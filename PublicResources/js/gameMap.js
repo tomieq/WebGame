@@ -67,6 +67,26 @@ class GameMap {
         this.canvas.clearCanvas();
     }
 
+    drawTiles(gameMap, fillWithGrass) {
+
+        var imageSources = this.getImageResources(gameMap, fillWithGrass);
+
+        Promise
+        .all(imageSources.map(i => this.loadImage(i)))
+        .then((images) => {
+            for (var mapX = this.mapWidth - 1; mapX >= 0 ; mapX--) {
+                for (var mapY = 0; mapY < this.mapHeight; mapY++) {
+                    var mapObject = this.findTileInObjectArray(gameMap, mapX, mapY);
+                    if (mapObject != undefined) {
+                        this.setupTile(mapObject.mapX, mapObject.mapY, mapObject.imagePath, mapObject.imageWidth, mapObject.imageHeight);
+                    } else if (fillWithGrass) {
+                        this.setupTile(mapX, mapY, "tiles/grass.png", 600, 400);
+                    }
+                }
+            }
+        });
+    }
+
     drawGround() {
         var left = this.getCanvasCoordinates(0, 0);
         var right = this.getCanvasCoordinates(this.mapWidth - 1, this.mapHeight - 1);
@@ -83,6 +103,7 @@ class GameMap {
         var topX = top[0] + 0.5 * this.tileWidth;
         var topY = top[1] - this.tileHeight;
         // rectangle
+        
         this.canvas.drawLine({
                 strokeStyle: '#42626a',
                 strokeWidth: 10,
@@ -127,3 +148,61 @@ class GameMap {
         }
 
     }
+
+    getImageResources(gameMap, fillWithGrass) {
+        var imageSources = [];
+        if (fillWithGrass) {
+            imageSources.push("tiles/grass.png");
+        }
+        for (var i = 0; i < gameMap.length; i++) {
+            var mapObject = gameMap[i];
+            if (mapObject instanceof MapObject) {
+                var path = mapObject.imagePath;
+                if (!imageSources.includes(path)) {
+                    imageSources.push(path);
+                }
+            }
+        }
+        return imageSources;
+    }
+
+    findTileInObjectArray(gameMap, mapX, mapY) {
+        for (var i = 0; i < gameMap.length; i++) {
+            var mapObject = gameMap[i];
+            if (mapObject instanceof MapObject) {
+                if (mapObject.mapX == mapX && mapObject.mapY == mapY) {
+                    return mapObject;
+                }
+            }
+        }
+        return undefined;
+    }
+
+    setupTile(mapX, mapY, imagePath, imageWidth, imageHeight) {
+        var coordinates = this.getCanvasCoordinates(mapX, mapY);
+        var canvasX = coordinates[0];
+        var canvasY = coordinates[1] - imageHeight;
+        this.canvas.drawImage({
+              source: imagePath,
+              x: canvasX, y: canvasY,
+                  width: imageWidth,
+                  height: imageHeight,
+              fromCenter: false,
+              rotate: 0
+        });
+    }
+
+    loadImage(imagePath) {
+        return new Promise((resolve, reject) => {
+            let image = new Image();
+            image.addEventListener("load", () => {
+                console.log("Loaded image " + imagePath);
+                resolve(image);
+            });
+            image.addEventListener("error", (err) => {
+                reject(err);
+            });
+            image.src = imagePath;
+        });
+    }
+}

@@ -10,13 +10,15 @@ import Swifter
 
 class WebApplication {
 
-    private let rawPage = Resource.getAppResource(relativePath: "templates/pageResponse.html")
     
     init(_ server: HttpServer) {
 
         server.GET["/"] = { request, _ in
+            let rawPage = Resource.getAppResource(relativePath: "templates/pageResponse.html")
+            let template = Template(raw: rawPage)
             
-            let template = Template(raw: self.rawPage)
+            let canvas = Template.htmlNode(type: "canvas", attributes: ["id":"canvasMap"])
+            template.set(variables: ["body": canvas])
             return template.asResponse()
         }
         
