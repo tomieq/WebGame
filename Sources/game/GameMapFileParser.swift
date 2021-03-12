@@ -94,30 +94,63 @@ class GameMapFileParser {
         switch (topTile, bottomTile, leftTile, righTile) {
             case (.mainStreet, .mainStreet, .mainStreet, .mainStreet):
                 return .mainCross
+
             case (.localStreet, .localStreet, .mainStreet, .mainStreet):
                 return .mainXIntersection3
+            case (.localStreet, .localStreet, .mainStreet, _):
+                return .mainXIntersection3
+            case (.localStreet, .localStreet, _, .mainStreet):
+                return .mainXIntersection3
+
             case (.localStreet, _, .mainStreet, .mainStreet):
                 return .mainXIntersection1
+            case (.localStreet, _, .mainStreet, _):
+                return .mainXIntersection1
+            case (.localStreet, _, _, .mainStreet):
+                return .mainXIntersection1
+
             case (_, .localStreet, .mainStreet, .mainStreet):
                 return .mainXIntersection2
+            case (_, .localStreet, .mainStreet, _):
+                return .mainXIntersection2
+            case (_, .localStreet, _, .mainStreet):
+                return .mainXIntersection2
+            
             case (.mainStreet, .mainStreet, .localStreet, .localStreet):
                 return .mainYIntersection3
+            case (.mainStreet, _, .localStreet, .localStreet):
+                return .mainYIntersection3
+            case (_, .mainStreet, .localStreet, .localStreet):
+                return .mainYIntersection3
+            
             case (.mainStreet, .mainStreet, .localStreet, _):
                 return .mainYIntersection1
+            case (.mainStreet, _, .localStreet, _):
+                return .mainYIntersection1
+            case (_, .mainStreet, .localStreet, _):
+                return .mainYIntersection1
+
             case (.mainStreet, .mainStreet, _, .localStreet):
                 return .mainYIntersection2
+            case (.mainStreet, _, _, .localStreet):
+                return .mainYIntersection2
+            case (_, .mainStreet, _, .localStreet):
+                return .mainYIntersection2
+
             case (.mainStreet, .mainStreet, _, _):
                 return .mainY
             case (.mainStreet, _, _, _):
                 return .mainY
             case (_, .mainStreet, _, _):
                 return .mainY
+
             case (_, _, .mainStreet, .mainStreet):
                 return .mainX
             case (_, _, _, .mainStreet):
                 return .mainX
             case (_, _, .mainStreet, _):
                 return .mainX
+
             default:
                 return nil
         }

@@ -9,7 +9,7 @@ var gameMap;
 
 $( document ).ready(function() {
     var $canvas  = $('#canvasMap');
-    gameMap = new GameMap($canvas, 12, 12);
+    gameMap = new GameMap($canvas, 25, 25);
     gameMap.drawCoordinates();
 
     $.getScript( "js/loadMap.js", function( data, textStatus, jqxhr ) {
