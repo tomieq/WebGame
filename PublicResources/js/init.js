@@ -9,8 +9,11 @@ var gameMap;
 var gameTraffic;
 
 $( document ).ready(function() {
-    var $canvasMap  = $('#canvasMap');
-    gameMap = new GameMap($canvasMap, 25, 25, 0.25);
+    
+    var calculator = new GameCalculator(25, 25, 0.25);
+
+    var canvasMap  = $('#canvasMap');
+    gameMap = new GameMap(canvasMap, calculator);
     gameMap.drawCoordinates();
 
     var $canvasTraffic  = $('#canvasTraffic');

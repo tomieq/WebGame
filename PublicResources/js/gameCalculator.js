@@ -18,6 +18,8 @@ class GameCalculator {
     }
 
     setupCanvas(canvas) {
+        console.log("Canvas width: " + this.canvasWidth + " canvas height: " + this.canvasHeight);
+
         canvas.attr("width", this.canvasWidth * this.canvasScale);
         canvas.attr("height", this.canvasHeight * this.canvasScale);
         canvas.css("width", this.canvasWidth * this.canvasScale * 0.5);
@@ -26,5 +28,10 @@ class GameCalculator {
             scale: this.canvasScale
         })
     }
-    
+
+    getCanvasCoordinates(mapX, mapY) {
+        var canvasX = ((mapX + mapY) * this.tileWidth * 0.5);
+        var canvasY = ((this.mapWidth + mapY) * this.tileHeight * 0.5 - (mapX * this.tileHeight * 0.5) + this.canvasTopMargin);
+        return [canvasX, canvasY]
+    }
 }
