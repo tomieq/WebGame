@@ -25,10 +25,10 @@ class GameMapFileParser {
             matrix.forEach { dataX in
                 dataX.value.forEach { dataY in
                     if dataY.value == .localStreet, let streetType = self.evaluateLocalStreetType(x: dataX.key, y: dataY.key, mapMatrix: matrix) {
-                        mapTiles.append(GameMapTile(x: dataX.key, y: dataY.key, image: .street(type: streetType)))
+                        mapTiles.append(GameMapTile(x: dataX.key, y: dataY.key, image: .street(type: .local(streetType))))
                     }
                     if dataY.value == .mainStreet, let streetType = self.evaluateMainStreetType(x: dataX.key, y: dataY.key, mapMatrix: matrix) {
-                        mapTiles.append(GameMapTile(x: dataX.key, y: dataY.key, image: .street(type: streetType)))
+                        mapTiles.append(GameMapTile(x: dataX.key, y: dataY.key, image: .street(type: .main(streetType))))
                     }
                 }
             }
@@ -36,7 +36,7 @@ class GameMapFileParser {
         return mapTiles
     }
     
-    private func evaluateLocalStreetType(x: Int, y: Int, mapMatrix: MapMatrix) -> StreetType? {
+    private func evaluateLocalStreetType(x: Int, y: Int, mapMatrix: MapMatrix) -> LocalStreetType? {
         let topTile = mapMatrix[x]?[y-1]
         let bottomTile = mapMatrix[x]?[y+1]
         let leftTile = mapMatrix[x-1]?[y]
@@ -84,7 +84,7 @@ class GameMapFileParser {
     }
     
     
-    private func evaluateMainStreetType(x: Int, y: Int, mapMatrix: MapMatrix) -> StreetType? {
+    private func evaluateMainStreetType(x: Int, y: Int, mapMatrix: MapMatrix) -> MainStreetType? {
         let topTile = mapMatrix[x]?[y-1]
         let bottomTile = mapMatrix[x]?[y+1]
         let leftTile = mapMatrix[x-1]?[y]
