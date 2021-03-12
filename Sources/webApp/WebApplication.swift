@@ -10,7 +10,7 @@ import Swifter
 
 class WebApplication {
 
-    let gameMap = GameMap()
+    let gameMap = GameMap(width: 10, height: 5, scale: 0.3, path: "maps/roadMap2")
     
     init(_ server: HttpServer) {
 

@@ -14,12 +14,12 @@ class GameMap {
     let scale: Double
     var tiles: [GameMapTile] = []
     
-    init() {
-        self.width = 25
-        self.height = 25
-        self.scale = 0.35
+    init(width: Int, height: Int, scale: Double, path: String) {
+        self.width = width
+        self.height = height
+        self.scale = scale
         let parser = GameMapFileParser()
-        self.tiles = parser.loadStreets("maps/roadMap1")
+        self.tiles = parser.loadStreets(path)
     }
     
     
