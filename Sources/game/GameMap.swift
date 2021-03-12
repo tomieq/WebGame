@@ -46,39 +46,39 @@ class GameMap {
         
         switch (topTile, bottomTile, leftTile, righTile) {
             case (true, true, true, true):
-                return .cross
+                return .localCross
             case (true, true, true, false):
-                return .yIntersection1
+                return .localYIntersection1
             case (true, true, false, true):
-                return .yIntersection2
+                return .localYIntersection2
             case (false, true, true, true):
-                return .xIntersection2
+                return .localXIntersection2
             case (true, false, true, true):
-                return .xIntersection1
+                return .localXIntersection1
             case (true, false, false, true):
-                return .curveTop
+                return .localCurveTop
             case (false, true, true, false):
-                return .curveBottom
+                return .localCurveBottom
             case (true, false, true, false):
-                return .curveLeft
+                return .localCurveLeft
             case (false, true, false, true):
-                return .curveRight
+                return .localCurveRight
             case (true, true, false, false):
-                return .y
+                return .localY
             case (false, false, true, true):
-                return .x
+                return .localX
             case (false, false, false, true):
-                return .deadEndX1
+                return .localDeadEndX1
             case (false, false, true, false):
-                return .deadEndX2
+                return .localDeadEndX2
             case (false, true, false, false):
-                return .deadEndY1
+                return .localDeadEndY1
             case (true, false, false, false):
-                return .deadEndY2
+                return .localDeadEndY2
             default:
-                return .cross
+                return .localCross
         }
-        return .cross
+        return .localCross
     }
 }
 

@@ -19,35 +19,35 @@ extension TileImage {
             return TileImageInfo(path: "tiles/grass.png", width: 600, height: 400)
         case .street(let type):
             switch type {
-            case .x:
+            case .localX:
                 return TileImageInfo(path: "tiles/street-X.png", width: 600, height: 400)
-            case .y:
+            case .localY:
                 return TileImageInfo(path: "tiles/street-Y.png", width: 600, height: 400)
-            case .yIntersection1:
+            case .localYIntersection1:
                 return TileImageInfo(path: "tiles/street-Y-1.png", width: 600, height: 400)
-            case .yIntersection2:
+            case .localYIntersection2:
                 return TileImageInfo(path: "tiles/street-Y-2.png", width: 600, height: 400)
-            case .xIntersection1:
+            case .localXIntersection1:
                 return TileImageInfo(path: "tiles/street-X-1.png", width: 600, height: 400)
-            case .xIntersection2:
+            case .localXIntersection2:
                 return TileImageInfo(path: "tiles/street-X-2.png", width: 600, height: 400)
-            case .cross:
+            case .localCross:
                 return TileImageInfo(path: "tiles/street-cross.png", width: 600, height: 400)
-            case .curveBottom:
+            case .localCurveBottom:
                 return TileImageInfo(path: "tiles/street-curve-bottom.png", width: 600, height: 400)
-            case .curveLeft:
+            case .localCurveLeft:
                 return TileImageInfo(path: "tiles/street-curve-left.png", width: 600, height: 400)
-            case .curveRight:
+            case .localCurveRight:
                 return TileImageInfo(path: "tiles/street-curve-right.png", width: 600, height: 400)
-            case .curveTop:
+            case .localCurveTop:
                 return TileImageInfo(path: "tiles/street-curve-top.png", width: 600, height: 400)
-            case .deadEndX1:
+            case .localDeadEndX1:
                 return TileImageInfo(path: "tiles/street-dead-X-1.png", width: 600, height: 400)
-            case .deadEndX2:
+            case .localDeadEndX2:
                 return TileImageInfo(path: "tiles/street-dead-X-2.png", width: 600, height: 400)
-            case .deadEndY1:
+            case .localDeadEndY1:
                 return TileImageInfo(path: "tiles/street-dead-Y-1.png", width: 600, height: 400)
-            case .deadEndY2:
+            case .localDeadEndY2:
                 return TileImageInfo(path: "tiles/street-dead-Y-2.png", width: 600, height: 400)
             }
         }
@@ -62,19 +62,19 @@ struct TileImageInfo {
 }
 
 enum StreetType {
-    case x
-    case y
-    case yIntersection1
-    case yIntersection2
-    case xIntersection1
-    case xIntersection2
-    case cross
-    case curveBottom
-    case curveLeft
-    case curveRight
-    case curveTop
-    case deadEndX1
-    case deadEndX2
-    case deadEndY1
-    case deadEndY2
+    case localX
+    case localY
+    case localYIntersection1
+    case localYIntersection2
+    case localXIntersection1
+    case localXIntersection2
+    case localCross
+    case localCurveBottom
+    case localCurveLeft
+    case localCurveRight
+    case localCurveTop
+    case localDeadEndX1
+    case localDeadEndX2
+    case localDeadEndY1
+    case localDeadEndY2
 }
