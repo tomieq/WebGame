@@ -24,8 +24,21 @@ class WebApplication {
         
         server.GET["js/loadMap.js"] = { request, responseHeaders in
             responseHeaders.addHeader("Content-Type", "text/javascript;charset=UTF-8")
-            let jsCode = Resource.getAppResource(relativePath: "templates/loadMap.js")
-            return .ok(.text(jsCode))
+            let raw = Resource.getAppResource(relativePath: "templates/loadMap.js")
+            let template = Template(raw: raw)
+            
+            let gameMap = GameMap()
+            gameMap.tiles.forEach { tile in
+                var variables = [String:String]()
+                variables["x"] = tile.x.string
+                variables["y"] = tile.y.string
+                variables["path"] = tile.image.info.path
+                variables["imageWidth"] = tile.image.info.width.string
+                variables["imageHeight"] = tile.image.info.height.string
+                template.set(variables: variables, inNest: "object")
+            }
+            
+            return .ok(.text(template.output()))
         }
         
         
