@@ -22,7 +22,7 @@ extension TileImage {
             case .x:
                 return TileImageInfo(path: "tiles/street-X.png", width: 600, height: 400)
             case .y:
-                return TileImageInfo(path: "tiles/street-X.png", width: 600, height: 400)
+                return TileImageInfo(path: "tiles/street-Y.png", width: 600, height: 400)
             case .yIntersection1:
                 return TileImageInfo(path: "tiles/street-Y-1.png", width: 600, height: 400)
             case .yIntersection2:
