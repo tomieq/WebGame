@@ -49,6 +49,24 @@ extension TileImage {
                 return TileImageInfo(path: "tiles/street-dead-Y-1.png", width: 600, height: 400)
             case .localDeadEndY2:
                 return TileImageInfo(path: "tiles/street-dead-Y-2.png", width: 600, height: 400)
+            case .mainX:
+                return TileImageInfo(path: "tiles/wide-street-X.png", width: 600, height: 400)
+            case .mainY:
+                return TileImageInfo(path: "tiles/wide-street-Y.png", width: 600, height: 400)
+            case .mainCross:
+                return TileImageInfo(path: "tiles/wide-street-cross.png", width: 600, height: 400)
+            case .mainXIntersection1:
+                return TileImageInfo(path: "tiles/wide-street-X-1.png", width: 600, height: 400)
+            case .mainXIntersection2:
+                return TileImageInfo(path: "tiles/wide-street-X-2.png", width: 600, height: 400)
+            case .mainXIntersection3:
+                return TileImageInfo(path: "tiles/wide-street-X-3.png", width: 600, height: 400)
+            case .mainYIntersection1:
+                return TileImageInfo(path: "tiles/wide-street-Y-1.png", width: 600, height: 400)
+            case .mainYIntersection2:
+                return TileImageInfo(path: "tiles/wide-street-Y-2.png", width: 600, height: 400)
+            case .mainYIntersection3:
+                return TileImageInfo(path: "tiles/wide-street-Y-3.png", width: 600, height: 400)
             }
         }
     }
@@ -77,4 +95,13 @@ enum StreetType {
     case localDeadEndX2
     case localDeadEndY1
     case localDeadEndY2
+    case mainX
+    case mainY
+    case mainCross
+    case mainXIntersection1
+    case mainXIntersection2
+    case mainXIntersection3
+    case mainYIntersection1
+    case mainYIntersection2
+    case mainYIntersection3
 }

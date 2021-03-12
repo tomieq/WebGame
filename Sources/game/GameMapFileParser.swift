@@ -24,8 +24,11 @@ class GameMapFileParser {
             }
             matrix.forEach { dataX in
                 dataX.value.forEach { dataY in
-                    if dataY.value == .localStreet {
-                        mapTiles.append(GameMapTile(x: dataX.key, y: dataY.key, image: .street(type: self.evaluateStreetType(x: dataX.key, y: dataY.key, mapMatrix: matrix))))
+                    if dataY.value == .localStreet, let streetType = self.evaluateLocalStreetType(x: dataX.key, y: dataY.key, mapMatrix: matrix) {
+                        mapTiles.append(GameMapTile(x: dataX.key, y: dataY.key, image: .street(type: streetType)))
+                    }
+                    if dataY.value == .mainStreet, let streetType = self.evaluateMainStreetType(x: dataX.key, y: dataY.key, mapMatrix: matrix) {
+                        mapTiles.append(GameMapTile(x: dataX.key, y: dataY.key, image: .street(type: streetType)))
                     }
                 }
             }
@@ -33,45 +36,90 @@ class GameMapFileParser {
         return mapTiles
     }
     
-    private func evaluateStreetType(x: Int, y: Int, mapMatrix: MapMatrix) -> StreetType {
+    private func evaluateLocalStreetType(x: Int, y: Int, mapMatrix: MapMatrix) -> StreetType? {
         let topTile = mapMatrix[x]?[y-1]
         let bottomTile = mapMatrix[x]?[y+1]
         let leftTile = mapMatrix[x-1]?[y]
         let righTile = mapMatrix[x+1]?[y]
         
-        switch (topTile, bottomTile, leftTile, righTile) {
-            case (.localStreet, .localStreet, .localStreet, .localStreet):
+        let isTopTileStreet = [.localStreet, .mainStreet].contains(topTile)
+        let isBottomTileStreet = [.localStreet, .mainStreet].contains(bottomTile)
+        let isLeftTileStreet = [.localStreet, .mainStreet].contains(leftTile)
+        let isRightTileStreet = [.localStreet, .mainStreet].contains(righTile)
+        
+        switch (isTopTileStreet, isBottomTileStreet, isLeftTileStreet, isRightTileStreet) {
+            case (true, true, true, true):
                 return .localCross
-            case (.localStreet, .localStreet, .localStreet, _):
+            case (true, true, true, false):
                 return .localYIntersection1
-            case (.localStreet, .localStreet, _, .localStreet):
+            case (true, true, false, true):
                 return .localYIntersection2
-            case (_, .localStreet, .localStreet, .localStreet):
+            case (false, true, true, true):
                 return .localXIntersection2
-            case (.localStreet, _, .localStreet, .localStreet):
+            case (true, false, true, true):
                 return .localXIntersection1
-            case (.localStreet, _, _, .localStreet):
+            case (true, false, false, true):
                 return .localCurveTop
-            case (_, .localStreet, .localStreet, _):
+            case (false, true, true, false):
                 return .localCurveBottom
-            case (.localStreet, _, .localStreet, _):
+            case (true, false, true, false):
                 return .localCurveLeft
-            case (_, .localStreet, _, .localStreet):
+            case (false, true, false, true):
                 return .localCurveRight
-            case (.localStreet, .localStreet, _, _):
+            case (true, true, false, false):
                 return .localY
-            case (_, _, .localStreet, .localStreet):
+            case (false, false, true, true):
                 return .localX
-            case (_, _, _, .localStreet):
+            case (false, false, false, true):
                 return .localDeadEndX1
-            case (_, _, .localStreet, _):
+            case (false, false, true, false):
                 return .localDeadEndX2
-            case (_, .localStreet, _, _):
+            case (false, true, false, false):
                 return .localDeadEndY1
-            case (.localStreet, _, _, _):
+            case (true, false, false, false):
                 return .localDeadEndY2
             default:
-                return .localCross
+                return nil
+        }
+    }
+    
+    
+    private func evaluateMainStreetType(x: Int, y: Int, mapMatrix: MapMatrix) -> StreetType? {
+        let topTile = mapMatrix[x]?[y-1]
+        let bottomTile = mapMatrix[x]?[y+1]
+        let leftTile = mapMatrix[x-1]?[y]
+        let righTile = mapMatrix[x+1]?[y]
+        
+        
+        switch (topTile, bottomTile, leftTile, righTile) {
+            case (.mainStreet, .mainStreet, .mainStreet, .mainStreet):
+                return .mainCross
+            case (.localStreet, .localStreet, .mainStreet, .mainStreet):
+                return .mainXIntersection3
+            case (.localStreet, _, .mainStreet, .mainStreet):
+                return .mainXIntersection1
+            case (_, .localStreet, .mainStreet, .mainStreet):
+                return .mainXIntersection2
+            case (.mainStreet, .mainStreet, .localStreet, .localStreet):
+                return .mainYIntersection3
+            case (.mainStreet, .mainStreet, .localStreet, _):
+                return .mainYIntersection1
+            case (.mainStreet, .mainStreet, _, .localStreet):
+                return .mainYIntersection2
+            case (.mainStreet, .mainStreet, _, _):
+                return .mainY
+            case (.mainStreet, _, _, _):
+                return .mainY
+            case (_, .mainStreet, _, _):
+                return .mainY
+            case (_, _, .mainStreet, .mainStreet):
+                return .mainX
+            case (_, _, _, .mainStreet):
+                return .mainX
+            case (_, _, .mainStreet, _):
+                return .mainX
+            default:
+                return nil
         }
     }
 }
