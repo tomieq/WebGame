@@ -22,6 +22,12 @@ class WebApplication {
             return template.asResponse()
         }
         
+        server.GET["js/loadMap.js"] = { request, responseHeaders in
+            responseHeaders.addHeader("Content-Type", "text/javascript;charset=UTF-8")
+            let jsCode = Resource.getAppResource(relativePath: "templates/loadMap.js")
+            return .ok(.text(jsCode))
+        }
+        
         
         server.notFoundHandler = { request, responseHeaders in
             
