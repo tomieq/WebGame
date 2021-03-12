@@ -1,17 +1,18 @@
 //
 //  GameMap.js
-//  
+//
 //
 //  Created by Tomasz Kucharski on 12/03/2021.
 //
 
-class GameMap {
+class GameMapInteractive {
     constructor(canvas, calculator) {
         this.canvas = canvas;
         this.calculator = calculator;
-        
-        this.calculator.setupCanvas(this.canvas)
+        this.gameMap = 0;
+        this.calculator.setupCanvas(this.canvas);
         this.drawGround();
+        this.layers = [];
     }
 
     drawCoordinates() {
@@ -35,25 +36,76 @@ class GameMap {
         this.canvas.clearCanvas();
     }
 
+    splitMapToLayers() {
+        var layerIndex = 0;
+        this.layers = [];
+
+        var amountToTake = 1;
+        for (var w = this.calculator.mapWidth; w--; w >= 0) {
+            var mapX = w;
+            var mapY = 0;
+            this.layers[layerIndex] = [];
+            for(var h = 0; h < amountToTake; h++) {
+                
+                var mapObject = this.findTileInObjectArray(this.gameMap, mapX, mapY);
+                if (mapObject != undefined) {
+                    this.layers[layerIndex].push(mapObject);
+                    console.log("layer="+layerIndex+" "+mapX+"," + mapY);
+                }
+                mapX++;
+                mapY++;
+            }
+            
+            if (amountToTake < this.calculator.mapHeight) {
+                amountToTake++;
+            }
+            layerIndex++;
+        }
+        
+        var amountToTake = this.calculator.mapHeight - 1;
+        for (var w = 1; w < this.calculator.mapHeight; w++) {
+            var mapX = 0;
+            var mapY = w;
+            this.layers[layerIndex] = [];
+            for(var h = amountToTake; h > 0; h--) {
+                var mapObject = this.findTileInObjectArray(this.gameMap, mapX, mapY);
+                if (mapObject != undefined) {
+                    this.layers[layerIndex].push(mapObject);
+                    console.log("layer="+layerIndex+" "+mapX+"," + mapY);
+                }
+                mapX++;
+                mapY++;
+            }
+            amountToTake--;
+            layerIndex++;
+        }
+    }
     setTiles(gameMap, fillWithGrass) {
 
-        var imageSources = this.getImageResources(gameMap, fillWithGrass);
+        
+        
+        this.gameMap = gameMap;
+        var imageSources = this.getImageResources(gameMap);
 
         Promise
         .all(imageSources.map(i => this.loadImage(i)))
         .then((images) => {
-            for (var mapX = this.calculator.mapWidth - 1; mapX >= 0 ; mapX--) {
-                for (var mapY = 0; mapY < this.calculator.mapHeight; mapY++) {
-                    var mapObject = this.findTileInObjectArray(gameMap, mapX, mapY);
-                    if (mapObject != undefined) {
-                        this.setupTile(mapObject.mapX, mapObject.mapY, mapObject.imagePath, mapObject.imageWidth, mapObject.imageHeight);
-                    } else if (fillWithGrass) {
-                        this.setupTile(mapX, mapY, "tiles/grass.png", 600, 400);
-                    }
-                }
-            }
+            var t = this;
+            t.splitMapToLayers()
+            t.drawTiles();
+
         });
     }
+    
+    drawTiles() {
+        for (var layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
+            for (var i = 0; i < this.layers[layerIndex].length; i++) {
+                var mapObject = this.layers[layerIndex][i];
+                this.setupTile(mapObject.mapX, mapObject.mapY, mapObject.imagePath, mapObject.imageWidth, mapObject.imageHeight);
+            }
+        }
+    }
+    
 
     drawGround() {
         var left = this.calculator.getCanvasCoordinates(0, 0);
@@ -117,11 +169,8 @@ class GameMap {
 
     }
 
-    getImageResources(gameMap, fillWithGrass) {
-        var imageSources = [];
-        if (fillWithGrass) {
-            imageSources.push("tiles/grass.png");
-        }
+    getImageResources(gameMap) {
+        var imageSources = ["tiles/grass.png"];
         for (var i = 0; i < gameMap.length; i++) {
             var mapObject = gameMap[i];
             if (mapObject instanceof MapObject) {
