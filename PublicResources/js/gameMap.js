@@ -17,9 +17,9 @@ class MapObject {
 }
 
 class GameMap {
-    constructor(canvas, mapWidth, mapHeight) {
+    constructor(canvas, mapWidth, mapHeight, scale) {
         this.canvas = canvas
-        this.canvasScale = 0.25;
+        this.canvasScale = scale;
         this.canvasTopMargin = 2100
         this.tileWidth = 600;
         this.tileHeight = 345;

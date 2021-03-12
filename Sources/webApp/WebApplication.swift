@@ -17,8 +17,11 @@ class WebApplication {
             let rawPage = Resource.getAppResource(relativePath: "templates/pageResponse.html")
             let template = Template(raw: rawPage)
             
-            let canvas = Template.htmlNode(type: "canvas", attributes: ["id":"canvasMap"])
-            template.set(variables: ["body": canvas])
+            var html = Template.htmlNode(type: "canvas", attributes: ["id":"canvasMap","style":"z-index:0;"])
+            html.append(Template.htmlNode(type: "canvas", attributes: ["id":"canvasTraffic","style":"z-index:1;"]))
+            
+            
+            template.set(variables: ["body": html])
             return template.asResponse()
         }
         
