@@ -10,6 +10,7 @@ import Swifter
 
 class WebApplication {
 
+    let gameMap = GameMap()
     
     init(_ server: HttpServer) {
 
@@ -25,13 +26,29 @@ class WebApplication {
             return template.asResponse()
         }
         
+        
+        server.GET["js/init.js"] = { request, responseHeaders in
+            responseHeaders.addHeader("Content-Type", "text/javascript;charset=UTF-8")
+            let raw = Resource.getAppResource(relativePath: "templates/init.js")
+            let template = Template(raw: raw)
+            
+            
+            var variables = [String:String]()
+            variables["mapWidth"] = self.gameMap.width.string
+            variables["mapHeight"] = self.gameMap.height.string
+            variables["mapScale"] = self.gameMap.scale.string
+            template.set(variables: variables)
+
+            
+            return .ok(.text(template.output()))
+        }
+        
         server.GET["js/loadMap.js"] = { request, responseHeaders in
             responseHeaders.addHeader("Content-Type", "text/javascript;charset=UTF-8")
             let raw = Resource.getAppResource(relativePath: "templates/loadMap.js")
             let template = Template(raw: raw)
             
-            let gameMap = GameMap()
-            gameMap.tiles.forEach { tile in
+            self.gameMap.tiles.forEach { tile in
                 var variables = [String:String]()
                 variables["x"] = tile.x.string
                 variables["y"] = tile.y.string

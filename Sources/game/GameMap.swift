@@ -9,11 +9,15 @@ import Foundation
 
 class GameMap {
     
+    let width: Int
+    let height: Int
+    let scale: Double
     var tiles: [GameMapTile] = []
     
     init() {
-        //self.tiles.append(GameMapTile(x: 0, y: 0, image: .grass))
-        //self.tiles.append(GameMapTile(x: 0, y: 1, image: .street(type: .x)))
+        self.width = 25
+        self.height = 25
+        self.scale = 0.35
         let parser = GameMapFileParser()
         self.tiles = parser.loadStreets("maps/roadMap1")
     }
