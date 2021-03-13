@@ -11,7 +11,6 @@ class GameMap {
         this.calculator = calculator;
         
         this.calculator.setupCanvas(this.canvas)
-        this.drawGround();
     }
 
     drawCoordinates() {

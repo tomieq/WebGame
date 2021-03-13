@@ -2,4 +2,4 @@ var mapObjects = [];
 [START object]
 mapObjects.push(new MapObject({x}, {y}, "{path}", {imageWidth}, {imageHeight}));
 [END object]
-gameMap.setTiles(mapObjects, false);
+gameStreetMap.setTiles(mapObjects, false);

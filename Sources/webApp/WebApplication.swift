@@ -10,7 +10,7 @@ import Swifter
 
 class WebApplication {
 
-    let gameMap = GameMap(width: 10, height: 5, scale: 0.3, path: "maps/roadMap2")
+    let gameMap = GameMap(width: 11, height: 5, scale: 0.4, path: "maps/roadMap2")
     
     init(_ server: HttpServer) {
 
@@ -18,8 +18,9 @@ class WebApplication {
             let rawPage = Resource.getAppResource(relativePath: "templates/pageResponse.html")
             let template = Template(raw: rawPage)
             
-            var html = Template.htmlNode(type: "canvas", attributes: ["id":"canvasMap","style":"z-index:0;"])
+            var html = Template.htmlNode(type: "canvas", attributes: ["id":"canvasStreets","style":"z-index:0;"])
             html.append(Template.htmlNode(type: "canvas", attributes: ["id":"canvasTraffic","style":"z-index:1;"]))
+            html.append(Template.htmlNode(type: "canvas", attributes: ["id":"canvasBuildings","style":"z-index:2;"]))
             
             
             template.set(variables: ["body": html])
