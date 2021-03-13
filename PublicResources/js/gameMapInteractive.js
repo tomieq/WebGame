@@ -5,6 +5,16 @@
 //  Created by Tomasz Kucharski on 12/03/2021.
 //
 
+class GameMovableObject {
+    constructor(screenX, screenY) {
+        this.screenX = screenX
+        this.screenY = screenY
+        this.screenHeight = 400
+        this.speed = 5;
+        this.mod = -1;
+    }
+}
+
 class GameMapInteractive {
     constructor(canvas, calculator) {
         this.canvas = canvas;
@@ -13,6 +23,17 @@ class GameMapInteractive {
         this.calculator.setupCanvas(this.canvas);
         this.drawGround();
         this.layers = [];
+        this.layersScreenY = [];
+        this.movableObjects = [];
+        this.deltaX = Math.cos(Math.PI/180 * 30);
+        this.deltaY = Math.sin(Math.PI/180 * -30);
+        this.moveInterval = 0;
+        
+        var coordinates = this.calculator.getCanvasCoordinates(10, 1);
+        var x = coordinates[0];
+        var y = coordinates[1];
+        this.movableObjects.push(new GameMovableObject(x, y));
+        
     }
 
     drawCoordinates() {
@@ -45,6 +66,9 @@ class GameMapInteractive {
             var mapX = w;
             var mapY = 0;
             this.layers[layerIndex] = [];
+            
+            var coordinates = this.calculator.getCanvasCoordinates(mapX, mapY);
+            this.layersScreenY[layerIndex] = coordinates[1];
             for(var h = 0; h < amountToTake; h++) {
                 
                 var mapObject = this.findTileInObjectArray(this.gameMap, mapX, mapY);
@@ -67,6 +91,8 @@ class GameMapInteractive {
             var mapX = 0;
             var mapY = w;
             this.layers[layerIndex] = [];
+            var coordinates = this.calculator.getCanvasCoordinates(mapX, mapY);
+            this.layersScreenY[layerIndex] = coordinates[1];
             for(var h = amountToTake; h > 0; h--) {
                 var mapObject = this.findTileInObjectArray(this.gameMap, mapX, mapY);
                 if (mapObject != undefined) {
@@ -80,10 +106,8 @@ class GameMapInteractive {
             layerIndex++;
         }
     }
+    
     setTiles(gameMap, fillWithGrass) {
-
-        
-        
         this.gameMap = gameMap;
         var imageSources = this.getImageResources(gameMap);
 
@@ -92,15 +116,50 @@ class GameMapInteractive {
         .then((images) => {
             var t = this;
             t.splitMapToLayers()
-            t.drawTiles();
+            clearInterval(t.moveInterval);
+            //t.drawTiles();
+            this.moveInterval = setInterval(function(){t.drawTiles();}, 50);
+            setTimeout(function(){ clearInterval(t.moveInterval); }, 17000);
 
+              setTimeout(function(){ t.addCar() }, 1000);
+              setTimeout(function(){ t.addCar() }, 3000);
         });
     }
     
+   addCar() {
+       var coordinates = this.calculator.getCanvasCoordinates(10, 1);
+       var x = coordinates[0];
+       var y = coordinates[1];
+       this.movableObjects.push(new GameMovableObject(x, y));
+   }
+    
     drawTiles() {
+        this.clearMap();
+        this.drawGround();
+        this.drawCoordinates();
         for (var layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
+           var layerScreenY = this.layersScreenY[layerIndex];
+
+           for (var i = 0; i < this.movableObjects.length; i++) {
+               var movableObject = this.movableObjects[i];
+               if (movableObject.screenY < layerScreenY && movableObject.screenY > layerScreenY - this.calculator.tileHeight) {
+                   //console.log("draw car in layer " + layerIndex);
+                   this.canvas.drawImage({
+                         source: "objects/car1.png",
+                         x: movableObject.screenX,
+                         y: (movableObject.screenY - movableObject.screenHeight),
+                             width: 600,
+                             height: 400,
+                         fromCenter: false,
+                         rotate: 0
+                   });
+                  movableObject.screenX += (movableObject.speed * movableObject.mod) * this.deltaX;
+                  movableObject.screenY += (movableObject.speed * movableObject.mod) * this.deltaY;
+               }
+           }
             for (var i = 0; i < this.layers[layerIndex].length; i++) {
                 var mapObject = this.layers[layerIndex][i];
+                //console.log("draw "+mapObject.imagePath+" in layer " + layerIndex);
                 this.setupTile(mapObject.mapX, mapObject.mapY, mapObject.imagePath, mapObject.imageWidth, mapObject.imageHeight);
             }
         }
