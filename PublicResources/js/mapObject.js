@@ -29,7 +29,9 @@ class MapObject {
 }
 
 class GameMovableObject {
-    constructor(calculator, mapPoints, imageHeight, speed) {
+    constructor(id, type, calculator, mapPoints, imageHeight, speed) {
+        this.id = id;
+        this.type = type;
         this.calculator = calculator;
         this.mapPoints = mapPoints;
         this.pathCounter = 0;
@@ -70,6 +72,7 @@ class GameMovableObject {
     applyNextPath() {
         if(this.pathCounter + 1 >= this.mapPoints.length ) {
             this.speed = 0;
+            console.log("Vehicle " + this.id + " finished");
             return
         }
         var startPoint = this.mapPoints[this.pathCounter];
@@ -93,7 +96,7 @@ class GameMovableObject {
                 this.direction = 4;
             }
         }
-        this.image = "objects/car" + this.direction + ".png";
+        this.image = "objects/" + this.type + "." + this.direction + ".png";
         this.calculateDelta();
     }
                                               

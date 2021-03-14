@@ -11,17 +11,28 @@ class GameTraffic {
         this.calculator = calculator;
         this.calculator.setupCanvas(this.canvas);
         this.movableObjects = [];
+        this.isRunning = false;
     
         var points = [new MapPoint(0, 1), new MapPoint(2, 1), new MapPoint(2, 4), new MapPoint(4, 4), new MapPoint(4, 1), new MapPoint(0, 1)];
+        this.addObject("suzanne", "car1", points, 7);
         
-        this.movableObjects.push(new GameMovableObject(this.calculator, points, 400, 7));
         
-        // set interval for updating frames
         var t = this;
-        this.moveInterval = setInterval(function(){ t.updateFrame(); }, 50);
-        // stop timer after 17 seconds
-        setTimeout(function(){ clearInterval(t.moveInterval); }, 52000);
+        setTimeout(function(){
+                   var points = [new MapPoint(0, 1), new MapPoint(10, 1)];
+                   t.addObject("emily", "car2", points, 7);
+        }, 2000);
 
+    }
+    
+    addObject(id, type, mapPoints, speed) {
+        this.movableObjects.push(new GameMovableObject(id, type, this.calculator, mapPoints, 400, speed));
+        if(this.isRunning == false) {
+            this.isRunning = true;
+            var t = this;
+            console.log("Traffic started");
+            this.moveInterval = setInterval(function(){ t.updateFrame(); }, 50);
+        }
     }
 
     updateFrame() {
@@ -29,10 +40,10 @@ class GameTraffic {
         if( this.movableObjects.length == 0) {
             console.log("Traffic finished");
             clearInterval(this.moveInterval);
+            this.isRunning = false;
         }
         for (var i = 0; i < this.movableObjects.length; i++) {
             var movableObject = this.movableObjects[i];
-                //console.log("draw car in layer " + movableObject.screenX + "," + movableObject.screenY);
             this.canvas.drawImage({
                   source: movableObject.image,
                   x: movableObject.coordinates.x,
@@ -46,10 +57,10 @@ class GameTraffic {
             movableObject.coordinates.y += movableObject.deltaY;
             movableObject.updateState();
         }
-        this.movableObjects = this.movableObjects.filter(this.validMovableObject);
+        this.movableObjects = this.movableObjects.filter(this.isValidMovableObject);
     }
 
-    validMovableObject(movableObject) {
+    isValidMovableObject(movableObject) {
         return movableObject.speed > 0;
     }
 }
