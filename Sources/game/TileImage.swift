@@ -10,6 +10,8 @@ import Foundation
 enum TileImage {
     case grass
     case street(type: StreetType)
+    case btsAntenna
+    case tree(type: Int)
 }
 
 extension TileImage {
@@ -17,6 +19,10 @@ extension TileImage {
         switch self {
         case .grass:
             return TileImageInfo(path: "tiles/grass.png", width: 600, height: 400)
+        case .btsAntenna:
+            return TileImageInfo(path: "tiles/btsAntenna.png", width: 600, height: 800)
+        case .tree(let type):
+            return TileImageInfo(path: "tiles/tree\(type).png", width: 600, height: 600)
         case .street(let type):
             switch type {
 

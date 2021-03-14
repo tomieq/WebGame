@@ -24,12 +24,27 @@ class GameMapFileParser {
             }
             matrix.forEach { dataX in
                 dataX.value.forEach { dataY in
-                    if dataY.value == .localStreet, let streetType = self.evaluateLocalStreetType(x: dataX.key, y: dataY.key, mapMatrix: matrix) {
-                        mapTiles.append(GameMapTile(x: dataX.key, y: dataY.key, image: .street(type: .local(streetType))))
+                    
+                    switch dataY.value {
+                        
+                    case .localStreet:
+                        if let streetType = self.evaluateLocalStreetType(x: dataX.key, y: dataY.key, mapMatrix: matrix) {
+                            mapTiles.append(GameMapTile(x: dataX.key, y: dataY.key, image: .street(type: .local(streetType))))
+                        }
+                    case .mainStreet:
+                        if let streetType = self.evaluateMainStreetType(x: dataX.key, y: dataY.key, mapMatrix: matrix) {
+                            mapTiles.append(GameMapTile(x: dataX.key, y: dataY.key, image: .street(type: .main(streetType))))
+                        }
+                    case .btsAntenna:
+                        mapTiles.append(GameMapTile(x: dataX.key, y: dataY.key, image: .btsAntenna))
+                    case .tree1:
+                        mapTiles.append(GameMapTile(x: dataX.key, y: dataY.key, image: .tree(type: 1)))
+                    case .tree2:
+                        mapTiles.append(GameMapTile(x: dataX.key, y: dataY.key, image: .tree(type: 2)))
+                    case .tree3:
+                        mapTiles.append(GameMapTile(x: dataX.key, y: dataY.key, image: .tree(type: 3)))
                     }
-                    if dataY.value == .mainStreet, let streetType = self.evaluateMainStreetType(x: dataX.key, y: dataY.key, mapMatrix: matrix) {
-                        mapTiles.append(GameMapTile(x: dataX.key, y: dataY.key, image: .street(type: .main(streetType))))
-                    }
+                    
                 }
             }
         }
@@ -160,4 +175,8 @@ class GameMapFileParser {
 enum GameMapFileChar: String {
     case localStreet = "s"
     case mainStreet = "S"
+    case btsAntenna = "A"
+    case tree1 = "T"
+    case tree2 = "t"
+    case tree3 = "d"
 }
