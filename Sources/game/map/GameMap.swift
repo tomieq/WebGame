@@ -22,7 +22,9 @@ class GameMap {
         self.tiles = parser.loadStreets(path)
     }
     
-    
+    func getTile(address: MapPoint) -> GameMapTile? {
+        return self.tiles.first{ $0.address == address }
+    }
 }
 
 struct GameMapTile {
