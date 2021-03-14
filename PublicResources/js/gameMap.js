@@ -16,9 +16,9 @@ class GameMap {
     drawCoordinates() {
         for (var mapX = 0; mapX < this.calculator.mapWidth; mapX++) {
             for (var mapY = 0; mapY < this.calculator.mapHeight; mapY++) {
-                var coordinates = this.calculator.getCanvasCoordinates(mapX, mapY);
-                var canvasX = coordinates[0] + this.calculator.tileWidth * 0.5;
-                var canvasY = coordinates[1] - this.calculator.tileHeight * 0.5;
+                var coordinates = this.calculator.getCanvasCoordinates(new MapPoint(mapX, mapY));
+                var canvasX = coordinates.x + this.calculator.tileWidth * 0.5;
+                var canvasY = coordinates.y - this.calculator.tileHeight * 0.5;
                 this.canvas.drawText({
                         fillStyle: '#9cf',
                         x: canvasX, y: canvasY,
@@ -43,11 +43,11 @@ class GameMap {
         .then((images) => {
             for (var mapX = this.calculator.mapWidth - 1; mapX >= 0 ; mapX--) {
                 for (var mapY = 0; mapY < this.calculator.mapHeight; mapY++) {
-                    var mapObject = this.findTileInObjectArray(gameMap, mapX, mapY);
+                    var mapObject = this.findTileInObjectArray(gameMap, new MapPoint(mapX, mapY));
                     if (mapObject != undefined) {
-                        this.setupTile(mapObject.mapX, mapObject.mapY, mapObject.imagePath, mapObject.imageWidth, mapObject.imageHeight);
+                        this.setupTile(mapObject.mapPoint, mapObject.imagePath, mapObject.imageWidth, mapObject.imageHeight);
                     } else if (fillWithGrass) {
-                        this.setupTile(mapX, mapY, "tiles/grass.png", 600, 400);
+                        this.setupTile(new MapPoint(mapX, mapY), "tiles/grass.png", 600, 400);
                     }
                 }
             }
@@ -55,20 +55,20 @@ class GameMap {
     }
 
     drawGround() {
-        var left = this.calculator.getCanvasCoordinates(0, 0);
-        var right = this.calculator.getCanvasCoordinates(this.calculator.mapWidth - 1, this.calculator.mapHeight - 1);
-        var top = this.calculator.getCanvasCoordinates(this.calculator.mapWidth - 1, 0);
-        var bottom = this.calculator.getCanvasCoordinates(0, this.calculator.mapHeight - 1);
+        var left = this.calculator.getCanvasCoordinates(new MapPoint(0, 0));
+        var right = this.calculator.getCanvasCoordinates(new MapPoint(this.calculator.mapWidth - 1, this.calculator.mapHeight - 1));
+        var top = this.calculator.getCanvasCoordinates(new MapPoint(this.calculator.mapWidth - 1, 0));
+        var bottom = this.calculator.getCanvasCoordinates(new MapPoint(0, this.calculator.mapHeight - 1));
 
 
-        var leftX = left[0];
-        var leftY = left[1] - 0.5 * this.calculator.tileHeight;
-        var bottomX = bottom[0] + this.calculator.tileWidth * 0.5;
-        var bottomY = bottom[1];
-        var rightX = right[0] + this.calculator.tileWidth;
-        var rightY = right[1] - 0.5 * this.calculator.tileHeight;
-        var topX = top[0] + 0.5 * this.calculator.tileWidth;
-        var topY = top[1] - this.calculator.tileHeight;
+        var leftX = left.x;
+        var leftY = left.y - 0.5 * this.calculator.tileHeight;
+        var bottomX = bottom.x + this.calculator.tileWidth * 0.5;
+        var bottomY = bottom.y;
+        var rightX = right.x + this.calculator.tileWidth;
+        var rightY = right.y - 0.5 * this.calculator.tileHeight;
+        var topX = top.x + 0.5 * this.calculator.tileWidth;
+        var topY = top.y - this.calculator.tileHeight;
         // rectangle
         
         this.canvas.drawLine({
@@ -133,11 +133,11 @@ class GameMap {
         return imageSources;
     }
 
-    findTileInObjectArray(gameMap, mapX, mapY) {
+    findTileInObjectArray(gameMap, mapPoint) {
         for (var i = 0; i < gameMap.length; i++) {
             var mapObject = gameMap[i];
             if (mapObject instanceof MapObject) {
-                if (mapObject.mapX == mapX && mapObject.mapY == mapY) {
+                if (mapObject.mapPoint.x == mapPoint.x && mapObject.mapPoint.y == mapPoint.y) {
                     return mapObject;
                 }
             }
@@ -145,10 +145,10 @@ class GameMap {
         return undefined;
     }
 
-    setupTile(mapX, mapY, imagePath, imageWidth, imageHeight) {
-        var coordinates = this.calculator.getCanvasCoordinates(mapX, mapY);
-        var canvasX = coordinates[0];
-        var canvasY = coordinates[1] - imageHeight;
+    setupTile(mapPoint, imagePath, imageWidth, imageHeight) {
+        var coordinates = this.calculator.getCanvasCoordinates(mapPoint);
+        var canvasX = coordinates.x;
+        var canvasY = coordinates.y - imageHeight;
         this.canvas.drawImage({
               source: imagePath,
               x: canvasX, y: canvasY,

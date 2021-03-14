@@ -29,9 +29,9 @@ class GameCalculator {
         })
     }
 
-    getCanvasCoordinates(mapX, mapY) {
-        var canvasX = ((mapX + mapY) * this.tileWidth * 0.5);
-        var canvasY = ((this.mapWidth + mapY) * this.tileHeight * 0.5 - (mapX * this.tileHeight * 0.5) + this.canvasTopMargin);
-        return [canvasX, canvasY]
+    getCanvasCoordinates(mapPoint) {
+        var canvasX = ((mapPoint.x + mapPoint.y) * this.tileWidth * 0.5);
+        var canvasY = ((this.mapWidth + mapPoint.y) * this.tileHeight * 0.5 - (mapPoint.x * this.tileHeight * 0.5) + this.canvasTopMargin);
+        return new Coordinates(canvasX, canvasY)
     }
 }

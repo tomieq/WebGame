@@ -12,17 +12,13 @@ class GameTraffic {
         this.calculator.setupCanvas(this.canvas);
         this.movableObjects = [];
     
-        var coordinates = this.calculator.getCanvasCoordinates(0, 1);
-        var x = coordinates[0];
-        var y = coordinates[1];
+        var coordinates = this.calculator.getCanvasCoordinates(new MapPoint(0, 1));
         
-        this.movableObjects.push(new GameMovableObject(x, y, 7, 4));
+        this.movableObjects.push(new GameMovableObject(coordinates, 7, 4));
         
-        var coordinates = this.calculator.getCanvasCoordinates(10, 1);
-        x = coordinates[0];
-        y = coordinates[1];
+        var coordinates = this.calculator.getCanvasCoordinates(new MapPoint(10, 1));
         
-        this.movableObjects.push(new GameMovableObject(x, y, 9, 1));
+        this.movableObjects.push(new GameMovableObject(coordinates, 9, 1));
         // set interval for updating frames
         var t = this;
         this.moveInterval = setInterval(function(){ t.updateFrame(); }, 50);
@@ -41,15 +37,15 @@ class GameTraffic {
                 //console.log("draw car in layer " + movableObject.screenX + "," + movableObject.screenY);
                 this.canvas.drawImage({
                       source: movableObject.image,
-                      x: movableObject.screenX,
-                      y: (movableObject.screenY - movableObject.screenHeight),
-                          width: 600,
-                          height: 400,
+                      x: movableObject.coordinates.x,
+                      y: (movableObject.coordinates.y - movableObject.imageHeight),
+                          width: this.calculator.tileWidth,
+                          height: movableObject.imageHeight,
                       fromCenter: false,
                       rotate: 0
                 });
-               movableObject.screenX += movableObject.deltaX;
-               movableObject.screenY += movableObject.deltaY;
+               movableObject.coordinates.x += movableObject.deltaX;
+               movableObject.coordinates.y += movableObject.deltaY;
         }
         
     }

@@ -5,10 +5,23 @@
 //  Created by Tomasz Kucharski on 12/03/2021.
 //
 
+class MapPoint {
+    constructor(mapX, mapY) {
+        this.x = mapX
+        this.y = mapY
+    }
+}
+
+class Coordinates {
+    constructor(x, y) {
+        this.x = x
+        this.y = y
+    }
+}
+
 class MapObject {
-    constructor(mapX, mapY, imagePath, imageWidth, imageHeight) {
-        this.mapX = mapX;
-        this.mapY = mapY;
+    constructor(mapPoint, imagePath, imageWidth, imageHeight) {
+        this.mapPoint = mapPoint;
         this.imagePath = imagePath;
         this.imageWidth = imageWidth;
         this.imageHeight = imageHeight;
@@ -16,10 +29,9 @@ class MapObject {
 }
 
 class GameMovableObject {
-    constructor(screenX, screenY, speed, direction) {
-        this.screenX = screenX
-        this.screenY = screenY
-        this.screenHeight = 400
+    constructor(coordinates, speed, direction) {
+        this.coordinates = coordinates
+        this.imageHeight = 400
         this.image = "objects/car" + direction + ".png";
         
         var xMod = 0;
