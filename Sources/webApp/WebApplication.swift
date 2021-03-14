@@ -51,8 +51,8 @@ class WebApplication {
             
             self.gameMap.tiles.forEach { tile in
                 var variables = [String:String]()
-                variables["x"] = tile.x.string
-                variables["y"] = tile.y.string
+                variables["x"] = tile.address.x.string
+                variables["y"] = tile.address.y.string
                 variables["path"] = tile.type.image.path
                 variables["imageWidth"] = tile.type.image.width.string
                 variables["imageHeight"] = tile.type.image.height.string

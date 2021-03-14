@@ -26,7 +26,6 @@ class GameMap {
 }
 
 struct GameMapTile {
-    let x: Int
-    let y: Int
+    let address: MapPoint
     let type: TileType
 }

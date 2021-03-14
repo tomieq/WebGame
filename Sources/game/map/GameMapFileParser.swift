@@ -29,20 +29,22 @@ class GameMapFileParser {
                         
                     case .localStreet:
                         if let streetType = self.evaluateLocalStreetType(x: dataX.key, y: dataY.key, mapMatrix: matrix) {
-                            mapTiles.append(GameMapTile(x: dataX.key, y: dataY.key, type: .street(type: .local(streetType))))
+                            mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .street(type: .local(streetType))))
                         }
                     case .mainStreet:
                         if let streetType = self.evaluateMainStreetType(x: dataX.key, y: dataY.key, mapMatrix: matrix) {
-                            mapTiles.append(GameMapTile(x: dataX.key, y: dataY.key, type: .street(type: .main(streetType))))
+                            mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .street(type: .main(streetType))))
                         }
                     case .btsAntenna:
-                        mapTiles.append(GameMapTile(x: dataX.key, y: dataY.key, type: .btsAntenna))
+                        mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .btsAntenna))
+                    case .building:
+                        mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .building))
                     case .tree1:
-                        mapTiles.append(GameMapTile(x: dataX.key, y: dataY.key, type: .tree(type: 1)))
+                        mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .tree(type: 1)))
                     case .tree2:
-                        mapTiles.append(GameMapTile(x: dataX.key, y: dataY.key, type: .tree(type: 2)))
+                        mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .tree(type: 2)))
                     case .tree3:
-                        mapTiles.append(GameMapTile(x: dataX.key, y: dataY.key, type: .tree(type: 3)))
+                        mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .tree(type: 3)))
                     }
                     
                 }
@@ -176,6 +178,7 @@ enum GameMapFileChar: String {
     case localStreet = "s"
     case mainStreet = "S"
     case btsAntenna = "A"
+    case building = "B"
     case tree1 = "T"
     case tree2 = "t"
     case tree3 = "d"
