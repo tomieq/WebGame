@@ -29,33 +29,97 @@ class MapObject {
 }
 
 class GameMovableObject {
-    constructor(coordinates, speed, direction) {
-        this.coordinates = coordinates
-        this.imageHeight = 400
-        this.image = "objects/car" + direction + ".png";
-        
-        var xMod = 0;
-        var yMod = 0;
-        switch (direction) {
+    constructor(calculator, mapPoints, imageHeight, speed) {
+        this.calculator = calculator;
+        this.mapPoints = mapPoints;
+        this.pathCounter = 0;
+        this.imageHeight = imageHeight;
+        this.speed = speed;
+        this.direction = 0;
+        this.coordinates = 0;
+        this.endCoordinates = 0;
+        this.image = "";
+        this.applyNextPath();
+    }
+    
+    updateState() {
+        switch (this.direction) {
             case 1:
-                xMod = -1;
-                yMod = -1;
+                if (this.coordinates.y >= this.endCoordinates.y) {
+                    this.applyNextPath();
+                }
                 break;
             case 2:
-                xMod = 1;
-                yMod = -1;
+                if (this.coordinates.x >= this.endCoordinates.x) {
+                    this.applyNextPath();
+                }
                 break;
             case 3:
-                xMod = -1;
-                yMod = 1;
+                if (this.coordinates.x <= this.endCoordinates.x) {
+                    this.applyNextPath();
+                }
                 break;
             case 4:
-                xMod = 1;
-                yMod = 1;
+                if (this.coordinates.y <= this.endCoordinates.y) {
+                    this.applyNextPath();
+                }
                 break;
         }
-        
-        this.deltaX = xMod * speed * Math.cos(Math.PI/180 * 30);
-        this.deltaY = yMod * speed * Math.sin(Math.PI/180 * -30);
     }
+    
+    applyNextPath() {
+        if(this.pathCounter + 1 >= this.mapPoints.length ) {
+            this.speed = 0;
+            return
+        }
+        var startPoint = this.mapPoints[this.pathCounter];
+        var endPoint = this.mapPoints[this.pathCounter+1];
+        this.coordinates = this.calculator.getCanvasCoordinates(startPoint);
+        this.endCoordinates = this.calculator.getCanvasCoordinates(endPoint);
+        this.pathCounter++;
+        
+        if( startPoint.x == endPoint.x ) {
+            if ( startPoint.y > endPoint.y ) {
+                this.direction = 3;
+            } else {
+                this.direction = 2;
+            }
+        }
+        
+        if( startPoint.y == endPoint.y ) {
+            if ( startPoint.x > endPoint.x ) {
+                this.direction = 1;
+            } else {
+                this.direction = 4;
+            }
+        }
+        this.image = "objects/car" + this.direction + ".png";
+        this.calculateDelta();
+    }
+                                              
+    calculateDelta() {
+        var xMod = 0;
+        var yMod = 0;
+        switch (this.direction) {
+          case 1:
+              xMod = -1;
+              yMod = -1;
+              break;
+          case 2:
+              xMod = 1;
+              yMod = -1;
+              break;
+          case 3:
+              xMod = -1;
+              yMod = 1;
+              break;
+          case 4:
+              xMod = 1;
+              yMod = 1;
+              break;
+      }
+      
+      this.deltaX = xMod * this.speed * Math.cos(Math.PI/180 * 30);
+      this.deltaY = yMod * this.speed * Math.sin(Math.PI/180 * -30);
+  }
 }
