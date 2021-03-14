@@ -28,5 +28,5 @@ class GameMap {
 struct GameMapTile {
     let x: Int
     let y: Int
-    let image: TileImage
+    let type: TileType
 }
