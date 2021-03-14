@@ -14,6 +14,9 @@ $( document ).ready(function() {
     var canvasBuildings  = $('#canvasBuildings');
     gameBuildingsMap = new GameMap(canvasBuildings, calculator);
 
+    var canvasTraffic  = $('#canvasTraffic');
+    gameTraffic = new GameTraffic(canvasTraffic, calculator);
+
     $.getScript( "js/loadMap.js", function( data, textStatus, jqxhr ) {
       console.log( "Load was performed." );
     });

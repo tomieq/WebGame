@@ -5,16 +5,6 @@
 //  Created by Tomasz Kucharski on 12/03/2021.
 //
 
-class GameMovableObject {
-    constructor(screenX, screenY) {
-        this.screenX = screenX
-        this.screenY = screenY
-        this.screenHeight = 400
-        this.speed = 5;
-        this.mod = -1;
-    }
-}
-
 class GameMapInteractive {
     constructor(canvas, calculator) {
         this.canvas = canvas;

@@ -56,7 +56,12 @@ class WebApplication {
                 variables["path"] = tile.image.info.path
                 variables["imageWidth"] = tile.image.info.width.string
                 variables["imageHeight"] = tile.image.info.height.string
-                template.set(variables: variables, inNest: "object")
+                
+                if case .street(_) = tile.image {
+                    template.set(variables: variables, inNest: "street")
+                } else {
+                    template.set(variables: variables, inNest: "building")
+                }
             }
             
             return .ok(.text(template.output()))

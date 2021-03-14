@@ -1,5 +1,10 @@
-var mapObjects = [];
-[START object]
-mapObjects.push(new MapObject({x}, {y}, "{path}", {imageWidth}, {imageHeight}));
-[END object]
-gameStreetMap.setTiles(mapObjects, false);
+var streetObjects = [];
+var buildingObjects = [];
+[START street]
+streetObjects.push(new MapObject({x}, {y}, "{path}", {imageWidth}, {imageHeight}));
+[END street]
+[START building]
+buildingObjects.push(new MapObject({x}, {y}, "{path}", {imageWidth}, {imageHeight}));
+[END building]
+gameStreetMap.setTiles(streetObjects, false);
+gameBuildingsMap.setTiles(buildingObjects, false);
