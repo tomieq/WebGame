@@ -34,7 +34,7 @@ $( document ).ready(function() {
     $(window).on('click', function(e) {
         var point = e2MapPoint(e);
         if(point.x >= 0 && point.x < calculator.mapWidth && point.y >= 0 && point.y < calculator.mapHeight) {
-             syncData("clicked", point);
+             syncData("tileClicked", point);
         }
     });
     $.getScript( "js/loadMap.js", function( data, textStatus, jqxhr ) {

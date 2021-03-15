@@ -96,8 +96,29 @@ class WebApplication {
         }
 
         server["/websocket"] = websocket(text: { (session, text) in
-            session.writeText(text)
             Logger.info("WebApplication", "Incoming message \(text)")
+            if let data = text.data(using: .utf8),
+                let jsonData = try? JSONDecoder().decode(BackendAnonymouseCommand.self, from: data),
+                let command = jsonData.command {
+                
+                Logger.info("DBG", "Incomming websocket command \(command)")
+                switch command {
+                case .tileClicked:
+                    if let clickedDto = try? JSONDecoder().decode(BackendCommand<MapPoint>.self, from: data),
+                        let point = clickedDto.data {
+                        if let routePoints = self.streetNavi.routePoints(from: MapPoint(x: 0, y: 16), to: point) {
+                            let command = FrontEndCommand(StartVehicleDto())
+                            command.command = .startVehicle
+                            command.data.points = routePoints
+                            let json = command.toJSONString() ?? ""
+                            session.writeText(json)
+                            Logger.info("WebApplication", "Outgoing message \(json)")
+                        }
+                    }
+                }
+            }
+            
+            
         }, binary: { (session, binary) in
             session.writeBinary(binary)
         }, pong: { (_, _) in
