@@ -52,7 +52,7 @@ function e2MapPoint(e) {
     var tileWidth = calculator.tileWidth * calculator.canvasScale / 2;
     var tileHeight = calculator.tileHeight * calculator.canvasScale / 2;
     e.pageX = e.pageX - tileWidth / 2;
-    e.pageY = e.pageY - tileHeight / 2 - calculator.canvasTopMargin/2;
+    e.pageY = e.pageY - tileHeight / 2 - calculator.canvasTopMargin * calculator.canvasScale/2 - tileHeight*(calculator.mapHeight-2)/2;
     var tileX = Math.round(e.pageX / tileWidth - e.pageY / tileHeight);
     var tileY = Math.round(e.pageX / tileWidth + e.pageY / tileHeight);
 
