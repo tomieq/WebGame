@@ -5,12 +5,13 @@ import PackageDescription
 let package = Package(
     name: "WebGame",
     dependencies: [
-        .package(url: "https://github.com/tomieq/swifter.git", .upToNextMajor(from: "1.5.1"))
+        .package(url: "https://github.com/tomieq/swifter.git", .upToNextMajor(from: "1.5.1")),
+        .package(url: "https://github.com/ReactiveX/RxSwift.git", .exact("6.1.0"))
     ],
     targets: [
         .target(
             name: "WebGame",
-            dependencies: ["Swifter"],
+            dependencies: ["Swifter", "RxSwift", "RxCocoa"],
             path: "Sources")
     ]
 )
