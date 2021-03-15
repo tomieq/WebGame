@@ -21,10 +21,10 @@ class WebApplication {
             let rawPage = Resource.getAppResource(relativePath: "templates/pageResponse.html")
             let template = Template(raw: rawPage)
             
-            var html = Template.htmlNode(type: "canvas", attributes: ["id":"canvasStreets","style":"z-index:0;"])
-            html.append(Template.htmlNode(type: "canvas", attributes: ["id":"canvasTraffic","style":"z-index:1;"]))
-            html.append(Template.htmlNode(type: "canvas", attributes: ["id":"canvasBuildings","style":"z-index:2;"]))
-            
+            let canvasLayers = ["canvasStreets", "canvasInteraction", "canvasTraffic", "canvasBuildings"]
+            let html = canvasLayers.enumerated().map { (zIndex, canvasName) in
+                return Template.htmlNode(type: "canvas", attributes: ["id":canvasName,"style":"z-index:\(zIndex);"])
+            }.joined(separator: "\n")
             
             template.set(variables: ["body": html])
             return template.asResponse()

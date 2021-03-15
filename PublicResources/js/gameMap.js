@@ -54,6 +54,24 @@ class GameMap {
         });
     }
 
+    drawTile(mapPoint) {
+        var coordinates = this.calculator.getCanvasCoordinates(mapPoint);
+        var t = this;
+        this.canvas.draw({
+          fn: function(ctx) {
+            ctx.beginPath();
+            ctx.fillStyle = 'yellow';
+            ctx.moveTo(coordinates.x, coordinates.y - 0.5 * t.calculator.tileHeight);
+            ctx.lineTo(coordinates.x + t.calculator.tileWidth * 0.5, coordinates.y);
+            ctx.lineTo(coordinates.x + t.calculator.tileWidth, coordinates.y - 0.5 * t.calculator.tileHeight);
+            ctx.lineTo(coordinates.x + t.calculator.tileWidth * 0.5, coordinates.y - t.calculator.tileHeight);
+            ctx.stroke();
+            ctx.fill();
+            ctx.closePath();
+          }
+        });
+    }
+    
     drawGround() {
         var left = this.calculator.getCanvasCoordinates(new MapPoint(0, 0));
         var right = this.calculator.getCanvasCoordinates(new MapPoint(this.calculator.mapWidth - 1, this.calculator.mapHeight - 1));
