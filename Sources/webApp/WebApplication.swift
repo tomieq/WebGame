@@ -10,10 +10,13 @@ import Swifter
 
 class WebApplication {
 
-    let gameMap = GameMap(width: 11, height: 5, scale: 0.4, path: "maps/roadMap2")
+    let gameMap = GameMap(width: 25, height: 25, scale: 0.35, path: "maps/roadMap1")
+    let streetNavi: StreetNavi
     
     init(_ server: HttpServer) {
 
+        self.streetNavi = StreetNavi(gameMap: self.gameMap)
+        
         server.GET["/"] = { request, _ in
             let rawPage = Resource.getAppResource(relativePath: "templates/pageResponse.html")
             let template = Template(raw: rawPage)
@@ -64,10 +67,47 @@ class WebApplication {
                 }
             }
             
+            if let routePoints = self.streetNavi.routePoints(from: MapPoint(x: 0, y: 16), to: MapPoint(x: 22, y: 2)) {
+                var variables = [String:String]()
+                variables["points"] = routePoints.map{ "new MapPoint(\($0.x), \($0.y))" }.joined(separator: ", ")
+                variables["id"] = "897"
+                variables["speed"] = "7"
+                variables["type"] = "truck1"
+                template.set(variables: variables, inNest: "traffic")
+            }
+            if let routePoints = self.streetNavi.routePoints(from: MapPoint(x: 17, y: 22), to: MapPoint(x: 0, y: 3)) {
+                var variables = [String:String]()
+                variables["points"] = routePoints.map{ "new MapPoint(\($0.x), \($0.y))" }.joined(separator: ", ")
+                variables["id"] = "898"
+                variables["speed"] = "7"
+                variables["type"] = "car2"
+                template.set(variables: variables, inNest: "traffic")
+            }
+            
             return .ok(.text(template.output()))
         }
         
         
+        server.GET["js/websockets.js"] = { request, responseHeaders in
+            responseHeaders.addHeader("Content-Type", "text/javascript;charset=UTF-8")
+            let raw = Resource.getAppResource(relativePath: "templates/websockets.js")
+            let template = Template(raw: raw)
+            return .ok(.text(template.output()))
+        }
+
+        server["/websocket"] = websocket(text: { (session, text) in
+            session.writeText(text)
+            Logger.info("WebApplication", "Incoming message \(text)")
+        }, binary: { (session, binary) in
+            session.writeBinary(binary)
+        }, pong: { (_, _) in
+            // Got a pong frame
+        }, connected: { _ in
+            Logger.info("WebApplication", "New websocket client connected")
+        }, disconnected: { _ in
+            Logger.info("WebApplication", "Websocket client disconnected")
+        })
+
         server.notFoundHandler = { request, responseHeaders in
             
             let filePath = Resource.absolutePath(forPublicResource: request.path)

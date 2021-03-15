@@ -12,17 +12,6 @@ class GameTraffic {
         this.calculator.setupCanvas(this.canvas);
         this.movableObjects = [];
         this.isRunning = false;
-    
-        var points = [new MapPoint(0, 1), new MapPoint(2, 1), new MapPoint(2, 4), new MapPoint(4, 4), new MapPoint(4, 1), new MapPoint(0, 1)];
-        this.addObject("suzanne", "car1", points, 7);
-        
-        
-        var t = this;
-        setTimeout(function(){
-                   var points = [new MapPoint(0, 1), new MapPoint(10, 1)];
-                   t.addObject("emily", "car2", points, 7);
-        }, 2000);
-
     }
     
     addObject(id, type, mapPoints, speed) {

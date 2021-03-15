@@ -18,7 +18,6 @@ class StreetNavi {
         for x in (0...gameMap.width) {
             for y in (0...gameMap.height) {
                 if let tile = gameMap.getTile(address: MapPoint(x: x, y: y)), tile.isVertex() {
-                    Logger.info("Tile", "\(tile.address)")
                     vertexes.append(self.adjacencyList.createVertex(data: tile.address))
                 }
             }
@@ -27,8 +26,6 @@ class StreetNavi {
         vertexes.forEach { vertex in
             self.findNeighbourVertexes(for: vertex, using: self.adjacencyList, type: .directed);
         }
-        
-        print(self.adjacencyList.description)
     }
     
     private func findNeighbourVertexes(for vertex: Vertex<MapPoint>, using graphable: AdjacencyList<MapPoint>, type: EdgeType) {
