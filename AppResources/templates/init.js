@@ -19,11 +19,6 @@ $( document ).ready(function() {
 
     var canvasTraffic  = $('#canvasTraffic');
     gameTraffic = new GameTraffic(canvasTraffic, calculator);
-
-    canvasBuildings.click(function() {
-      var points = [new MapPoint(0, 1), new MapPoint(2, 1), new MapPoint(2, 4), new MapPoint(4, 4), new MapPoint(4, 1), new MapPoint(0, 1)];
-      gameTraffic.addObject("john", "truck1", points, 7);
-    });
                     
     var lastMousePoint = new MapPoint(-1, -1);
     $(window).on('mousemove', function(e) {
