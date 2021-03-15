@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct MapPoint {
+struct MapPoint: Codable {
     let x: Int
     let y: Int
 }
