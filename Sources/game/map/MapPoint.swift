@@ -32,7 +32,7 @@ extension MapPoint {
 
 extension MapPoint: CustomStringConvertible {
     public var description: String {
-        return "[\(self.x),\(self.y)]"
+        return "(\(self.x),\(self.y))"
     }
 }
 
