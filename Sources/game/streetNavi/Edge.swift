@@ -7,6 +7,11 @@
 
 import Foundation
 
+public enum EdgeType {
+    case directed
+    case undirected
+}
+
 public struct Edge<T: Hashable> {
     public var source: Vertex<T>
     public var destination: Vertex<T>
