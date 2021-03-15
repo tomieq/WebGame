@@ -2,7 +2,7 @@ var webSocket = 0;
 var websocketHandler;
 
 $( document ).ready(function() {
-    webSocket = new WebSocket("ws://localhost:5920/websocket");
+    webSocket = new WebSocket("{url}");
     websocketHandler = new WebSocketHandler();
     
     webSocket.onopen = function (event) {

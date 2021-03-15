@@ -92,6 +92,7 @@ class WebApplication {
             responseHeaders.addHeader("Content-Type", "text/javascript;charset=UTF-8")
             let raw = Resource.getAppResource(relativePath: "templates/websockets.js")
             let template = Template(raw: raw)
+            template.set(variables: ["url":"ws://localhost:5920/websocket"])
             return .ok(.text(template.output()))
         }
 
@@ -104,8 +105,8 @@ class WebApplication {
                 Logger.info("DBG", "Incomming websocket command \(command)")
                 switch command {
                 case .tileClicked:
-                    if let clickedDto = try? JSONDecoder().decode(BackendCommand<MapPoint>.self, from: data),
-                        let point = clickedDto.data {
+                    if let backendCommand = try? JSONDecoder().decode(BackendCommand<MapPoint>.self, from: data),
+                        let point = backendCommand.data {
                         if let routePoints = self.streetNavi.routePoints(from: MapPoint(x: 0, y: 16), to: point) {
                             let command = FrontEndCommand(StartVehicleDto())
                             command.command = .startVehicle
