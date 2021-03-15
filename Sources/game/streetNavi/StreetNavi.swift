@@ -34,7 +34,7 @@ class StreetNavi {
     private func findNeighbourVertexes(for vertex: Vertex<MapPoint>, using graphable: AdjacencyList<MapPoint>, type: EdgeType) {
         let vertexAddress = vertex.data
         
-        var naighbourAddress = vertexAddress.moveRight()
+        var naighbourAddress = vertexAddress.move(.right)
         var distance = 1;
         while let neighbourTile = self.gameMap.getTile(address: naighbourAddress) {
             if !neighbourTile.isStreet() { break }
@@ -42,11 +42,11 @@ class StreetNavi {
                 graphable.add(type, from: vertex, to: graphable.createVertex(data: naighbourAddress), weight: distance)
                 break
             }
-            naighbourAddress = naighbourAddress.moveRight()
+            naighbourAddress = naighbourAddress.move(.right)
             distance = distance + 1
         }
         
-        naighbourAddress = vertexAddress.moveLeft()
+        naighbourAddress = vertexAddress.move(.left)
         distance = 1;
         while let neighbourTile = self.gameMap.getTile(address: naighbourAddress) {
             if neighbourTile.isVertex() {
@@ -54,11 +54,11 @@ class StreetNavi {
                 break
             }
             if !neighbourTile.isStreet() { break }
-            naighbourAddress = naighbourAddress.moveLeft()
+            naighbourAddress = naighbourAddress.move(.left)
             distance = distance + 1
         }
         
-        naighbourAddress = vertexAddress.moveUp()
+        naighbourAddress = vertexAddress.move(.up)
         distance = 1;
         while let neighbourTile = self.gameMap.getTile(address: naighbourAddress) {
             if neighbourTile.isVertex() {
@@ -66,11 +66,11 @@ class StreetNavi {
                 break
             }
             if !neighbourTile.isStreet() { break }
-            naighbourAddress = naighbourAddress.moveUp()
+            naighbourAddress = naighbourAddress.move(.up)
             distance = distance + 1
         }
         
-        naighbourAddress = vertexAddress.moveDown()
+        naighbourAddress = vertexAddress.move(.down)
         distance = 1;
         while let neighbourTile = self.gameMap.getTile(address: naighbourAddress) {
             if neighbourTile.isVertex() {
@@ -78,7 +78,7 @@ class StreetNavi {
                 break
             }
             if !neighbourTile.isStreet() { break }
-            naighbourAddress = naighbourAddress.moveDown()
+            naighbourAddress = naighbourAddress.move(.down)
             distance = distance + 1
         }
     }

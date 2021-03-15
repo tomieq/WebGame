@@ -12,21 +12,26 @@ struct MapPoint {
     let y: Int
 }
 
+enum MapDirection: CaseIterable {
+    case right
+    case left
+    case up
+    case down
+}
+
 extension MapPoint {
-    func moveRight() -> MapPoint {
-        return MapPoint(x: self.x + 1, y: self.y)
-    }
     
-    func moveLeft() -> MapPoint {
-        return MapPoint(x: self.x - 1, y: self.y)
-    }
-    
-    func moveUp() -> MapPoint {
-        return MapPoint(x: self.x, y: self.y - 1)
-    }
-    
-    func moveDown() -> MapPoint {
-        return MapPoint(x: self.x, y: self.y + 1)
+    func move(_ direction: MapDirection) -> MapPoint {
+        switch direction {
+        case .right:
+            return MapPoint(x: self.x + 1, y: self.y)
+        case .left:
+            return MapPoint(x: self.x - 1, y: self.y)
+        case .up:
+            return MapPoint(x: self.x, y: self.y - 1)
+        case .down:
+            return MapPoint(x: self.x, y: self.y + 1)
+        }
     }
 }
 
