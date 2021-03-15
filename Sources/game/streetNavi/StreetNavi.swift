@@ -34,52 +34,18 @@ class StreetNavi {
     private func findNeighbourVertexes(for vertex: Vertex<MapPoint>, using graphable: AdjacencyList<MapPoint>, type: EdgeType) {
         let vertexAddress = vertex.data
         
-        var naighbourAddress = vertexAddress.move(.right)
-        var distance = 1;
-        while let neighbourTile = self.gameMap.getTile(address: naighbourAddress) {
-            if !neighbourTile.isStreet() { break }
-            if neighbourTile.isVertex() {
-                graphable.add(type, from: vertex, to: graphable.createVertex(data: naighbourAddress), weight: distance)
-                break
+        MapDirection.allCases.forEach { direction in
+            var naighbourAddress = vertexAddress.move(direction)
+            var distance = 1;
+            while let neighbourTile = self.gameMap.getTile(address: naighbourAddress) {
+                if !neighbourTile.isStreet() { break }
+                if neighbourTile.isVertex() {
+                    graphable.add(type, from: vertex, to: graphable.createVertex(data: naighbourAddress), weight: distance)
+                    break
+                }
+                naighbourAddress = naighbourAddress.move(direction)
+                distance = distance + 1
             }
-            naighbourAddress = naighbourAddress.move(.right)
-            distance = distance + 1
-        }
-        
-        naighbourAddress = vertexAddress.move(.left)
-        distance = 1;
-        while let neighbourTile = self.gameMap.getTile(address: naighbourAddress) {
-            if neighbourTile.isVertex() {
-                graphable.add(type, from: vertex, to: graphable.createVertex(data: naighbourAddress), weight: distance)
-                break
-            }
-            if !neighbourTile.isStreet() { break }
-            naighbourAddress = naighbourAddress.move(.left)
-            distance = distance + 1
-        }
-        
-        naighbourAddress = vertexAddress.move(.up)
-        distance = 1;
-        while let neighbourTile = self.gameMap.getTile(address: naighbourAddress) {
-            if neighbourTile.isVertex() {
-                graphable.add(type, from: vertex, to: graphable.createVertex(data: naighbourAddress), weight: distance)
-                break
-            }
-            if !neighbourTile.isStreet() { break }
-            naighbourAddress = naighbourAddress.move(.up)
-            distance = distance + 1
-        }
-        
-        naighbourAddress = vertexAddress.move(.down)
-        distance = 1;
-        while let neighbourTile = self.gameMap.getTile(address: naighbourAddress) {
-            if neighbourTile.isVertex() {
-                graphable.add(type, from: vertex, to: graphable.createVertex(data: naighbourAddress), weight: distance)
-                break
-            }
-            if !neighbourTile.isStreet() { break }
-            naighbourAddress = naighbourAddress.move(.down)
-            distance = distance + 1
         }
     }
     
