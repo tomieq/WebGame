@@ -73,7 +73,8 @@ class GameMovableObject {
         if(this.pathCounter + 1 >= this.mapPoints.length ) {
             this.speed = 0;
             console.log("Vehicle " + this.id + " finished");
-            syncData("Vehicle " + this.id + " finished");
+            var data = {id : this.id, address: this.mapPoints[this.pathCounter]}
+            syncData("vehicleFinished", data);
             return
         }
         var startPoint = this.mapPoints[this.pathCounter];

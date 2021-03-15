@@ -25,9 +25,12 @@ $( document ).ready(function() {
     };
 });
 
-function syncData(text) {
+function syncData(command, data) {
     if (webSocket.readyState == 1) {
-        webSocket.send(text);
+        var dto = {};
+        dto["command"] = command;
+        dto["data"] = data;
+        webSocket.send(JSON.stringify(dto));
     } else {
         console.log("[websocker] sending problem. webSocket.readyState="+webSocket.readyState);
     }
