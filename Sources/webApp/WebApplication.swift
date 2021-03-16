@@ -11,13 +11,11 @@ import Swifter
 class WebApplication {
 
     let players: [Player]
-    var playerSessions: [PlayerSession]
     let gameEngine = GameEngine()
     
     init(_ server: HttpServer) {
         
         self.players = [Player(id: "p1", login: "John"), Player(id: "p2", login: "Steve")]
-        self.playerSessions = []
         
         server.GET["/"] = { request, responseHeaders in
             
@@ -27,9 +25,8 @@ class WebApplication {
             guard let userID = (request.queryParams.first{ $0.0 == "userID"}?.1), let player = (self.players.first{ $0.id == userID }) else {
                     return .ok(.htmlBody("Invalid userID"))
             }
-            let playerSession = PlayerSession(player: player)
+            let playerSession = self.gameEngine.makePlayerSession(player: player)
             responseHeaders.setCookie(name: "sessionID", value: playerSession.id)
-            self.playerSessions.append(playerSession)
             Logger.info("WebApplication", "User \(player.login)(\(player.id)) started new session \(playerSession.id)")
             
             let rawPage = Resource.getAppResource(relativePath: "templates/pageResponse.html")
@@ -87,7 +84,7 @@ class WebApplication {
         server.GET["js/websockets.js"] = { request, responseHeaders in
             
             responseHeaders.addHeader("Content-Type", "text/javascript;charset=UTF-8")
-            guard let playerSessionID = (request.queryParams.first{ $0.0 == "playerSessionID" }?.1), let _ = (self.playerSessions.first { $0.id == playerSessionID }) else {
+            guard let playerSessionID = (request.queryParams.first{ $0.0 == "playerSessionID" }?.1), let _ = self.gameEngine.getPlayerSession(id: playerSessionID) else {
                 return .ok(.text("alert('Invalid playerSessionID');"))
             }
             let raw = Resource.getAppResource(relativePath: "templates/websockets.js")
