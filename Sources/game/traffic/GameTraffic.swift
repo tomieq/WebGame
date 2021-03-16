@@ -34,7 +34,6 @@ class GameTraffic {
     private func startRandomTraffic() {
         
         Observable<Int>.interval(.seconds(20), scheduler: MainScheduler.instance).bind { [weak self] _ in
-            Logger.debug("DBG", "timer")
             if let travelPoints = self?.streetNavi.routePoints(from: MapPoint(x: 0, y: 16), to: MapPoint(x: 24, y: 16)) {
                 let travelData = VehicleTravelData(id: UUID().uuidString, speed: 10, vehicleType: "car2", travelPoints: travelPoints)
                 self?.events.onNext(.vehicleTravel(travelData))

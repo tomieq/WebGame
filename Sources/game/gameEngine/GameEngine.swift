@@ -13,6 +13,7 @@ class GameEngine {
     let gameMap: GameMap
     let gameTraffic: GameTraffic
     let websocketHandler: WebsocketHandler
+    let gameEvents = PublishSubject<GameEvent>()
     let disposeBag = DisposeBag()
     private var playerSessions: [PlayerSession]
     
@@ -23,7 +24,16 @@ class GameEngine {
         self.playerSessions = []
         
         self.websocketHandler.events.asObservable().bind { websocketEvent in
-            
+            guard let player = (self.playerSessions.first { $0.id == websocketEvent.playerSesssionID }?.player) else {
+                Logger.error("GameEngine", "websocketEvent has no player assosiated")
+                return
+            }
+            switch websocketEvent.eventType {
+                
+                case .tileClicked(let mapPoint):
+                    let gameEvent = GameEvent(player: player, action: .tileClicked(mapPoint))
+                    self.gameEvents.onNext(gameEvent)
+            }
         }.disposed(by: self.disposeBag)
         
         self.gameTraffic.events.asObservable().bind { [weak self] trafficEvent in

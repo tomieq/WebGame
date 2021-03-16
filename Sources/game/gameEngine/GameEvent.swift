@@ -9,6 +9,7 @@ import Foundation
 
 struct GameEvent {
     let player: Player?
+    let action: GameEventAction
 }
 enum GameEventAction {
     case tileClicked(MapPoint)
