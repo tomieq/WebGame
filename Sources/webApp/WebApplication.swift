@@ -10,14 +10,28 @@ import Swifter
 
 class WebApplication {
 
-    let gameMap = GameMap(width: 25, height: 25, scale: 0.35, path: "maps/roadMap1")
-    let streetNavi: StreetNavi
+    let players: [Player]
+    var playerSessions: [PlayerSession]
+    let gameEngine = GameEngine()
     
     init(_ server: HttpServer) {
-
-        self.streetNavi = StreetNavi(gameMap: self.gameMap)
         
-        server.GET["/"] = { request, _ in
+        self.players = [Player(id: "p1", login: "John"), Player(id: "p2", login: "Steve")]
+        self.playerSessions = []
+        
+        server.GET["/"] = { request, responseHeaders in
+            
+            /*if let sessionID = request.cookies["sessionID"], let existingSession = (self.webSessions.first { $0.id == sessionID }) {
+                webSession = existingSession
+            } else*/
+            guard let userID = (request.queryParams.first{ $0.0 == "userID"}?.1), let player = (self.players.first{ $0.id == userID }) else {
+                    return .ok(.htmlBody("Invalid userID"))
+            }
+            let playerSession = PlayerSession(player: player)
+            responseHeaders.setCookie(name: "sessionID", value: playerSession.id)
+            self.playerSessions.append(playerSession)
+            Logger.info("WebApplication", "User \(player.login)(\(player.id)) started new session \(playerSession.id)")
+            
             let rawPage = Resource.getAppResource(relativePath: "templates/pageResponse.html")
             let template = Template(raw: rawPage)
             
@@ -26,7 +40,7 @@ class WebApplication {
                 return Template.htmlNode(type: "canvas", attributes: ["id":canvasName,"style":"z-index:\(zIndex);"])
             }.joined(separator: "\n")
             
-            template.set(variables: ["body": html])
+            template.set(variables: ["body": html, "playerSessionID": playerSession.id])
             return template.asResponse()
         }
         
@@ -38,9 +52,9 @@ class WebApplication {
             
             
             var variables = [String:String]()
-            variables["mapWidth"] = self.gameMap.width.string
-            variables["mapHeight"] = self.gameMap.height.string
-            variables["mapScale"] = self.gameMap.scale.string
+            variables["mapWidth"] = self.gameEngine.gameMap.width.string
+            variables["mapHeight"] = self.gameEngine.gameMap.height.string
+            variables["mapScale"] = self.gameEngine.gameMap.scale.string
             template.set(variables: variables)
 
             
@@ -52,7 +66,7 @@ class WebApplication {
             let raw = Resource.getAppResource(relativePath: "templates/loadMap.js")
             let template = Template(raw: raw)
             
-            self.gameMap.tiles.forEach { tile in
+            self.gameEngine.gameMap.tiles.forEach { tile in
                 var variables = [String:String]()
                 variables["x"] = tile.address.x.string
                 variables["y"] = tile.address.y.string
@@ -66,68 +80,36 @@ class WebApplication {
                     template.set(variables: variables, inNest: "building")
                 }
             }
-            
-            if let routePoints = self.streetNavi.routePoints(from: MapPoint(x: 0, y: 16), to: MapPoint(x: 22, y: 2)) {
-                var variables = [String:String]()
-                variables["points"] = routePoints.map{ "new MapPoint(\($0.x), \($0.y))" }.joined(separator: ", ")
-                variables["id"] = "897"
-                variables["speed"] = "7"
-                variables["type"] = "truck1"
-                template.set(variables: variables, inNest: "traffic")
-            }
-            if let routePoints = self.streetNavi.routePoints(from: MapPoint(x: 17, y: 22), to: MapPoint(x: 0, y: 3)) {
-                var variables = [String:String]()
-                variables["points"] = routePoints.map{ "new MapPoint(\($0.x), \($0.y))" }.joined(separator: ", ")
-                variables["id"] = "898"
-                variables["speed"] = "7"
-                variables["type"] = "car2"
-                template.set(variables: variables, inNest: "traffic")
-            }
-            
             return .ok(.text(template.output()))
         }
         
         
         server.GET["js/websockets.js"] = { request, responseHeaders in
+            
             responseHeaders.addHeader("Content-Type", "text/javascript;charset=UTF-8")
+            guard let playerSessionID = (request.queryParams.first{ $0.0 == "playerSessionID" }?.1), let _ = (self.playerSessions.first { $0.id == playerSessionID }) else {
+                return .ok(.text("alert('Invalid playerSessionID');"))
+            }
             let raw = Resource.getAppResource(relativePath: "templates/websockets.js")
             let template = Template(raw: raw)
-            template.set(variables: ["url":"ws://localhost:5920/websocket"])
+            template.set(variables: ["url":"ws://localhost:5920/websocket", "playerSessionID": playerSessionID])
             return .ok(.text(template.output()))
         }
 
         server["/websocket"] = websocket(text: { (session, text) in
             Logger.info("WebApplication", "Incoming message \(text)")
-            if let data = text.data(using: .utf8),
-                let jsonData = try? JSONDecoder().decode(BackendAnonymouseCommand.self, from: data),
-                let command = jsonData.command {
-                
-                Logger.info("DBG", "Incomming websocket command \(command)")
-                switch command {
-                case .tileClicked:
-                    if let backendCommand = try? JSONDecoder().decode(BackendCommand<MapPoint>.self, from: data),
-                        let point = backendCommand.data {
-                        if let routePoints = self.streetNavi.routePoints(from: MapPoint(x: 0, y: 16), to: point) {
-                            let command = FrontEndCommand(StartVehicleDto())
-                            command.command = .startVehicle
-                            command.data.points = routePoints
-                            let json = command.toJSONString() ?? ""
-                            session.writeText(json)
-                            Logger.info("WebApplication", "Outgoing message \(json)")
-                        }
-                    }
-                }
-            }
-            
+            self.gameEngine.websocketHandler.handle(session: session, text: text)
             
         }, binary: { (session, binary) in
             session.writeBinary(binary)
         }, pong: { (_, _) in
             // Got a pong frame
-        }, connected: { _ in
+        }, connected: { session in
             Logger.info("WebApplication", "New websocket client connected")
-        }, disconnected: { _ in
+            self.gameEngine.websocketHandler.add(session: session)
+        }, disconnected: { session in
             Logger.info("WebApplication", "Websocket client disconnected")
+            self.gameEngine.websocketHandler.remove(session: session)
         })
 
         server.notFoundHandler = { request, responseHeaders in

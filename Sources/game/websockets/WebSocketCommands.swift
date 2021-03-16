@@ -9,6 +9,7 @@ import Foundation
 
 
 enum WebsocketCommandInType: String, Codable {
+    case playerSessionID
     case tileClicked
 }
 
