@@ -6,11 +6,14 @@
 //
 
 import Foundation
+import RxSwift
+import RxCocoa
 
 class GameEngine {
     let gameMap: GameMap
     let gameTraffic: GameTraffic
     let websocketHandler: WebsocketHandler
+    let disposeBag = DisposeBag()
     private var playerSessions: [PlayerSession]
     
     init() {
@@ -18,6 +21,18 @@ class GameEngine {
         self.gameTraffic = GameTraffic(gameMap: self.gameMap)
         self.websocketHandler = WebsocketHandler()
         self.playerSessions = []
+        
+        self.websocketHandler.events.asObservable().bind { websocketEvent in
+            
+        }.disposed(by: self.disposeBag)
+        
+        self.gameTraffic.events.asObservable().bind { [weak self] trafficEvent in
+            switch trafficEvent {
+                
+            case .vehicleTravel(let payload):
+                self?.websocketHandler.sendToAll(commandType: .startVehicle, payload: payload)
+            }
+        }.disposed(by: self.disposeBag)
     }
     
     func makePlayerSession(player: Player) -> PlayerSession {

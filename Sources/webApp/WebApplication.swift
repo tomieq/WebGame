@@ -95,7 +95,7 @@ class WebApplication {
 
         server["/websocket"] = websocket(text: { (session, text) in
             Logger.info("WebApplication", "Incoming message \(text)")
-            self.gameEngine.websocketHandler.handle(session: session, text: text)
+            self.gameEngine.websocketHandler.handleMessage(websocketSession: session, text: text)
             
         }, binary: { (session, binary) in
             session.writeBinary(binary)
@@ -103,10 +103,10 @@ class WebApplication {
             // Got a pong frame
         }, connected: { session in
             Logger.info("WebApplication", "New websocket client connected")
-            self.gameEngine.websocketHandler.add(session: session)
+            self.gameEngine.websocketHandler.add(websocketSession: session)
         }, disconnected: { session in
             Logger.info("WebApplication", "Websocket client disconnected")
-            self.gameEngine.websocketHandler.remove(session: session)
+            self.gameEngine.websocketHandler.remove(websocketSession: session)
         })
 
         server.notFoundHandler = { request, responseHeaders in

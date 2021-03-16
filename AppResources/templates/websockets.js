@@ -50,7 +50,7 @@ class WebSocketHandler {
         }
         switch (json["command"]) {
             case "startVehicle":
-                var data = json["data"];
+                var data = json["payload"];
                 var points = [];
                 if( data["travelPoints"] != undefined && data["speed"] != undefined && data["id"] != undefined && data["vehicleType"] != undefined ) {
                     for (var i=0; i < data["travelPoints"].length; i++) {
