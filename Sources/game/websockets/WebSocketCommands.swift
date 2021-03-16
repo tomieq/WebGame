@@ -29,10 +29,11 @@ enum WebsocketCommandOutType: String, Codable {
 
 class WebsocketOutCommand<T: Codable>: Codable {
 
-    var command: WebsocketCommandOutType?
+    var command: WebsocketCommandOutType
     let payload: T
 
-    init(_ payload: T) {
+    init(_ command: WebsocketCommandOutType, _ payload: T) {
+        self.command = command
         self.payload = payload
     }
 }
