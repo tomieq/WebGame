@@ -52,6 +52,21 @@ class GameEngine {
                 self?.websocketHandler.sendToAll(commandType: .startVehicle, payload: payload)
             }
         }.disposed(by: self.disposeBag)
+        
+        self.gameEvents.asObservable().bind { [weak self] gameEvent in
+            switch gameEvent.action {
+            case .reloadMap:
+                self?.websocketHandler.sendToAll(commandType: .reloadMap, payload: "\(gameEvent.player?.id ?? "nil")")
+            case .tileClicked(let point):
+
+                let tile = GameMapTile(address: point, type: .building)
+                self?.gameMap.replaceTile(tile: tile)
+                let gameEvent = GameEvent(player: gameEvent.player, action: .reloadMap)
+                self?.gameEvents.onNext(gameEvent)
+            default:
+                break
+            }
+        }.disposed(by: self.disposeBag)
     }
     
     func makePlayerSession(player: Player) -> PlayerSession {

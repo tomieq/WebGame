@@ -19,6 +19,10 @@ enum MapDirection: CaseIterable {
     case down
 }
 
+extension MapPoint: Equatable {
+    
+}
+
 extension MapPoint {
     
     func move(_ direction: MapDirection) -> MapPoint {

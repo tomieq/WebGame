@@ -33,7 +33,7 @@ class GameTraffic {
     
     private func startRandomTraffic() {
         
-        var buildingPoints = self.gameMap.tiles.filter{ tile in
+        var buildingPoints = self.gameMap.gameTiles.filter{ tile in
             if case .building = tile.type { return true }
             return false
         }

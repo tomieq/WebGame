@@ -12,6 +12,7 @@ class StreetNavi {
     private let gameMap: GameMap
     
     init(gameMap: GameMap) {
+        // TODO AdjacencyList should be updated when map changes
         self.gameMap = gameMap
         // find all intersections - those are vertexes for Dijkstra's algorithm
         var vertexes = [Vertex<MapPoint>]()

@@ -25,6 +25,7 @@ class WebsocketInCommandWithPayload<T: Codable>: Codable {
 
 enum WebsocketCommandOutType: String, Codable {
     case startVehicle
+    case reloadMap
 }
 
 class WebsocketOutCommand<T: Codable>: Codable {

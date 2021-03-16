@@ -12,7 +12,12 @@ class GameMap {
     let width: Int
     let height: Int
     let scale: Double
-    var tiles: [GameMapTile] = []
+    private var tiles: [GameMapTile] = []
+    var gameTiles: [GameMapTile] {
+        get {
+            return self.tiles
+        }
+    }
     
     init(width: Int, height: Int, scale: Double, path: String) {
         self.width = width
@@ -24,6 +29,11 @@ class GameMap {
     
     func getTile(address: MapPoint) -> GameMapTile? {
         return self.tiles.first{ $0.address == address }
+    }
+    
+    func replaceTile(tile: GameMapTile) {
+        self.tiles = self.tiles.filter { $0.address != tile.address }
+        self.tiles.append(tile)
     }
 }
 

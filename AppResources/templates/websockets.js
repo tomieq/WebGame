@@ -60,6 +60,10 @@ class WebSocketHandler {
                     gameTraffic.addObject(data["id"], data["vehicleType"], points, data["speed"]);
                 }
                 break;
+            case "reloadMap":
+                $.getScript( "js/loadMap.js", function( data, textStatus, jqxhr ) {
+                  console.log( "Load map performed." );
+                });
             default:
                 console.log("[webSocket] [unknown command] " + json["command"]);
                 break;

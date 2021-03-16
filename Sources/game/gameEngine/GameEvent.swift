@@ -15,4 +15,5 @@ enum GameEventAction {
     case userConnected
     case userDisconnected
     case tileClicked(MapPoint)
+    case reloadMap
 }
