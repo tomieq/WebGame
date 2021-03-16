@@ -33,9 +33,20 @@ class GameTraffic {
     
     private func startRandomTraffic() {
         
-        Observable<Int>.interval(.seconds(20), scheduler: MainScheduler.instance).bind { [weak self] _ in
-            if let travelPoints = self?.streetNavi.routePoints(from: MapPoint(x: 0, y: 16), to: MapPoint(x: 24, y: 16)) {
-                let travelData = VehicleTravelData(id: UUID().uuidString, speed: 10, vehicleType: "car2", travelPoints: travelPoints)
+        var buildingPoints = self.gameMap.tiles.filter{ tile in
+            if case .building = tile.type { return true }
+            return false
+        }
+        
+        Observable<Int>.interval(.seconds(10), scheduler: MainScheduler.instance).bind { [weak self] _ in
+            
+            buildingPoints.shuffle()
+            if let startBuilding = buildingPoints.first?.address,
+                let endBuilding = buildingPoints.last?.address,
+                let startPoint = self?.streetNavi.findNearestStreetPoint(for: startBuilding),
+                let endPoint = self?.streetNavi.findNearestStreetPoint(for: endBuilding),
+                let travelPoints = self?.streetNavi.routePoints(from: startPoint, to: endPoint) {
+                let travelData = VehicleTravelData(id: UUID().uuidString, speed: 8, vehicleType: "car\(Int.random(in: 1...2))", travelPoints: travelPoints)
                 self?.events.onNext(.vehicleTravel(travelData))
             }
         }.disposed(by: self.disposeBag)

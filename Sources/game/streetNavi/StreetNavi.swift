@@ -75,6 +75,22 @@ class StreetNavi {
         Logger.error("StreetNavi", "Couldn't find the way for route \(startAddress) --> \(stopAddress)")
         return nil
     }
+    
+    func findNearestStreetPoint(for address: MapPoint) -> MapPoint? {
+        for direction in MapDirection.allCases {
+            let streetAddress = address.move(direction)
+            if let tile = self.gameMap.getTile(address: streetAddress), tile.isStreet() {
+                return streetAddress
+            }
+        }
+        let points = [address.move(.up).move(.left), address.move(.up).move(.right),address.move(.down).move(.left),address.move(.down).move(.right)]
+        for streetAddress in points {
+            if let tile = self.gameMap.getTile(address: streetAddress), tile.isStreet() {
+                return streetAddress
+            }
+        }
+        return nil
+    }
 }
 
 fileprivate extension GameMapTile {
