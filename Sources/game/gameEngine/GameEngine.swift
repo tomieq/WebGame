@@ -18,7 +18,7 @@ class GameEngine {
     private var playerSessions: [PlayerSession]
     
     init() {
-        self.gameMap = GameMap(width: 25, height: 25, scale: 0.40, path: "maps/roadMap1")
+        self.gameMap = GameMap(width: 25, height: 25, scale: 0.20, path: "maps/roadMap1")
         self.gameTraffic = GameTraffic(gameMap: self.gameMap)
         self.websocketHandler = WebsocketHandler()
         self.playerSessions = []
@@ -30,9 +30,18 @@ class GameEngine {
             }
             switch websocketEvent.eventType {
                 
-                case .tileClicked(let mapPoint):
-                    let gameEvent = GameEvent(player: player, action: .tileClicked(mapPoint))
-                    self.gameEvents.onNext(gameEvent)
+            case .tileClicked(let mapPoint):
+                Logger.info("GameEngine", "\(player.login) clicked \(mapPoint)")
+                let gameEvent = GameEvent(player: player, action: .tileClicked(mapPoint))
+                self.gameEvents.onNext(gameEvent)
+            case .userConnected:
+                Logger.info("GameEngine", "\(player.login) connected")
+                let gameEvent = GameEvent(player: player, action: .userConnected)
+                self.gameEvents.onNext(gameEvent)
+            case .userDisconnected:
+                Logger.info("GameEngine", "\(player.login) disconnected")
+                let gameEvent = GameEvent(player: player, action: .userDisconnected)
+                self.gameEvents.onNext(gameEvent)
             }
         }.disposed(by: self.disposeBag)
         

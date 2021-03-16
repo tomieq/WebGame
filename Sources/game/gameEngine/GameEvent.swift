@@ -12,5 +12,7 @@ struct GameEvent {
     let action: GameEventAction
 }
 enum GameEventAction {
+    case userConnected
+    case userDisconnected
     case tileClicked(MapPoint)
 }

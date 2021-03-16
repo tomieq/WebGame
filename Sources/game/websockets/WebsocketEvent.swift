@@ -13,5 +13,7 @@ struct WebsocketEvent {
 }
 
 enum WebsocketEventType {
+    case userConnected
+    case userDisconnected
     case tileClicked(MapPoint)
 }

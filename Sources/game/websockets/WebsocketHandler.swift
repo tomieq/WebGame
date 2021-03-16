@@ -19,6 +19,9 @@ class WebsocketHandler {
     }
     
     func remove(websocketSession: WebSocketSession) {
+        if let playerSessionID = self.getPlayerSessionID(websocketSession) {
+            self.events.onNext(WebsocketEvent(playerSesssionID: playerSessionID, eventType: .userDisconnected))
+        }
         self.playerSessions = self.playerSessions.filter { $0.websocketSession != websocketSession }
     }
     
@@ -59,14 +62,14 @@ class WebsocketHandler {
                 if let dto = try? JSONDecoder().decode(WebsocketInCommandWithPayload<String>.self, from: data),
                     let playerSessionID = dto.payload {
                     self.playerSessions.first{ $0.websocketSession == websocketSession }?.playerSessionID = playerSessionID
-                     Logger.info("WebsocketHandler", "Websocket registered for \(playerSessionID)")
+                    Logger.info("WebsocketHandler", "Websocket registered for \(playerSessionID)")
+                    self.events.onNext(WebsocketEvent(playerSesssionID: playerSessionID, eventType: .userConnected))
                  }
             
             case .tileClicked:
                 guard let playerSessionID = self.getPlayerSessionID(websocketSession) else { return }
                 if let dto = try? JSONDecoder().decode(WebsocketInCommandWithPayload<MapPoint>.self, from: data),
                     let point = dto.payload {
-                    Logger.info("WebsocketHandler", "Tile clicked \(point)")
                     self.events.onNext(WebsocketEvent(playerSesssionID: playerSessionID, eventType: .tileClicked(point)))
                 }
             }
