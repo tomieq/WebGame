@@ -10,21 +10,34 @@ import Swifter
 
 class WebsocketHandler {
     
-    private var sessions: [WebSocketSession] = []
+    private var playerSessions: [PlayerWebsocketSession] = []
     
     func add(session: WebSocketSession) {
-        self.sessions.append(session)
+        self.playerSessions.append(PlayerWebsocketSession(websocketSession: session))
     }
     
     func remove(session: WebSocketSession) {
-        self.sessions.remove(object: session)
+        self.playerSessions = self.playerSessions.filter { $0.websocketSession != session }
+    }
+    
+    
+    func sendTo<T:Codable>(playerSessionID: String, commandType: WebsocketCommandOutType, payload: T) {
+        let command = WebsocketOutCommand<T>(payload)
+        if let json = command.toJSONString() {
+            self.playerSessions.filter{ $0.playerSessionID == playerSessionID}.forEach { playerSession in
+                playerSession.websocketSession.writeText(json)
+            }
+        } else {
+            Logger.error("WebsocketHandler", "Couldn't serialize command \(commandType)")
+        }
+        
     }
     
     func sendToAll<T:Codable>(commandType: WebsocketCommandOutType, payload: T) {
         let command = WebsocketOutCommand<T>(payload)
         if let json = command.toJSONString() {
-            self.sessions.forEach { session in
-                session.writeText(json)
+            self.playerSessions.forEach { playerSession in
+                playerSession.websocketSession.writeText(json)
             }
         } else {
             Logger.error("WebsocketHandler", "Couldn't serialize command \(commandType)")
@@ -44,6 +57,12 @@ class WebsocketHandler {
                     let point = dto.payload {
                     Logger.info("WebsocketHandler", "Tile clicked \(point)")
                 }
+            case .playerSessionID:
+                if let dto = try? JSONDecoder().decode(WebsocketInCommandWithPayload<String>.self, from: data),
+                    let playerSessionID = dto.payload {
+                    self.playerSessions.first{ $0.websocketSession == session }?.playerSessionID = playerSessionID
+                     Logger.info("WebsocketHandler", "Websocket registered for \(playerSessionID)")
+                 }
             }
         }
     }

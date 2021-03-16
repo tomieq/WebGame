@@ -7,7 +7,7 @@ $( document ).ready(function() {
     
     webSocket.onopen = function (event) {
         console.log("[webSocket] Connection established");
-        webSocket.send("connected");
+        syncData("playerSessionID", "{playerSessionID}");
     };
     webSocket.onmessage = function (event) {
         websocketHandler.incoming(event.data);
@@ -31,7 +31,7 @@ function syncData(command, data) {
     if (webSocket.readyState == 1) {
         var dto = {};
         dto["command"] = command;
-        dto["data"] = data;
+        dto["payload"] = data;
         webSocket.send(JSON.stringify(dto));
     } else {
         console.log("[websocker] sending problem. webSocket.readyState="+webSocket.readyState);
@@ -52,12 +52,12 @@ class WebSocketHandler {
             case "startVehicle":
                 var data = json["data"];
                 var points = [];
-                if( data["points"] != undefined && data["speed"] != undefined && data["id"] != undefined && data["type"] != undefined ) {
-                    for (var i=0; i < data["points"].length; i++) {
-                        var point = data["points"][i];
+                if( data["travelPoints"] != undefined && data["speed"] != undefined && data["id"] != undefined && data["vehicleType"] != undefined ) {
+                    for (var i=0; i < data["travelPoints"].length; i++) {
+                        var point = data["travelPoints"][i];
                         points.push(new MapPoint(point["x"], point["y"]));
                     }
-                    gameTraffic.addObject(data["id"], data["type"], points, data["speed"]);
+                    gameTraffic.addObject(data["id"], data["vehicleType"], points, data["speed"]);
                 }
                 break;
             default:
