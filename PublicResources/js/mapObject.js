@@ -79,6 +79,9 @@ class GameMovableObject {
         }
         var startPoint = this.mapPoints[this.pathCounter];
         var endPoint = this.mapPoints[this.pathCounter+1];
+        if ( startPoint == undefined || endPoint == undefined ) {
+            this.speed = 0;
+        }
         this.coordinates = this.calculator.getCanvasCoordinates(startPoint);
         this.endCoordinates = this.calculator.getCanvasCoordinates(endPoint);
         this.pathCounter++;
