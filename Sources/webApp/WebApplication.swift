@@ -25,7 +25,7 @@ class WebApplication {
             guard let userID = (request.queryParams.first{ $0.0 == "userID"}?.1), let player = (self.players.first{ $0.id == userID }) else {
                     return .ok(.htmlBody("Invalid userID"))
             }
-            let playerSession = self.gameEngine.makePlayerSession(player: player)
+            let playerSession = PlayerSessionManager.shared.createPlayerSession(for: player)
             responseHeaders.setCookie(name: "sessionID", value: playerSession.id)
             Logger.info("WebApplication", "User \(player.login)(\(player.id)) started new session \(playerSession.id)")
             
@@ -63,7 +63,7 @@ class WebApplication {
             let raw = Resource.getAppResource(relativePath: "templates/loadMap.js")
             let template = Template(raw: raw)
             
-            self.gameEngine.gameMap.tiles.forEach { tile in
+            self.gameEngine.gameMap.gameTiles.forEach { tile in
                 var variables = [String:String]()
                 variables["x"] = tile.address.x.string
                 variables["y"] = tile.address.y.string
@@ -84,7 +84,7 @@ class WebApplication {
         server.GET["js/websockets.js"] = { request, responseHeaders in
             
             responseHeaders.addHeader("Content-Type", "text/javascript;charset=UTF-8")
-            guard let playerSessionID = (request.queryParams.first{ $0.0 == "playerSessionID" }?.1), let _ = self.gameEngine.getPlayerSession(id: playerSessionID) else {
+            guard let playerSessionID = (request.queryParams.first{ $0.0 == "playerSessionID" }?.1), let _ = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return .ok(.text("alert('Invalid playerSessionID');"))
             }
             let raw = Resource.getAppResource(relativePath: "templates/websockets.js")

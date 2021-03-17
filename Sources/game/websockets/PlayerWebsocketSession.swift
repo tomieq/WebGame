@@ -9,7 +9,7 @@ import Foundation
 import Swifter
 
 class PlayerWebsocketSession {
-    var playerSessionID: String?
+    var playerSession: PlayerSession?
     let websocketSession: WebSocketSession
     
     init(websocketSession: WebSocketSession) {

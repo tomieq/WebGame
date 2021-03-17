@@ -11,18 +11,18 @@ import RxSwift
 
 class WebsocketHandler {
     
-    let events = PublishSubject<WebsocketEvent>()
-    private var playerSessions: [PlayerWebsocketSession] = []
+    private var activeSessions: [PlayerWebsocketSession] = []
     
     func add(websocketSession: WebSocketSession) {
-        self.playerSessions.append(PlayerWebsocketSession(websocketSession: websocketSession))
+        self.activeSessions.append(PlayerWebsocketSession(websocketSession: websocketSession))
     }
     
     func remove(websocketSession: WebSocketSession) {
-        if let playerSessionID = self.getPlayerSessionID(websocketSession) {
-            self.events.onNext(WebsocketEvent(playerSesssionID: playerSessionID, eventType: .userDisconnected))
+        if let playerSession = self.getPlayerSession(websocketSession) {
+            let event = GameEvent(playerSession: playerSession, action: .userDisconnected)
+            GameEventBus.gameEvents.onNext(event)
         }
-        self.playerSessions = self.playerSessions.filter { $0.websocketSession != websocketSession }
+        self.activeSessions = self.activeSessions.filter { $0.websocketSession != websocketSession }
     }
     
     
@@ -30,7 +30,7 @@ class WebsocketHandler {
         let command = WebsocketOutCommand<T>(commandType, payload)
         if let json = command.toJSONString() {
             Logger.info("WebsocketHandler", "Send to \(playerSessionID ?? "nil"): \(json)")
-            self.playerSessions.filter{ $0.playerSessionID == playerSessionID}.forEach { playerSession in
+            self.activeSessions.filter{ $0.playerSession?.id == playerSessionID}.forEach { playerSession in
                 playerSession.websocketSession.writeText(json)
             }
         } else {
@@ -43,7 +43,7 @@ class WebsocketHandler {
         let command = WebsocketOutCommand<T>(commandType, payload)
         if let json = command.toJSONString() {
             Logger.info("WebsocketHandler", "Send to all: \(json)")
-            self.playerSessions.forEach { playerSession in
+            self.activeSessions.forEach { playerSession in
                 playerSession.websocketSession.writeText(json)
             }
         } else {
@@ -62,26 +62,37 @@ class WebsocketHandler {
             case .playerSessionID:
                 if let dto = try? JSONDecoder().decode(WebsocketInCommandWithPayload<String>.self, from: data),
                     let playerSessionID = dto.payload {
-                    self.playerSessions.first{ $0.websocketSession == websocketSession }?.playerSessionID = playerSessionID
+                    guard let gobalSession = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                        let info = "Cannot establish websocket session. Couldn't find related web session"
+                        Logger.error("WebsocketHandler", info)
+                        websocketSession.writeText(info)
+                        websocketSession.writeCloseFrame()
+                        return
+                    }
+                    self.activeSessions.first{ $0.websocketSession == websocketSession }?.playerSession = gobalSession
                     Logger.info("WebsocketHandler", "Websocket registered for \(playerSessionID)")
-                    self.events.onNext(WebsocketEvent(playerSesssionID: playerSessionID, eventType: .userConnected))
+                    let event = GameEvent(playerSession: gobalSession, action: .userConnected)
+                    GameEventBus.gameEvents.onNext(event)
                  }
             
             case .tileClicked:
-                guard let playerSessionID = self.getPlayerSessionID(websocketSession) else { return }
+                guard let playerSession = self.getPlayerSession(websocketSession) else { return }
                 if let dto = try? JSONDecoder().decode(WebsocketInCommandWithPayload<MapPoint>.self, from: data),
                     let point = dto.payload {
-                    self.events.onNext(WebsocketEvent(playerSesssionID: playerSessionID, eventType: .tileClicked(point)))
+                    let event = GameEvent(playerSession: playerSession, action: .tileClicked(point))
+                    GameEventBus.gameEvents.onNext(event)
                 }
             }
         }
     }
     
-    private func getPlayerSessionID(_ websocketSession: WebSocketSession) -> String? {
-        if let playerSessionID = (self.playerSessions.first{ $0.websocketSession == websocketSession }) {
-            return playerSessionID.playerSessionID
+    private func getPlayerSession(_ websocketSession: WebSocketSession) -> PlayerSession? {
+        if let activeSession = (self.activeSessions.first{ $0.websocketSession == websocketSession }) {
+            return activeSession.playerSession
         }
-        Logger.error("WebsocketHandler", "WebSocketSession is not connected to PlayerSession")
+        let info = "WebSocketSession is not connected to PlayerSession. Closing"
+        Logger.error("WebsocketHandler", info)
+        websocketSession.writeText(info)
         websocketSession.writeCloseFrame()
         return nil
     }

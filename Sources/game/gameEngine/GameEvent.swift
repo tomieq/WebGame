@@ -8,9 +8,10 @@
 import Foundation
 
 struct GameEvent {
-    let player: Player?
+    let playerSession: PlayerSession?
     let action: GameEventAction
 }
+
 enum GameEventAction {
     case userConnected
     case userDisconnected
