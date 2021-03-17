@@ -78,14 +78,7 @@ class StreetNavi {
     }
     
     func findNearestStreetPoint(for address: MapPoint) -> MapPoint? {
-        for direction in MapDirection.allCases {
-            let streetAddress = address.move(direction)
-            if let tile = self.gameMap.getTile(address: streetAddress), tile.isStreet() {
-                return streetAddress
-            }
-        }
-        let points = [address.move(.up).move(.left), address.move(.up).move(.right),address.move(.down).move(.left),address.move(.down).move(.right)]
-        for streetAddress in points {
+        for streetAddress in self.gameMap.getNeighbourAddresses(to: address, radius: 1) {
             if let tile = self.gameMap.getTile(address: streetAddress), tile.isStreet() {
                 return streetAddress
             }
@@ -110,13 +103,6 @@ fileprivate extension GameMapTile {
         default:
             return false
         }
-    }
-    
-    func isStreet() -> Bool {
-        if case .street(_) = self.type {
-            return true
-        }
-        return false
     }
 }
 
