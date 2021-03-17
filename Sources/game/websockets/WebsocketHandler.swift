@@ -26,9 +26,10 @@ class WebsocketHandler {
     }
     
     
-    func sendTo<T:Codable>(playerSessionID: String, commandType: WebsocketCommandOutType, payload: T) {
+    func sendTo<T:Codable>(playerSessionID: String?, commandType: WebsocketCommandOutType, payload: T) {
         let command = WebsocketOutCommand<T>(commandType, payload)
         if let json = command.toJSONString() {
+            Logger.info("WebsocketHandler", "Send to \(playerSessionID ?? "nil"): \(json)")
             self.playerSessions.filter{ $0.playerSessionID == playerSessionID}.forEach { playerSession in
                 playerSession.websocketSession.writeText(json)
             }

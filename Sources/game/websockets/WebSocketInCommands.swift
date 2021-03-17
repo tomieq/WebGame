@@ -1,12 +1,11 @@
 //
-//  WebSocketCommands.swift
+//  WebSocketInCommands.swift
 //  
 //
 //  Created by Tomasz Kucharski on 15/03/2021.
 //
 
 import Foundation
-
 
 enum WebsocketCommandInType: String, Codable {
     case playerSessionID
@@ -23,18 +22,3 @@ class WebsocketInCommandWithPayload<T: Codable>: Codable {
 }
 
 
-enum WebsocketCommandOutType: String, Codable {
-    case startVehicle
-    case reloadMap
-}
-
-class WebsocketOutCommand<T: Codable>: Codable {
-
-    var command: WebsocketCommandOutType
-    let payload: T
-
-    init(_ command: WebsocketCommandOutType, _ payload: T) {
-        self.command = command
-        self.payload = payload
-    }
-}
