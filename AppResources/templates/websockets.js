@@ -50,20 +50,35 @@ class WebSocketHandler {
         }
         switch (json["command"]) {
             case "startVehicle":
-                var data = json["payload"];
+                var payload = json["payload"];
                 var points = [];
-                if( data["travelPoints"] != undefined && data["speed"] != undefined && data["id"] != undefined && data["vehicleType"] != undefined ) {
-                    for (var i=0; i < data["travelPoints"].length; i++) {
-                        var point = data["travelPoints"][i];
+                if( payload["travelPoints"] != undefined && payload["speed"] != undefined && payload["id"] != undefined && payload["vehicleType"] != undefined ) {
+                    for (var i=0; i < payload["travelPoints"].length; i++) {
+                        var point = payload["travelPoints"][i];
                         points.push(new MapPoint(point["x"], point["y"]));
                     }
-                    gameTraffic.addObject(data["id"], data["vehicleType"], points, data["speed"]);
+                    gameTraffic.addObject(payload["id"], payload["vehicleType"], points, payload["speed"]);
                 }
                 break;
             case "reloadMap":
                 $.getScript( "js/loadMap.js", function( data, textStatus, jqxhr ) {
                   console.log( "Load map performed." );
                 });
+                break;
+            case "highlightArea":
+                var payload = json["payload"];
+                var points = [];
+                if(payload["points"] != undefined && payload["color"] != undefined) {
+                    for (var i=0; i < payload["points"].length; i++) {
+                        var point = payload["points"][i];
+                        points.push(new MapPoint(point["x"], point["y"]));
+                    }
+                    gameInteractionMap.drawTiles(points, payload["color"]);
+                }
+                break;
+            case "alert":
+                alert(json["payload"]);
+                break;
             default:
                 console.log("[webSocket] [unknown command] " + json["command"]);
                 break;

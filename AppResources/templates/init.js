@@ -27,7 +27,7 @@ $( document ).ready(function() {
             gameInteractionMap.clearMap();
             lastMousePoint = point;
             if(point.x >= 0 && point.x < calculator.mapWidth && point.y >= 0 && point.y < calculator.mapHeight) {
-                 gameInteractionMap.drawTile(point);
+                 gameInteractionMap.drawTile(point, 'yellow');
             }
         }
     });

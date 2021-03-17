@@ -41,6 +41,7 @@ class GameMap {
         Promise
         .all(imageSources.map(i => this.loadImage(i)))
         .then((images) => {
+            this.clearMap();
             for (var mapX = this.calculator.mapWidth - 1; mapX >= 0 ; mapX--) {
                 for (var mapY = 0; mapY < this.calculator.mapHeight; mapY++) {
                     var mapObject = this.findTileInObjectArray(gameMap, new MapPoint(mapX, mapY));
@@ -53,14 +54,21 @@ class GameMap {
             }
         });
     }
+    
+    
+    drawTiles(mapPoints, color) {
+        for (var i = 0; i < mapPoints.length; i++) {
+            this.drawTile(mapPoints[i], color);
+        }
+    }
 
-    drawTile(mapPoint) {
+    drawTile(mapPoint, color) {
         var coordinates = this.calculator.getCanvasCoordinates(mapPoint);
         var t = this;
         this.canvas.draw({
           fn: function(ctx) {
             ctx.beginPath();
-            ctx.fillStyle = 'yellow';
+            ctx.fillStyle = color;
             ctx.moveTo(coordinates.x, coordinates.y - 0.5 * t.calculator.tileHeight);
             ctx.lineTo(coordinates.x + t.calculator.tileWidth * 0.5, coordinates.y);
             ctx.lineTo(coordinates.x + t.calculator.tileWidth, coordinates.y - 0.5 * t.calculator.tileHeight);
