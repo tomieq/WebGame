@@ -13,12 +13,14 @@ class GameEngine {
     let gameMap: GameMap
     let gameTraffic: GameTraffic
     let websocketHandler: WebsocketHandler
+    let realEstateAgent: RealEstateAgent
     let disposeBag = DisposeBag()
     
     init() {
-        self.gameMap = GameMap(width: 25, height: 25, scale: 0.20, path: "maps/roadMap1")
+        self.gameMap = GameMap(width: 25, height: 25, scale: 0.30, path: "maps/roadMap1")
         self.gameTraffic = GameTraffic(gameMap: self.gameMap)
         self.websocketHandler = WebsocketHandler()
+        self.realEstateAgent = RealEstateAgent(map: self.gameMap)
 
         GameEventBus.gameEvents.asObservable().bind { [weak self] gameEvent in
             switch gameEvent.action {
@@ -39,14 +41,16 @@ class GameEngine {
                     let payload = HighlightArea(points: points, color: "orange")
                     self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .highlightArea, payload: payload)
                 }
-                /*if self?.gameMap.getTile(address: point) == nil {
-                    let land = Land(address: point, map: self!.gameMap)
-                    self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .alert, payload: "The value is \(land.moneyValue)")
-                }*/
-                /*let tile = GameMapTile(address: point, type: .building)
-                self?.gameMap.replaceTile(tile: tile)
-                let gameEvent = GameEvent(player: gameEvent.player, action: .reloadMap)
-                self?.gameEvents.onNext(gameEvent)*/
+                if self?.gameMap.getTile(address: point) == nil {
+                    let land = Land(address: point)
+                    self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .alert, payload: "The value is \(self?.realEstateAgent.evaluatePrice(land) ?? 0)")
+                }
+                
+                var sizes = [4,6,8,10]
+                sizes.shuffle()
+                let tile = GameMapTile(address: point, type: .building(size: sizes.first!))
+                self?.realEstateAgent.putTile(tile)
+                self?.websocketHandler.sendToAll(commandType: .reloadMap, payload: "\(gameEvent.playerSession?.player.id ?? "nil")")
                 break
             case .vehicleTravelStarted(let payload):
                 switch gameEvent.playerSession {

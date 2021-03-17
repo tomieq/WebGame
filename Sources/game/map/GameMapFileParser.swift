@@ -38,7 +38,7 @@ class GameMapFileParser {
                     case .btsAntenna:
                         mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .btsAntenna))
                     case .building:
-                        mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .building))
+                        mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .building(size: 4)))
                     case .tree1:
                         mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .tree(type: 1)))
                     case .tree2:
