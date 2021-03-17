@@ -19,15 +19,7 @@ class GameEngine {
         self.gameMap = GameMap(width: 25, height: 25, scale: 0.20, path: "maps/roadMap1")
         self.gameTraffic = GameTraffic(gameMap: self.gameMap)
         self.websocketHandler = WebsocketHandler()
-        
-        self.gameTraffic.events.asObservable().bind { [weak self] trafficEvent in
-            switch trafficEvent {
-                
-            case .vehicleTravel(let payload):
-                self?.websocketHandler.sendToAll(commandType: .startVehicle, payload: payload)
-            }
-        }.disposed(by: self.disposeBag)
-        
+
         GameEventBus.gameEvents.asObservable().bind { [weak self] gameEvent in
             switch gameEvent.action {
             case .reloadMap:
@@ -56,6 +48,13 @@ class GameEngine {
                 let gameEvent = GameEvent(player: gameEvent.player, action: .reloadMap)
                 self?.gameEvents.onNext(gameEvent)*/
                 break
+            case .vehicleTravelStarted(let payload):
+                switch gameEvent.playerSession {
+                case .none:
+                    self?.websocketHandler.sendToAll(commandType: .startVehicle, payload: payload)
+                case .some(let playerSession):
+                    self?.websocketHandler.sendTo(playerSessionID: playerSession.id, commandType: .startVehicle, payload: payload)
+                }
             default:
                 break
             }

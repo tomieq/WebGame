@@ -17,4 +17,6 @@ enum GameEventAction {
     case userDisconnected
     case tileClicked(MapPoint)
     case reloadMap
+    case vehicleTravelStarted(VehicleTravelStarted)
+    case vehicleTravelFinished(VehicleTravelFinished)
 }

@@ -82,6 +82,13 @@ class WebsocketHandler {
                     let event = GameEvent(playerSession: playerSession, action: .tileClicked(point))
                     GameEventBus.gameEvents.onNext(event)
                 }
+            case .vehicleFinished:
+                guard let playerSession = self.getPlayerSession(websocketSession) else { return }
+                if let dto = try? JSONDecoder().decode(WebsocketInCommandWithPayload<VehicleTravelFinished>.self, from: data),
+                    let payload = dto.payload {
+                    let event = GameEvent(playerSession: playerSession, action: .vehicleTravelFinished(payload))
+                    GameEventBus.gameEvents.onNext(event)
+                }
             }
         }
     }

@@ -43,6 +43,7 @@ class WebSocketHandler {
     }
     
     incoming(text) {
+        console.log("Incoming websocket data: " + text);
         var json = JSON.parse(text);
         if(json["command"] == undefined) {
             console.log("[webSocket] [message error] " + text);
