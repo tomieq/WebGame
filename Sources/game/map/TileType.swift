@@ -9,9 +9,11 @@ import Foundation
 
 enum TileType {
     case grass
+    case soldLand(ownerID: String)
     case street(type: StreetType)
     case btsAntenna
     case building(size: Int)
+    case cityCouncil
     case tree(type: Int)
 }
 
@@ -20,10 +22,14 @@ extension TileType {
         switch self {
         case .grass:
             return TileImage(path: "tiles/grass.png", width: 600, height: 400)
+        case .soldLand(_):
+            return TileImage(path: "tiles/sold-land.png", width: 600, height: 400)
         case .btsAntenna:
             return TileImage(path: "tiles/btsAntenna.png", width: 600, height: 800)
         case .building(let size):
             return TileImage(path: "tiles/building-\(size).png", width: 600, height: 900)
+        case .cityCouncil:
+            return TileImage(path: "tiles/city-council.png", width: 600, height: 500)
         case .tree(let type):
             return TileImage(path: "tiles/tree\(type).png", width: 600, height: 600)
         case .street(let type):

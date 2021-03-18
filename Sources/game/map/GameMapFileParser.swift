@@ -37,8 +37,12 @@ class GameMapFileParser {
                         }
                     case .btsAntenna:
                         mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .btsAntenna))
+                    case .cityCouncil:
+                        mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .cityCouncil))
                     case .building:
-                        mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .building(size: 4)))
+                        var sizes = [4,6,8,10]
+                        sizes.shuffle()
+                        mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .building(size: sizes.first!)))
                     case .tree1:
                         mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .tree(type: 1)))
                     case .tree2:
@@ -179,6 +183,7 @@ enum GameMapFileChar: String {
     case mainStreet = "S"
     case btsAntenna = "A"
     case building = "B"
+    case cityCouncil = "C"
     case tree1 = "T"
     case tree2 = "t"
     case tree3 = "d"
