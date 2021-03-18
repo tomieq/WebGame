@@ -1,5 +1,6 @@
 var webSocket = 0;
 var websocketHandler;
+var playerSessionID = "{playerSessionID}";
 
 $( document ).ready(function() {
     webSocket = new WebSocket("{url}");
@@ -77,8 +78,24 @@ class WebSocketHandler {
                     gameInteractionMap.drawTiles(points, payload["color"]);
                 }
                 break;
+            case "openWindow":
+                var payload = json["payload"];
+                var x = -1;
+                var y = -1;
+                if(payload["address"] != undefined ) {
+                    x = payload["address"]["x"];
+                    y = payload["address"]["y"];
+                }
+                openWindow(payload["title"], payload["initUrl"], payload["width"], payload["height"], x, y);
+                break;
             case "alert":
-                alert(json["payload"]);
+                new Noty({
+                  type: 'info',
+                  theme: 'bootstrap-v4',
+                  layout: 'topRight',
+                  timeout: 5000,
+                  text: json["payload"]
+                }).show();
                 break;
             default:
                 console.log("[webSocket] [unknown command] " + json["command"]);
