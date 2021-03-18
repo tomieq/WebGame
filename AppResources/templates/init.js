@@ -22,6 +22,7 @@ $( document ).ready(function() {
                     
     var lastMousePoint = new MapPoint(-1, -1);
     $(window).on('mousemove', function(e) {
+        if (amountOfOpenedWindows != 0) { return; }
         var point = e2MapPoint(e);
         if (lastMousePoint.x != point.x || lastMousePoint.y != point.y) {
             gameInteractionMap.clearMap();
@@ -32,6 +33,7 @@ $( document ).ready(function() {
         }
     });
     $(window).on('click', function(e) {
+        if (amountOfOpenedWindows != 0) { return; }
         var point = e2MapPoint(e);
         if(point.x >= 0 && point.x < calculator.mapWidth && point.y >= 0 && point.y < calculator.mapHeight) {
              syncData("tileClicked", point);
