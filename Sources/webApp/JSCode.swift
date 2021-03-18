@@ -23,13 +23,34 @@ class JSResponse {
 
 enum JSCode {
     case setWindowContent(String, content: String)
+    case setWindowActive(String)
+    case resizeWindow(String, width: Int, height: Int)
+    case closeWindow(String)
+    case showError(txt: String, duration: Int)
+    case showWarning(txt: String, duration: Int)
+    case showSuccess(txt: String, duration: Int)
+    case showInfo(txt: String, duration: Int)
 }
 
 extension JSCode {
     var js: String {
         switch self {
-        case .setWindowContent(let windowIndex, content: let content):
+        case .setWindowContent(let windowIndex, let content):
             return "setWindowContent(\(windowIndex), \"\(content)\");";
+        case .setWindowActive(let windowIndex):
+            return "setWindowActive(\(windowIndex));";
+        case .resizeWindow(let windowIndex, let width, let height):
+            return "resizeWindow(\(windowIndex), \(width), \(height));";
+        case .closeWindow(let windowIndex):
+             return "closeWindow(\(windowIndex));";
+        case .showError(let txt, let duration):
+            return "uiShowError(\"\(txt)\", \(duration * 1000));";
+        case .showWarning(let txt, let duration):
+            return "uiShowWarning(\"\(txt)\", \(duration * 1000));";
+        case .showSuccess(let txt, let duration):
+            return "uiShowSuccess(\"\(txt)\", \(duration * 1000));";
+        case .showInfo(let txt, let duration):
+            return "uiShowInfo(\"\(txt)\", \(duration * 1000));";
         }
     }
 }
