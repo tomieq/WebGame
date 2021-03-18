@@ -21,6 +21,7 @@ class GameTraffic {
             var t = this;
             console.log("Traffic started");
             this.moveInterval = setInterval(function(){ t.updateFrame(); }, 50);
+            this.cleanInterval = setInterval(function(){ t.cleanMovableObjects(); }, 150);
         }
     }
 
@@ -29,6 +30,7 @@ class GameTraffic {
         if( this.movableObjects.length == 0) {
             console.log("Traffic finished");
             clearInterval(this.moveInterval);
+            clearInterval(this.cleanInterval);
             this.isRunning = false;
         }
         for (var i = 0; i < this.movableObjects.length; i++) {
@@ -42,14 +44,19 @@ class GameTraffic {
                   fromCenter: false,
                   rotate: 0
             });
+            if(movableObject === undefined || movableObject.coordinates === undefined) { continue; }
+            if(movableObject.coordinates.x === undefined || movableObject.coordinates.y === undefined) { continue; }
             movableObject.coordinates.x += movableObject.deltaX;
             movableObject.coordinates.y += movableObject.deltaY;
             movableObject.updateState();
         }
-        this.movableObjects = this.movableObjects.filter(this.isValidMovableObject);
     }
 
+    cleanMovableObjects() {
+        this.movableObjects = this.movableObjects.filter(this.isValidMovableObject);
+    }
+    
     isValidMovableObject(movableObject) {
-        return movableObject.speed > 0;
+        return !movableObject.vehicleFinished
     }
 }

@@ -40,6 +40,7 @@ class GameMovableObject {
         this.direction = 0;
         this.coordinates = 0;
         this.endCoordinates = 0;
+        this.vehicleFinished = false;
         this.image = "";
         this.applyNextPath();
     }
@@ -72,15 +73,24 @@ class GameMovableObject {
     applyNextPath() {
         if(this.pathCounter + 1 >= this.mapPoints.length ) {
             this.speed = 0;
-            console.log("Vehicle " + this.id + " finished");
-            var data = {id : this.id, address: this.mapPoints[this.pathCounter]}
-            syncData("vehicleFinished", data);
+            this.deltaX = 0;
+            this.deltaY = 0;
+            if(!this.vehicleFinished) {
+                this.vehicleFinished = true;
+                console.log("Vehicle " + this.id + " finished");
+                var data = {id : this.id, address: this.mapPoints[this.pathCounter]}
+                syncData("vehicleFinished", data);
+            }
             return
         }
         var startPoint = this.mapPoints[this.pathCounter];
         var endPoint = this.mapPoints[this.pathCounter+1];
-        if ( startPoint == undefined || endPoint == undefined ) {
+        if ( startPoint === undefined || endPoint === undefined ) {
+            this.vehicleFinished = true;
             this.speed = 0;
+            this.deltaX = 0;
+            this.deltaY = 0;
+            return
         }
         this.coordinates = this.calculator.getCanvasCoordinates(startPoint);
         this.endCoordinates = this.calculator.getCanvasCoordinates(endPoint);
