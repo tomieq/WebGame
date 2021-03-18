@@ -11,6 +11,7 @@ enum WebsocketCommandOutType: String, Codable {
     case startVehicle
     case reloadMap
     case highlightArea
+    case openWindow
     case alert
 }
 

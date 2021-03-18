@@ -8,9 +8,9 @@
 import Foundation
 
 struct OpenWindow: Codable {
-    let width: Int
-    let height: Int
-    let htmlUrl: String?
-    let jsLibUrl: [String]?
-    let cssUrl: [String]?
+    let title: String
+    let width: Double
+    let height: Double
+    let initUrl: String
+    let address: MapPoint?
 }
