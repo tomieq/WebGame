@@ -14,13 +14,15 @@ var osRequestCounter = 0;
 var osTempSystemWidth = 0;
 var osTempSystemHeight = 0;
 var osSystemTopMenuHeight = 0;
+var amountOfOpenedWindows = 0;
 
 function requestStarted() {
     osRequestCounter++;
 }
 
-function osOpenWindow(name, path, width, height, singletonID = false) {
+function osOpenWindow(name, path, width, height, mapX, mapY, singletonID = false) {
     
+    amountOfOpenedWindows++;
     if(singletonID) {
         var openedWindowIndex = getWindowIndexByData("singletonID", singletonID);
         if(openedWindowIndex != false) {
@@ -53,17 +55,30 @@ function osOpenWindow(name, path, width, height, singletonID = false) {
     var appWindow = osBuildWindow(windowIndex, name, theWidth, theHeight);
     
     $('body').append(appWindow);
-    osCenterWindow(windowIndex);
+
+    if (mapX >= 0 && mapY >= 0) {
+        var coordinates = calculator.getCanvasCoordinates(new MapPoint(mapX, mapY));
+        coordinates.x += calculator.tileWidth/2;
+        coordinates.y -= calculator.tileHeight;
+        coordinates.x *=  calculator.canvasScale/2;
+        coordinates.y *=  calculator.canvasScale/2;
+        coordinates.x -= appWindow.width()/2;
+        coordinates.y -= appWindow.height();
+        coordinates.y -= $(window).scrollTop();
+        coordinates.x -= $(window).scrollLeft();
+        osPositionWindow(windowIndex, coordinates.x, coordinates.y);
+    } else {
+        osCenterWindow(windowIndex);
+    }
     
     appWindow.resizable({
         start: function (event, ui) {
-            console.log("appWindow.resizable.start");
             osTempSystemWidth = osGetSystemWindowWidth();
             osTempSystemHeight = osGetSystemWindowHeight();
         },
         resize: function ( event, ui ) {
             
-            var maxWidth = osTempSystemWidth - ui.position.left;
+            var maxWidth = osTempSystemWidth - ui.position.left - 15;
             if(ui.size.width > maxWidth) {
                 ui.size.width = maxWidth;
             }
@@ -71,7 +86,7 @@ function osOpenWindow(name, path, width, height, singletonID = false) {
             if(minWidth > 0 && ui.size.width < minWidth) {
                 ui.size.width = minWidth;
             }
-            var maxHeight = osTempSystemHeight - ui.position.top;
+            var maxHeight = osTempSystemHeight - ui.position.top - 15;
             if(ui.size.height > maxHeight) {
                 ui.size.height = maxHeight;
             }
@@ -121,8 +136,9 @@ function osOpenWindow(name, path, width, height, singletonID = false) {
         osSetData(windowIndex, "singletonID", singletonID);
         console.log("window is singleton with id=" + singletonID);
     }
+    setWindowMinimumSize(windowIndex, 120, 100);
     osMakeWindowActive(windowIndex);
-    //runScript(windowIndex, path);
+    runScript(windowIndex, path);
     return windowIndex;
 }
 
@@ -157,7 +173,6 @@ function osBuildWindow(windowIndex, name, width, height) {
     content.html('');
     appWindow.append(titlebar);
     appWindow.append(content);
-    //appWindow.append(contentLoader);
     contentLoader.html('<i class="fa fa-2x fa-cog faa-spin animated"></i>');
     
     return appWindow;
@@ -197,16 +212,28 @@ function osCenterWindowVertically(windowIndex) {
 function osPositionWindow(windowIndex, x, y) {
     
     var appWindow = $("#appWindow" + windowIndex);
-
-    if(x > 0) {
-        appWindow.css({ left: x + 'px' });
-    } else {
-        var windowWidth = windowsMeta[windowIndex].width;
-        var osTempSystemWidth = osGetSystemWindowWidth();
-        appWindow.css({ left: osTempSystemWidth - windowWidth + x + 'px' });
-        
+    var fullWidth = osGetSystemWindowWidth();
+    var fullHeight = osGetSystemWindowHeight();
+    
+    if (x < 0) {
+        x = 5;
     }
-    appWindow.css({ top: osSystemTopMenuHeight + y + 'px' });
+    if ( x + appWindow.width() > fullWidth ) {
+        x = fullWidth - appWindow.width() - 5;
+    }
+    if (x < 0) {
+        x = 5;
+    }
+    if ( y + appWindow.height() > fullHeight ) {
+        y =  appWindow.height() - theHeight - 5;
+    }
+    if (y < 0) {
+        y = 5;
+    }
+
+    appWindow.css({ left: x + 'px' });
+
+    appWindow.css({ top: y + 'px' });
     osUpdateWindowMeta(appWindow);
 }
 
@@ -234,7 +261,7 @@ function getActiveWindowIndex() {
 function osAddWindowIndexToPath(windowIndex, path) {
     var pathWithIndex = osAddArgumentToPath(path, "windowIndex", windowIndex);
     pathWithIndex = osAddArgumentToPath(pathWithIndex, "rc", osRequestCounter);
-    pathWithIndex = osAddArgumentToPath(pathWithIndex, "bSID", osBrowserSession);
+    pathWithIndex = osAddArgumentToPath(pathWithIndex, "playerSessionID", playerSessionID);
     return pathWithIndex;
 }
 
@@ -285,4 +312,21 @@ function osUpdateWindowMeta(appWindow) {
 
 function osGetRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function runScript(windowIndex, path) {
+    if(path == '') {
+        return;
+    }
+    setWindowLoading(windowIndex);
+    requestStarted();
+    var pathWithIndex = osAddWindowIndexToPath(windowIndex, path);
+    $.getScript(pathWithIndex)
+      .done(function( script, textStatus ) {
+        setWindowLoaded(windowIndex);
+      })
+      .fail(function( jqxhr, settings, exception ) {
+            setWindowLoaded(windowIndex);
+            uiShowError( windowIndex + ': Error while loading script '+this.url+'<br>' + exception);
+    });
 }

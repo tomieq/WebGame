@@ -6,8 +6,8 @@
 //
 
 
-function openWindow(name, path, width, height, singletonID = false) {
-    return osOpenWindow(name, path, width, height, singletonID);
+function openWindow(name, path, width, height, mapX, mapY, singletonID = false) {
+    return osOpenWindow(name, path, width, height, mapX, mapY, singletonID);
 }
 
 function openChildWindow(parentWindowIndex, name, path, width, height, singletonID = false) {
@@ -77,6 +77,7 @@ function resizeWindow(windowIndex, width, height) {
 }
 
 function closeWindow(windowIndex) {
+    amountOfOpenedWindows--;
     $("#appWindow" + windowIndex).remove();
     closeAllChildWindows(windowIndex);
 }
