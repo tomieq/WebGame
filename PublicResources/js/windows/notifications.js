@@ -36,16 +36,6 @@ function uiShowSuccess(txt, duration = 5000) {
     }).show();
 }
 
-function uiShowWarning(txt, duration = 5000) {
-    new Noty({
-        text: txt,
-        theme: 'bootstrap-v4',
-        layout: 'topRight',
-        type: 'warning',
-        timeout: duration
-    }).show();
-}
-
 function uiShowInfo(txt, duration = 5000) {
     new Noty({
         text: txt,
