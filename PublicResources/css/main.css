@@ -1,5 +1,7 @@
 body {
     background-color: #222222;
+    font-size: 12px;
+    font-family: Verdana, Arial
 }
 canvas {
     position: absolute;
