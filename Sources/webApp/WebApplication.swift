@@ -43,7 +43,6 @@ class WebApplication {
         
         
         server.GET["js/init.js"] = { request, responseHeaders in
-            responseHeaders.addHeader("Content-Type", "text/javascript;charset=UTF-8")
             let raw = Resource.getAppResource(relativePath: "templates/init.js")
             let template = Template(raw: raw)
             
@@ -55,11 +54,11 @@ class WebApplication {
             template.set(variables: variables)
 
             
-            return .ok(.text(template.output()))
+            return .ok(.javaScript(template.output()))
         }
         
         server.GET["js/loadMap.js"] = { request, responseHeaders in
-            responseHeaders.addHeader("Content-Type", "text/javascript;charset=UTF-8")
+
             let raw = Resource.getAppResource(relativePath: "templates/loadMap.js")
             let template = Template(raw: raw)
             
@@ -77,20 +76,19 @@ class WebApplication {
                     template.set(variables: variables, inNest: "building")
                 }
             }
-            return .ok(.text(template.output()))
+            return .ok(.javaScript(template.output()))
         }
         
         
         server.GET["js/websockets.js"] = { request, responseHeaders in
-            
-            responseHeaders.addHeader("Content-Type", "text/javascript;charset=UTF-8")
+
             guard let playerSessionID = (request.queryParams.first{ $0.0 == "playerSessionID" }?.1), let _ = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return .ok(.text("alert('Invalid playerSessionID');"))
             }
             let raw = Resource.getAppResource(relativePath: "templates/websockets.js")
             let template = Template(raw: raw)
             template.set(variables: ["url":"ws://localhost:5920/websocket", "playerSessionID": playerSessionID])
-            return .ok(.text(template.output()))
+            return .ok(.javaScript(template.output()))
         }
 
         server["/websocket"] = websocket(text: { (session, text) in

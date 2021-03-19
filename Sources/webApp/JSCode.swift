@@ -11,7 +11,7 @@ import Swifter
 class JSResponse {
     private var code: [JSCode] = []
     var response: HttpResponse {
-        return .ok(.text(self.code.map{ $0.js }.joined(separator: "\n")))
+        return .ok(.javaScript(self.code.map{ $0.js }.joined(separator: "\n")))
     }
     
     @discardableResult
