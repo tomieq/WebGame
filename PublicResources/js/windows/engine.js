@@ -7,18 +7,11 @@
 
 var osWindowCounter = 0;
 var windowsMeta = [];
-var windowMenuOptions = {};
-var osLoadedJS = [];
-var osLoadedCSS = [];
-var osRequestCounter = 0;
 var osTempSystemWidth = 0;
 var osTempSystemHeight = 0;
 var osSystemTopMenuHeight = 0;
 var amountOfOpenedWindows = 0;
 
-function requestStarted() {
-    osRequestCounter++;
-}
 
 function osOpenWindow(name, path, width, height, mapX, mapY, singletonID = false) {
     
@@ -138,7 +131,7 @@ function osOpenWindow(name, path, width, height, mapX, mapY, singletonID = false
     }
     setWindowMinimumSize(windowIndex, 120, 100);
     osMakeWindowActive(windowIndex);
-    runScript(windowIndex, path);
+    runScripts(windowIndex, [path]);
     return windowIndex;
 }
 
@@ -312,21 +305,4 @@ function osUpdateWindowMeta(appWindow) {
 
 function osGetRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function runScript(windowIndex, path) {
-    if(path == '') {
-        return;
-    }
-    setWindowLoading(windowIndex);
-    requestStarted();
-    var pathWithIndex = osAddWindowIndexToPath(windowIndex, path);
-    $.getScript(pathWithIndex)
-      .done(function( script, textStatus ) {
-        setWindowLoaded(windowIndex);
-      })
-      .fail(function( jqxhr, settings, exception ) {
-            setWindowLoaded(windowIndex);
-            uiShowError( windowIndex + ': Error while loading script '+this.url+'<br>' + exception);
-    });
 }
