@@ -19,10 +19,7 @@ class WebApplication {
         
         server.GET["/"] = { request, responseHeaders in
             
-            /*if let sessionID = request.cookies["sessionID"], let existingSession = (self.webSessions.first { $0.id == sessionID }) {
-                webSession = existingSession
-            } else*/
-            guard let userID = (request.queryParams.first{ $0.0 == "userID"}?.1), let player = (self.players.first{ $0.id == userID }) else {
+            guard let userID = request.queryParam("userID"), let player = (self.players.first{ $0.id == userID }) else {
                     return .ok(.htmlBody("Invalid userID"))
             }
             let playerSession = PlayerSessionManager.shared.createPlayerSession(for: player)
@@ -37,31 +34,29 @@ class WebApplication {
                 return Template.htmlNode(type: "canvas", attributes: ["id":canvasName,"style":"z-index:\(zIndex);"])
             }.joined(separator: "\n")
             
-            template.set(variables: ["body": html, "playerSessionID": playerSession.id])
+            template.assign(variables: ["body": html, "playerSessionID": playerSession.id])
             return template.asResponse()
         }
         
         
-        server.GET["js/init.js"] = { request, responseHeaders in
+        server.GET["js/init.js"] = { request, _ in
             let raw = Resource.getAppResource(relativePath: "templates/init.js")
             let template = Template(raw: raw)
-            
-            
+
             var variables = [String:String]()
             variables["mapWidth"] = self.gameEngine.gameMap.width.string
             variables["mapHeight"] = self.gameEngine.gameMap.height.string
             variables["mapScale"] = self.gameEngine.gameMap.scale.string
-            template.set(variables: variables)
+            template.assign(variables: variables)
 
-            
             return .ok(.javaScript(template.output()))
         }
         
-        server.GET["js/loadMap.js"] = { request, responseHeaders in
+        server.GET["js/loadMap.js"] = { request, _ in
 
             let raw = Resource.getAppResource(relativePath: "templates/loadMap.js")
             let template = Template(raw: raw)
-            
+
             self.gameEngine.gameMap.gameTiles.forEach { tile in
                 var variables = [String:String]()
                 variables["x"] = tile.address.x.string
@@ -69,25 +64,25 @@ class WebApplication {
                 variables["path"] = tile.type.image.path
                 variables["imageWidth"] = tile.type.image.width.string
                 variables["imageHeight"] = tile.type.image.height.string
-                
+
                 if case .street(_) = tile.type {
-                    template.set(variables: variables, inNest: "street")
+                    template.assign(variables: variables, inNest: "street")
                 } else {
-                    template.set(variables: variables, inNest: "building")
+                    template.assign(variables: variables, inNest: "building")
                 }
             }
             return .ok(.javaScript(template.output()))
         }
         
         
-        server.GET["js/websockets.js"] = { request, responseHeaders in
+        server.GET["js/websockets.js"] = { request, _ in
 
-            guard let playerSessionID = (request.queryParams.first{ $0.0 == "playerSessionID" }?.1), let _ = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+            guard let playerSessionID = request.queryParam("playerSessionID"), let _ = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return .ok(.text("alert('Invalid playerSessionID');"))
             }
             let raw = Resource.getAppResource(relativePath: "templates/websockets.js")
             let template = Template(raw: raw)
-            template.set(variables: ["url":"ws://localhost:5920/websocket", "playerSessionID": playerSessionID])
+            template.assign(variables: ["url":"ws://localhost:5920/websocket", "playerSessionID": playerSessionID])
             return .ok(.javaScript(template.output()))
         }
 
@@ -106,7 +101,58 @@ class WebApplication {
             Logger.info("WebApplication", "Websocket client disconnected")
             self.gameEngine.websocketHandler.remove(websocketSession: session)
         })
-
+        
+        server.GET["/openSaleOffer.js"] = { request, _ in
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
+            }
+            guard let address = request.mapPoint else {
+                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
+            }
+            let js = JSResponse()
+            js.add(.loadHtml(windowIndex, htmlPath: "/saleOffer.html?\(address.asQueryParams)"))
+            js.add(.setWindowTitle(windowIndex, title: "Land property"))
+            js.add(.disableWindowResizing(windowIndex))
+            return js.response
+        }
+        
+        server.GET["/saleOffer.html"] = { request, _ in
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
+            }
+            guard let address = request.mapPoint else {
+                return .ok(.text("Invalid request! Missing address."))
+            }
+            let land = Land(address: address)
+            
+            let value = self.gameEngine.realEstateAgent.evaluatePrice(land) ?? 0.0
+            let tax = value * 0.08
+            let transactionCosts = value * 0.01
+            let raw = Resource.getAppResource(relativePath: "templates/saleOffer.html")
+            let template = Template(raw: raw)
+            var data = [String:String]()
+            data["value"] = value.money
+            data["tax"] = tax.money
+            data["transactionCosts"] = transactionCosts.money
+            data["total"] = (value + tax + transactionCosts).money
+            data["buyScript"] = JSCode.runScripts(windowIndex, paths: ["/buyProperty.js?\(address.asQueryParams)"]).js
+            template.assign(variables: data)
+            return .ok(.html(template.output()))
+        }
+        
+        server.GET["/buyProperty.js"] = {request, _ in
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
+            }
+            guard let address = request.mapPoint else {
+                return .ok(.text("Invalid request! Missing address."))
+            }
+            let tile = GameMapTile(address: address, type: .soldLand(ownerID: "ert"))
+            self.gameEngine.realEstateAgent.putTiles([tile])
+            let code = JSResponse()
+            code.add(.closeWindow(windowIndex))
+            return code.response
+        }
         server.notFoundHandler = { request, responseHeaders in
             
             let filePath = Resource.absolutePath(forPublicResource: request.path)
