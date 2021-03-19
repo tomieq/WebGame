@@ -55,3 +55,9 @@ extension MapPoint: Hashable {
         return lhs.x == rhs.x && lhs.y == rhs.y
     }
 }
+
+extension MapPoint {
+    var asQueryParams: String {
+        return "x=\(self.x)&y=\(self.y)"
+    }
+}
