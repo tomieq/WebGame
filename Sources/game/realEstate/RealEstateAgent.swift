@@ -14,13 +14,17 @@ class RealEstateAgent {
         self.map = map
     }
     
-    func putTile(_ tile: GameMapTile) {
-        self.map.replaceTile(tile: tile)
+    func putTiles(_ tiles: [GameMapTile]) {
+        tiles.forEach {
+            self.map.replaceTile(tile: $0)
+        }
+        let event = GameEvent(playerSession: nil, action: .reloadMap)
+        GameEventBus.gameEvents.onNext(event)
     }
     
-    func evaluatePrice(_ property: Property) -> Int? {
+    func evaluatePrice(_ property: Property) -> Double? {
         if let land = property as? Land, let value = self.evaluatePriceForLand(land) {
-            return Int(value * (1 + self.occupiedSpaceOnMapFactor()))
+            return value * (1 + self.occupiedSpaceOnMapFactor())
         }
         return nil
     }
