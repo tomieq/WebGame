@@ -9,22 +9,24 @@ import Foundation
 import Swifter
 
 class JSResponse {
-    private var code: [JSCode] = []
+    private var jsCodeList: [JSCode] = []
     var response: HttpResponse {
-        return .ok(.javaScript(self.code.map{ $0.js }.joined(separator: "\n")))
+        return .ok(.javaScript(self.jsCodeList.map{ $0.js }.joined(separator: "\n")))
     }
     
     @discardableResult
     func add(_ code: JSCode) -> JSResponse {
-        self.code.append(code)
+        self.jsCodeList.append(code)
         return self
     }
 }
 
 enum JSCode {
     case setWindowContent(String, content: String)
+    case setWindowTitle(String, title: String)
     case setWindowActive(String)
     case resizeWindow(String, width: Int, height: Int)
+    case disableWindowResizing(String)
     case closeWindow(String)
     case runScripts(String, paths: [String])
     case loadHtml(String, htmlPath: String)
@@ -42,10 +44,14 @@ extension JSCode {
         switch self {
         case .setWindowContent(let windowIndex, let content):
             return "setWindowContent(\(windowIndex), '\(content.escaped)');";
+        case .setWindowTitle(let windowIndex, let title):
+            return "setWindowTitle(\(windowIndex), '\(title.escaped)');"
         case .setWindowActive(let windowIndex):
             return "setWindowActive(\(windowIndex));";
         case .resizeWindow(let windowIndex, let width, let height):
             return "resizeWindow(\(windowIndex), \(width), \(height));";
+        case .disableWindowResizing(let windowIndex):
+            return "disableWindowResizing(\(windowIndex));"
         case .closeWindow(let windowIndex):
              return "closeWindow(\(windowIndex));";
         case .loadHtml(let windowIndex, let htmlPath):
@@ -68,8 +74,12 @@ extension JSCode {
             return code
         }
     }
-    
+}
 
+extension JSCode {
+    var response: HttpResponse {
+        return .ok(.javaScript(self.js))
+    }
 }
 
 fileprivate extension String {
