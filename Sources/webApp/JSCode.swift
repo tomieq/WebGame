@@ -26,31 +26,54 @@ enum JSCode {
     case setWindowActive(String)
     case resizeWindow(String, width: Int, height: Int)
     case closeWindow(String)
+    case runScripts(String, paths: [String])
+    case loadHtml(String, htmlPath: String)
+    case loadHtmlThenRunScripts(String, htmlPath: String, scriptPaths: [String])
+    case loadJsAndHtmlThenRunScripts(String, jsFilePaths: [String], htmlPath: String, scriptPaths: [String])
     case showError(txt: String, duration: Int)
     case showWarning(txt: String, duration: Int)
     case showSuccess(txt: String, duration: Int)
     case showInfo(txt: String, duration: Int)
+    case any(String)
 }
 
 extension JSCode {
     var js: String {
         switch self {
         case .setWindowContent(let windowIndex, let content):
-            return "setWindowContent(\(windowIndex), \"\(content)\");";
+            return "setWindowContent(\(windowIndex), '\(content.escaped)');";
         case .setWindowActive(let windowIndex):
             return "setWindowActive(\(windowIndex));";
         case .resizeWindow(let windowIndex, let width, let height):
             return "resizeWindow(\(windowIndex), \(width), \(height));";
         case .closeWindow(let windowIndex):
              return "closeWindow(\(windowIndex));";
+        case .loadHtml(let windowIndex, let htmlPath):
+            return "loadHtmlThenRunScripts(\(windowIndex), '\(htmlPath)', [], '');";
+        case .loadHtmlThenRunScripts(let windowIndex, let htmlPath, let scriptPaths):
+            return "loadHtmlThenRunScripts(\(windowIndex), '\(htmlPath)', ['\(scriptPaths.joined(separator: "', '"))'], '');";
+        case .loadJsAndHtmlThenRunScripts(let windowIndex, let jsFilePaths, let htmlPath, let scriptPaths):
+            return "loadJsAndHtmlThenRunScripts(\(windowIndex), ['\(jsFilePaths.joined(separator: "', '"))'], '\(htmlPath)', ['\(scriptPaths.joined(separator: "', '"))'], '');";
+        case .runScripts(let windowIndex, let paths):
+            return "runScripts(\(windowIndex), ['\(paths.joined(separator: "', '"))']);"
         case .showError(let txt, let duration):
-            return "uiShowError(\"\(txt)\", \(duration * 1000));";
+            return "uiShowError('\(txt.escaped)', \(duration * 1000));";
         case .showWarning(let txt, let duration):
-            return "uiShowWarning(\"\(txt)\", \(duration * 1000));";
+            return "uiShowWarning('\(txt.escaped)', \(duration * 1000));";
         case .showSuccess(let txt, let duration):
-            return "uiShowSuccess(\"\(txt)\", \(duration * 1000));";
+            return "uiShowSuccess(\'(\(txt.escaped))', \(duration * 1000));";
         case .showInfo(let txt, let duration):
-            return "uiShowInfo(\"\(txt)\", \(duration * 1000));";
+            return "uiShowInfo('\(txt.escaped)', \(duration * 1000));";
+        case .any(let code):
+            return code
         }
+    }
+    
+
+}
+
+fileprivate extension String {
+    var escaped: String {
+        return self.replacingOccurrences(of: "'", with: "\\'")
     }
 }
