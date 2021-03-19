@@ -88,13 +88,14 @@ class WebSocketHandler {
                 }
                 openWindow(payload["title"], payload["initUrl"], payload["width"], payload["height"], x, y);
                 break;
-            case "alert":
+            case "notification":
+                var payload = json["payload"];
                 new Noty({
-                  type: 'info',
-                  theme: 'bootstrap-v4',
-                  layout: 'topRight',
-                  timeout: 5000,
-                  text: json["payload"]
+                    text: payload["text"],
+                    theme: 'bootstrap-v4',
+                    layout: 'topRight',
+                    type: payload["level"],
+                    timeout: payload["duration"] * 1000
                 }).show();
                 break;
             default:

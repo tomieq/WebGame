@@ -19,4 +19,5 @@ enum GameEventAction {
     case reloadMap
     case vehicleTravelStarted(VehicleTravelStarted)
     case vehicleTravelFinished(VehicleTravelFinished)
+    case notification(UINotification)
 }

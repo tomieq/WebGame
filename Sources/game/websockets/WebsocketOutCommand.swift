@@ -12,7 +12,7 @@ enum WebsocketCommandOutType: String, Codable {
     case reloadMap
     case highlightArea
     case openWindow
-    case alert
+    case notification
 }
 
 class WebsocketOutCommand<T: Codable>: Codable {

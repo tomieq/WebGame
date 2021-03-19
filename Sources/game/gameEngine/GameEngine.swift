@@ -59,6 +59,13 @@ class GameEngine {
                 case .some(let playerSession):
                     self?.websocketHandler.sendTo(playerSessionID: playerSession.id, commandType: .startVehicle, payload: payload)
                 }
+            case .notification(let payload):
+                switch gameEvent.playerSession {
+                case .none:
+                    self?.websocketHandler.sendToAll(commandType: .notification, payload: payload)
+                case .some(let playerSession):
+                    self?.websocketHandler.sendTo(playerSessionID: playerSession.id, commandType: .notification, payload: payload)
+                }
             default:
                 break
             }

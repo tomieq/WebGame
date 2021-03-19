@@ -149,6 +149,8 @@ class WebApplication {
             }
             let tile = GameMapTile(address: address, type: .soldLand(ownerID: "ert"))
             self.gameEngine.realEstateAgent.putTiles([tile])
+            let event = GameEvent(playerSession: nil, action: .notification(UINotification(text: "New property has been sold!", level: .info, duration: 10)))
+            GameEventBus.gameEvents.onNext(event)
             let code = JSResponse()
             code.add(.closeWindow(windowIndex))
             return code.response
