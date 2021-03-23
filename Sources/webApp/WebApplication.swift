@@ -127,15 +127,14 @@ class WebApplication {
             let land = Land(address: address)
             
             let value = self.gameEngine.realEstateAgent.evaluatePrice(land) ?? 0.0
-            let tax = value * 0.08
-            let transactionCosts = value * 0.01
+            let transactionCosts = TransactionCosts(propertyValue: value)
             let raw = Resource.getAppResource(relativePath: "templates/saleOffer.html")
             let template = Template(raw: raw)
             var data = [String:String]()
             data["value"] = value.money
-            data["tax"] = tax.money
-            data["transactionCosts"] = transactionCosts.money
-            data["total"] = (value + tax + transactionCosts).money
+            data["tax"] = transactionCosts.tax.money
+            data["transactionCosts"] = transactionCosts.fee.money
+            data["total"] = transactionCosts.total.money
             data["buyScript"] = JSCode.runScripts(windowIndex, paths: ["/buyProperty.js?\(address.asQueryParams)"]).js
             template.assign(variables: data)
             return .ok(.html(template.output()))
