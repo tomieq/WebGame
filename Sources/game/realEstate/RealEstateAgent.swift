@@ -64,7 +64,7 @@ class RealEstateAgent {
         let reloadMapEvent = GameEvent(playerSession: nil, action: .reloadMap)
         GameEventBus.gameEvents.onNext(reloadMapEvent)
         
-        let announcementEvent = GameEvent(playerSession: nil, action: .notification(UINotification(text: "Player \(session.player.login) has just bought a new property", level: .info, duration: 10)))
+        let announcementEvent = GameEvent(playerSession: nil, action: .notification(UINotification(text: "New transaction on the market. Player \(session.player.login) has just bought property `\(property.name)`", level: .info, duration: 10)))
         GameEventBus.gameEvents.onNext(announcementEvent)
     }
     

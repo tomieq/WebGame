@@ -9,6 +9,7 @@ import Foundation
 
 protocol Property {
     var type: String { get }
+    var name: String { get }
     var ownerID: String? { set get }
     var address: [MapPoint] { get }
     var moneyValueWhenBought: Double? { set get }

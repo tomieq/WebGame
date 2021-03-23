@@ -203,6 +203,7 @@ class WebApplication {
             let template = Template(raw: raw)
             var data = [String:String]()
             data["type"] = property.type
+            data["name"] = property.name
             data["owner"] = owner?.login ?? "nil"
             template.assign(variables: data)
             return .ok(.html(template.output()))
