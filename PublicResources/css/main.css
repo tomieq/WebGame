@@ -26,3 +26,7 @@ canvas {
     border-radius: 3px;
     padding: 6px;
 }
+
+hr {
+    border: 1px solid #5B9AAD;
+}
