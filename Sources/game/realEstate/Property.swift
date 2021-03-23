@@ -14,6 +14,7 @@ protocol Property {
     var address: MapPoint { get }
     var transactionNetValue: Double? { set get }
     var monthlyMaintenanceCost: Double { set get }
+    var monthlyIncome: Double { set get }
 }
 
 protocol ResidentialProperty: Property {

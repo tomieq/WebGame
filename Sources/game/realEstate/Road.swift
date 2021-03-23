@@ -15,6 +15,7 @@ class Road: Property, Codable {
     let name: String
     var transactionNetValue: Double?
     var monthlyMaintenanceCost: Double
+    var monthlyIncome: Double
     
     init(land: Land) {
         self.address = land.address
@@ -22,5 +23,6 @@ class Road: Property, Codable {
         self.ownerID = land.ownerID
         self.transactionNetValue = land.transactionNetValue
         self.monthlyMaintenanceCost = 580
+        self.monthlyIncome = 0
     }
 }
