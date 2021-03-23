@@ -47,7 +47,7 @@ class RealEstateAgent {
         guard self.isForSale(address: address) else {
             throw BuyPropertyError.propertyNotForSale
         }
-        let property = Land(address: address)
+        var property = self.getProperty(address: address) ?? Land(address: address)
         guard let price = self.estimatePrice(property) else {
             throw BuyPropertyError.problemWithPrice
         }
@@ -61,6 +61,7 @@ class RealEstateAgent {
         property.ownerID = session.player.id
         property.transactionNetValue = transactionCost.propertyValue
         
+        self.properties = self.properties.filter { $0.address != address }
         self.properties.append(property)
         self.saveProperties()
         if let land = property as? Land {
@@ -88,6 +89,9 @@ class RealEstateAgent {
             fatalError()
         }
         property.ownerID = government.id
+        if property is Road {
+            self.properties = self.properties.filter { $0.address != address }
+        }
         self.saveProperties()
         
         let value = self.estimatePrice(property) ?? 0
