@@ -19,7 +19,7 @@ $( document ).ready(function() {
         } else {
         // e.g. server process killed or network down
         // event.code is usually 1006 in this case
-            alert('[webSocket] [close] Connection died');
+            alert('[webSocket] [close] Connection died ' + event.code);
         }
     };
 
@@ -87,6 +87,9 @@ class WebSocketHandler {
                     y = payload["address"]["y"];
                 }
                 openWindow(payload["title"], payload["initUrl"], payload["width"], payload["height"], x, y);
+                break;
+            case "updateWallet":
+                updateWallet(json["payload"]);
                 break;
             case "notification":
                 var payload = json["payload"];
