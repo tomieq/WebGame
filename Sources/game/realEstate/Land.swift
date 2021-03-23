@@ -9,10 +9,13 @@ import Foundation
 
 class Land: Property, Codable {
     
-    var owner: Player?
+    var ownerID: String?
     var address: [MapPoint]
     var moneyValueWhenBought: Int?
     var currentMoneyValue: Int?
+    var mapTiles: [GameMapTile] {
+        return [GameMapTile(address: address.first!, type: .soldLand)]
+    }
     
     init(address: MapPoint) {
         self.address = [address]

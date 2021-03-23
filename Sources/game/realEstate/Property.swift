@@ -12,4 +12,5 @@ protocol Property {
     var address: [MapPoint] { get }
     var moneyValueWhenBought: Int? { get }
     var currentMoneyValue: Int? { get }
+    var mapTiles: [GameMapTile] { get }
 }
