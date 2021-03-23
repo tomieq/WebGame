@@ -7,14 +7,21 @@
 
 import Foundation
 
+enum PlayerType: String, Codable {
+    case user
+    case system
+}
+
 class Player: Codable {
     let id: String
     let login: String
+    let type: PlayerType
     var wallet: Double
     
-    init(id: String, login: String) {
+    init(id: String, login: String, type: PlayerType = .user) {
         self.id = id
         self.login = login
+        self.type = type
         self.wallet = 1000000
     }
     

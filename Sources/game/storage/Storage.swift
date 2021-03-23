@@ -17,7 +17,11 @@ class Storage: Codable {
     
     private init() {
         
-        self.players = [Player(id: "p1", login: "John"), Player(id: "p2", login: "Steve")]
+        self.players = []
+        self.players.append(Player(id: "government", login: "Government", type: .system))
+        self.players.append(Player(id: "bank", login: "Central Bank", type: .system))
+        self.players.append(Player(id: "p1", login: "John Cash"))
+        self.players.append(Player(id: "p2", login: "Steve Poor"))
         self.landProperties = []
         self.roadProperties = []
         self.save()
