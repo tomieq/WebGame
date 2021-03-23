@@ -9,17 +9,27 @@ import Foundation
 
 class RealEstateAgent {
     private let map: GameMap
+    private var properties: [Property]
     
     init(map: GameMap) {
         self.map = map
+        self.properties = []
     }
     
-    func putTiles(_ tiles: [GameMapTile]) {
-        tiles.forEach {
+    func buyProperty(_ property: Property, player: Player) {
+        
+        if let price = self.evaluatePrice(property) {
+            player.wallet = player.wallet - price
+        }
+        self.properties.append(property)
+        property.mapTiles.forEach {
             self.map.replaceTile(tile: $0)
         }
-        let event = GameEvent(playerSession: nil, action: .reloadMap)
-        GameEventBus.gameEvents.onNext(event)
+        let reloadMapEvent = GameEvent(playerSession: nil, action: .reloadMap)
+        GameEventBus.gameEvents.onNext(reloadMapEvent)
+        
+        let announcementEvent = GameEvent(playerSession: nil, action: .notification(UINotification(text: "Player \(player.login) has just bought a new property", level: .info, duration: 10)))
+        GameEventBus.gameEvents.onNext(announcementEvent)
     }
     
     func evaluatePrice(_ property: Property) -> Double? {

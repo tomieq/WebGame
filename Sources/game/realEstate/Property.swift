@@ -8,7 +8,7 @@
 import Foundation
 
 protocol Property {
-    var owner: Player? { get }
+    var ownerID: String? { get }
     var address: [MapPoint] { get }
     var moneyValueWhenBought: Int? { get }
     var currentMoneyValue: Int? { get }

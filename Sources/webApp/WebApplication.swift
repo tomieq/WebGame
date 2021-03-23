@@ -10,16 +10,13 @@ import Swifter
 
 class WebApplication {
 
-    let players: [Player]
     let gameEngine = GameEngine()
     
     init(_ server: HttpServer) {
         
-        self.players = [Player(id: "p1", login: "John"), Player(id: "p2", login: "Steve")]
-        
         server.GET["/"] = { request, responseHeaders in
             
-            guard let userID = request.queryParam("userID"), let player = (self.players.first{ $0.id == userID }) else {
+            guard let userID = request.queryParam("userID"), let player = (Storage.shared.players.first{ $0.id == userID }) else {
                     return .ok(.htmlBody("Invalid userID"))
             }
             let playerSession = PlayerSessionManager.shared.createPlayerSession(for: player)
@@ -141,20 +138,32 @@ class WebApplication {
         }
         
         server.GET["/buyProperty.js"] = {request, _ in
+            let code = JSResponse()
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
             }
             guard let address = request.mapPoint else {
-                return .ok(.text("Invalid request! Missing address."))
+                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
             }
-            let tile = GameMapTile(address: address, type: .soldLand(ownerID: "ert"))
-            self.gameEngine.realEstateAgent.putTiles([tile])
-            let event = GameEvent(playerSession: nil, action: .notification(UINotification(text: "New property has been sold!", level: .info, duration: 10)))
-            GameEventBus.gameEvents.onNext(event)
-            let code = JSResponse()
+            guard let playerSessionID = request.queryParam("playerSessionID"),
+                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                    code.add(.closeWindow(windowIndex))
+                    code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
+                    return code.response
+            }
+            let land = Land(address: address)
+            self.gameEngine.realEstateAgent.buyProperty(land, player: session.player)
             code.add(.closeWindow(windowIndex))
             return code.response
         }
+        
+        
+        server.GET["/sampleLib.js"] = { _, _ in
+            let code = JSResponse()
+            code.add(.any("function runIt(){ \(JSCode.showInfo(txt: "runIt", duration: 2).js) }"))
+            return code.response
+        }
+        
         server.notFoundHandler = { request, responseHeaders in
             
             let filePath = Resource.absolutePath(forPublicResource: request.path)
