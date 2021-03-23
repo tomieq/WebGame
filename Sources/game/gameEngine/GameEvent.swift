@@ -17,6 +17,7 @@ enum GameEventAction {
     case userDisconnected
     case tileClicked(MapPoint)
     case reloadMap
+    case updateWallet(String)
     case vehicleTravelStarted(VehicleTravelStarted)
     case vehicleTravelFinished(VehicleTravelFinished)
     case notification(UINotification)

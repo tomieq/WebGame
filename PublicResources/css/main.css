@@ -12,3 +12,17 @@ canvas {
 #canvasInteraction {
     opacity: 0.7;
 }
+
+#wallet {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    width: 110px;
+    height: 15px;
+    background-color: #141414;
+    z-index: 6;
+    color: #FF8000;
+    border: 1px solid #0080FF;
+    border-radius: 3px;
+    padding: 6px;
+}

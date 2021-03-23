@@ -27,9 +27,10 @@ class WebApplication {
             let template = Template(raw: rawPage)
             
             let canvasLayers = ["canvasStreets", "canvasInteraction", "canvasTraffic", "canvasBuildings"]
-            let html = canvasLayers.enumerated().map { (zIndex, canvasName) in
+            var html = canvasLayers.enumerated().map { (zIndex, canvasName) in
                 return Template.htmlNode(type: "canvas", attributes: ["id":canvasName,"style":"z-index:\(zIndex);"])
             }.joined(separator: "\n")
+            html.append(Template.htmlNode(type: "div", attributes: ["id":"wallet"], content: "$ 1000 000"))
             
             template.assign(variables: ["body": html, "playerSessionID": playerSession.id])
             return template.asResponse()
@@ -79,7 +80,7 @@ class WebApplication {
             }
             let raw = Resource.getAppResource(relativePath: "templates/websockets.js")
             let template = Template(raw: raw)
-            template.assign(variables: ["url":"ws://localhost:5920/websocket", "playerSessionID": playerSessionID])
+            template.assign(variables: ["url":"ws://192.168.88.50:5920/websocket", "playerSessionID": playerSessionID])
             return .ok(.javaScript(template.output()))
         }
 
@@ -154,7 +155,7 @@ class WebApplication {
                     code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
                     return code.response
             }
-            self.gameEngine.realEstateAgent.buyProperty(address: address, player: session.player)
+            self.gameEngine.realEstateAgent.buyProperty(address: address, session: session)
             code.add(.closeWindow(windowIndex))
             return code.response
         }

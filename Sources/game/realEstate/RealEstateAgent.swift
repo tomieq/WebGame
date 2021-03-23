@@ -26,7 +26,7 @@ class RealEstateAgent {
         return self.map.getTile(address: address) == nil
     }
     
-    func buyProperty(address: MapPoint, player: Player) {
+    func buyProperty(address: MapPoint, session: PlayerSession) {
         
         guard self.map.getTile(address: address) == nil else {
             fatalError("Buying other properties not implemented yet")
@@ -35,8 +35,8 @@ class RealEstateAgent {
         guard let price = self.evaluatePrice(property) else {
             fatalError("TODO add proper error handling")
         }
-        player.wallet = player.wallet - price
-        property.ownerID = player.id
+        session.player.wallet = session.player.wallet - price
+        property.ownerID = session.player.id
         property.moneyValueWhenBought = price
         property.currentMoneyValue = price
         
@@ -47,10 +47,14 @@ class RealEstateAgent {
         property.mapTiles.forEach {
             self.map.replaceTile(tile: $0)
         }
+        
+        let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(session.player.wallet.money))
+        GameEventBus.gameEvents.onNext(updateWalletEvent)
+        
         let reloadMapEvent = GameEvent(playerSession: nil, action: .reloadMap)
         GameEventBus.gameEvents.onNext(reloadMapEvent)
         
-        let announcementEvent = GameEvent(playerSession: nil, action: .notification(UINotification(text: "Player \(player.login) has just bought a new property", level: .info, duration: 10)))
+        let announcementEvent = GameEvent(playerSession: nil, action: .notification(UINotification(text: "Player \(session.player.login) has just bought a new property", level: .info, duration: 10)))
         GameEventBus.gameEvents.onNext(announcementEvent)
     }
     

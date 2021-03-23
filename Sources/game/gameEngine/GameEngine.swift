@@ -24,8 +24,14 @@ class GameEngine {
 
         GameEventBus.gameEvents.asObservable().bind { [weak self] gameEvent in
             switch gameEvent.action {
+            case .userConnected:
+                if let session = gameEvent.playerSession {
+                    self?.websocketHandler.sendTo(playerSessionID: session.id, commandType: .updateWallet, payload: session.player.wallet.money)
+                }
             case .reloadMap:
                 self?.websocketHandler.sendToAll(commandType: .reloadMap, payload: "\(gameEvent.playerSession?.player.id ?? "nil")")
+            case .updateWallet(let wallet):
+                self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .updateWallet, payload: wallet)
             case .tileClicked(let point):
 
                 switch self?.realEstateAgent.isForSale(address: point) ?? false {

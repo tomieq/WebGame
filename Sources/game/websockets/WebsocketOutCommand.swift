@@ -13,6 +13,7 @@ enum WebsocketCommandOutType: String, Codable {
     case highlightArea
     case openWindow
     case notification
+    case updateWallet
 }
 
 class WebsocketOutCommand<T: Codable>: Codable {
