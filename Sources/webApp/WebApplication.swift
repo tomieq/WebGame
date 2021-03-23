@@ -126,13 +126,14 @@ class WebApplication {
             }
             let land = Land(address: address)
             
-            let value = self.gameEngine.realEstateAgent.evaluatePrice(land) ?? 0.0
-            let transactionCosts = TransactionCosts(propertyValue: value)
+            let value = self.gameEngine.realEstateAgent.estimatePrice(land) ?? 0.0
+            let transactionCosts = TransactionCost(propertyValue: value)
             let raw = Resource.getAppResource(relativePath: "templates/saleOffer.html")
             let template = Template(raw: raw)
             var data = [String:String]()
             data["value"] = transactionCosts.propertyValue.money
             data["tax"] = transactionCosts.tax.money
+            data["taxRate"] = Int(transactionCosts.taxRate).string
             data["transactionCosts"] = transactionCosts.fee.money
             data["total"] = transactionCosts.total.money
             data["buyScript"] = JSCode.runScripts(windowIndex, paths: ["/buyProperty.js?\(address.asQueryParams)"]).js
@@ -241,11 +242,42 @@ class WebApplication {
             let template = Template(raw: raw)
             var data = [String:String]()
             data["name"] = property.name
-            data["income"] = 0.0.money
-            data["monthlyCosts"] = property.monthlyMaintenanceCost
-            data["total"] = (-100.0).money
-            data["tileUrl"] = TileType.soldLand.image.path
-            data["tempUrl"] = JSCode.runScripts(windowIndex, paths: ["/buildRoad.js?\(address.asQueryParams)"]).js
+            data["type"] = property.type
+            data["monthlyIncome"] = property.monthlyIncome.money
+            data["monthlyCosts"] = property.monthlyMaintenanceCost.money
+            data["balance"] = (property.monthlyIncome - property.monthlyMaintenanceCost).money
+            data["purchasePrice"] = property.transactionNetValue?.money ?? ""
+            let estimatedValue = self.gameEngine.realEstateAgent.estimatePrice(property) ?? 0.0
+            data["estimatedValue"] = estimatedValue.money
+            data["instantSellPrice"] = (estimatedValue * 0.85).money
+            
+            let hasAccessToRoad = !self.gameEngine.gameMap.getNeighbourAddresses(to: address, radius: 1)
+                .compactMap { self.gameEngine.gameMap.getTile(address: $0) }
+                .filter{ $0.isStreet() }.isEmpty
+
+            if property is Land {
+                data["tileUrl"] = TileType.soldLand.image.path
+                if hasAccessToRoad {
+
+                    var investData = [String:String]()
+                    investData["name"] = "Road"
+                    investData["investmentCost"] = InvestmentPrice.buildingRoad.money
+                    investData["investmentTax"] = (InvestmentPrice.buildingRoad * TaxRates.investmentTax / 100).money
+                    investData["investmentTotal"] = (InvestmentPrice.buildingRoad * (1 + TaxRates.investmentTax / 100)).money
+                    investData["investmentDuration"] = "3 months"
+                    investData["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/buildRoad.js?\(address.asQueryParams)"]).js
+                    template.assign(variables: investData, inNest: "investment")
+                } else {
+                    let info = "This property has no access to the public road, so the investment options are very narrow."
+                    template.assign(variables: ["text":info], inNest: "info")
+                }
+            } else if property is Road {
+                data["tileUrl"] = TileType.street(type: .local(.localY)).image.path
+
+                let info = "Roads do not make any income, but they increase market value of surrounding area. Notice that there are the maintenance costs there, so the best approach is to sell the road. Road cannot be destroyed by government or any other players."
+                template.assign(variables: ["text":info], inNest: "info")
+            }
+            
             template.assign(variables: data)
             return .ok(.html(template.output()))
         }
@@ -258,13 +290,34 @@ class WebApplication {
             guard let address = request.mapPoint else {
                 return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
             }
+            
+            let hasDirectAccessToRoad = ![address.move(.up),address.move(.down),address.move(.left),address.move(.right)]
+                .compactMap { self.gameEngine.gameMap.getTile(address: $0) }
+                .filter{ $0.isStreet() }.isEmpty
+            guard hasDirectAccessToRoad else {
+                return JSCode.showError(txt: "You cannot build road here as this property has no direct access to the public road.", duration: 10).response
+            }
             guard let playerSessionID = request.queryParam("playerSessionID"),
                 let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                     code.add(.closeWindow(windowIndex))
                     code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
                     return code.response
             }
-            self.gameEngine.realEstateAgent.buildRoad(address: address, session: session)
+            do {
+                try self.gameEngine.realEstateAgent.buildRoad(address: address, session: session)
+            } catch StartInvestmentError.invalidOwner {
+                code.add(.closeWindow(windowIndex))
+                code.add(.showError(txt: "You can invest only on your properties", duration: 10))
+                return code.response
+            } catch StartInvestmentError.invalidPropertyType {
+                code.add(.closeWindow(windowIndex))
+                code.add(.showError(txt: "You can build road only on an empty land", duration: 10))
+                return code.response
+            } catch StartInvestmentError.notEnoughMoneyInWallet {
+                return JSCode.showError(txt: "You don't have enough money to start this investment", duration: 10).response
+            } catch {
+                return JSCode.showError(txt: "Unexpected error [\(request.address ?? "")]", duration: 10).response
+            }
             code.add(.closeWindow(windowIndex))
             return code.response
         }

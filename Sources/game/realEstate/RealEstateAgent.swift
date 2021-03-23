@@ -34,28 +34,33 @@ class RealEstateAgent {
         return self.properties.first { $0.address == address }
     }
     
+    private func saveProperties() {
+        Storage.shared.landProperties = self.properties.compactMap { $0 as? Land }
+        Storage.shared.roadProperties = self.properties.compactMap { $0 as? Road }
+    }
+    
     func buyProperty(address: MapPoint, session: PlayerSession) throws {
         
         guard self.isForSale(address: address) else {
             throw BuyPropertyError.propertyNotForSale
         }
         let property = Land(address: address)
-        guard let price = self.evaluatePrice(property) else {
+        guard let price = self.estimatePrice(property) else {
             throw BuyPropertyError.problemWithPrice
         }
-        let transactionCosts = TransactionCosts(propertyValue: price)
-        guard session.player.wallet > transactionCosts.total else {
+        let transactionCost = TransactionCost(propertyValue: price)
+        guard session.player.wallet > transactionCost.total else {
             throw BuyPropertyError.notEnoughMoneyInWallet
         }
         
         // proceed the transaction
-        session.player.wallet = (session.player.wallet - transactionCosts.propertyValue).rounded(toPlaces: 0)
+        session.player.wallet = (session.player.wallet - transactionCost.total).rounded(toPlaces: 0)
         property.ownerID = session.player.id
-        property.transactionNetValue = transactionCosts.propertyValue
+        property.transactionNetValue = transactionCost.propertyValue
         
         self.properties.append(property)
+        self.saveProperties()
         if let land = property as? Land {
-            Storage.shared.landProperties.append(land)
             self.mapManager.map.replaceTile(tile: land.mapTile)
         }
         
@@ -69,21 +74,27 @@ class RealEstateAgent {
         GameEventBus.gameEvents.onNext(announcementEvent)
     }
     
-    func buildRoad(address: MapPoint, session: PlayerSession) {
+    func buildRoad(address: MapPoint, session: PlayerSession) throws {
         
         guard let land = (self.properties.first { $0.address == address}) as? Land else {
-            fatalError("Not a Land")
+            throw StartInvestmentError.invalidPropertyType
         }
         guard land.ownerID == session.player.id else {
-            fatalError("Not his property")
+            throw StartInvestmentError.invalidOwner
+        }
+        let investmentCost = InvestmentCost(investmentValue: InvestmentPrice.buildingRoad)
+        guard session.player.wallet > investmentCost.total else {
+            throw StartInvestmentError.notEnoughMoneyInWallet
         }
         let road = Road(land: land)
         self.properties = self.properties.filter { $0.address != address }
         self.properties.append(road)
+        self.saveProperties()
+        
         Storage.shared.roadProperties.append(road)
         self.mapManager.addStreet(address: address)
         
-        session.player.wallet = (session.player.wallet - 410000).rounded(toPlaces: 0)
+        session.player.wallet = (session.player.wallet - investmentCost.total).rounded(toPlaces: 0)
         let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(session.player.wallet.money))
         GameEventBus.gameEvents.onNext(updateWalletEvent)
 
@@ -91,14 +102,17 @@ class RealEstateAgent {
         GameEventBus.gameEvents.onNext(reloadMapEvent)
     }
     
-    func evaluatePrice(_ property: Property) -> Double? {
-        if let land = property as? Land, let value = self.evaluatePriceForLand(land) {
+    func estimatePrice(_ property: Property) -> Double? {
+        if let land = property as? Land, let value = self.estimatePriceForLand(land) {
             return value * (1 + self.occupiedSpaceOnMapFactor())
+        }
+        if let road = property as? Road {
+            return 0.0
         }
         return nil
     }
     
-    private func evaluatePriceForLand(_ land: Land) -> Double? {
+    private func estimatePriceForLand(_ land: Land) -> Double? {
         // in future add price relation to bus stop
         var startPrice: Double = 90000
 
@@ -135,5 +149,11 @@ class RealEstateAgent {
 enum BuyPropertyError: Error {
     case propertyNotForSale
     case problemWithPrice
+    case notEnoughMoneyInWallet
+}
+
+enum StartInvestmentError: Error {
+    case invalidOwner
+    case invalidPropertyType
     case notEnoughMoneyInWallet
 }
