@@ -26,19 +26,25 @@ class RealEstateAgent {
         return self.map.getTile(address: address) == nil
     }
     
-    func buyProperty(address: MapPoint, session: PlayerSession) {
+    func buyProperty(address: MapPoint, session: PlayerSession) throws {
         
-        guard self.map.getTile(address: address) == nil else {
-            fatalError("Buying other properties not implemented yet")
+        guard self.isForSale(address: address) else {
+            throw BuyPropertyError.propertyNotForSale
         }
         let property = Land(address: address)
         guard let price = self.evaluatePrice(property) else {
-            fatalError("TODO add proper error handling")
+            throw BuyPropertyError.problemWithPrice
         }
-        session.player.wallet = session.player.wallet - price
+        let transactionCosts = TransactionCosts(propertyValue: price)
+        guard session.player.wallet > transactionCosts.total else {
+            throw BuyPropertyError.notEnoughMoneyInWallet
+        }
+        
+        // finish the transaction
+        session.player.wallet = (session.player.wallet - transactionCosts.propertyValue).rounded(toPlaces: 0)
         property.ownerID = session.player.id
-        property.moneyValueWhenBought = price
-        property.currentMoneyValue = price
+        property.moneyValueWhenBought = transactionCosts.propertyValue
+        property.currentMoneyValue = transactionCosts.propertyValue
         
         self.properties.append(property)
         if let land = property as? Land {
@@ -60,7 +66,7 @@ class RealEstateAgent {
     
     func evaluatePrice(_ property: Property) -> Double? {
         if let land = property as? Land, let value = self.evaluatePriceForLand(land) {
-            return (value * (1 + self.occupiedSpaceOnMapFactor())).rounded(toPlaces: 0)
+            return value * (1 + self.occupiedSpaceOnMapFactor())
         }
         return nil
     }
@@ -97,3 +103,10 @@ class RealEstateAgent {
         return Double(self.map.gameTiles.count) / Double(self.map.width * self.map.height)
     }
  }
+
+
+enum BuyPropertyError: Error {
+    case propertyNotForSale
+    case problemWithPrice
+    case notEnoughMoneyInWallet
+}

@@ -131,7 +131,7 @@ class WebApplication {
             let raw = Resource.getAppResource(relativePath: "templates/saleOffer.html")
             let template = Template(raw: raw)
             var data = [String:String]()
-            data["value"] = value.money
+            data["value"] = transactionCosts.propertyValue.money
             data["tax"] = transactionCosts.tax.money
             data["transactionCosts"] = transactionCosts.fee.money
             data["total"] = transactionCosts.total.money
@@ -154,7 +154,19 @@ class WebApplication {
                     code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
                     return code.response
             }
-            self.gameEngine.realEstateAgent.buyProperty(address: address, session: session)
+            do {
+                try self.gameEngine.realEstateAgent.buyProperty(address: address, session: session)
+            } catch BuyPropertyError.propertyNotForSale {
+                code.add(.closeWindow(windowIndex))
+                code.add(.showError(txt: "This property is not for sale any more.", duration: 10))
+                return code.response
+            } catch BuyPropertyError.problemWithPrice {
+                return JSCode.showError(txt: "Internal problem with price evaluation...", duration: 10).response
+            } catch BuyPropertyError.notEnoughMoneyInWallet {
+                return JSCode.showError(txt: "You don't have enough money to buy this property", duration: 10).response
+            } catch {
+                return JSCode.showError(txt: "Unexpected error [\(request.address ?? "")]", duration: 10).response
+            }
             code.add(.closeWindow(windowIndex))
             return code.response
         }
