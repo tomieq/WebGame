@@ -171,13 +171,42 @@ class WebApplication {
             return code.response
         }
         
-        
-        server.GET["/sampleLib.js"] = { _, _ in
-            let code = JSResponse()
-            code.add(.any("function runIt(){ \(JSCode.showInfo(txt: "runIt", duration: 2).js) }"))
-            return code.response
+        server.GET["/openPropertyInfo.js"] = { request, _ in
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
+            }
+            guard let address = request.mapPoint else {
+                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
+            }
+            let js = JSResponse()
+            js.add(.loadHtml(windowIndex, htmlPath: "/propertyInfo.html?\(address.asQueryParams)"))
+            js.add(.disableWindowResizing(windowIndex))
+            return js.response
         }
         
+        server.GET["/propertyInfo.html"] = { request, _ in
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
+            }
+            guard let address = request.mapPoint else {
+                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
+            }
+            guard let property = self.gameEngine.realEstateAgent.getProperty(address: address) else {
+                return .ok(.text("Property at \(address.description) not found!"))
+            }
+            guard let ownerID = property.ownerID else {
+                return .ok(.text("Property at \(address.description) has no owner!"))
+            }
+            let owner = Storage.shared.getPlayer(id: ownerID)
+            
+            let raw = Resource.getAppResource(relativePath: "templates/propertyInfo.html")
+            let template = Template(raw: raw)
+            var data = [String:String]()
+            data["type"] = property.type
+            data["owner"] = owner?.login ?? "nil"
+            template.assign(variables: data)
+            return .ok(.html(template.output()))
+        }
         server.notFoundHandler = { request, responseHeaders in
             
             let filePath = Resource.absolutePath(forPublicResource: request.path)

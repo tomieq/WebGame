@@ -26,6 +26,10 @@ class RealEstateAgent {
         return self.map.getTile(address: address) == nil
     }
     
+    func getProperty(address: MapPoint) -> Property? {
+        return self.properties.first { $0.address.contains(address) }
+    }
+    
     func buyProperty(address: MapPoint, session: PlayerSession) throws {
         
         guard self.isForSale(address: address) else {
@@ -40,7 +44,7 @@ class RealEstateAgent {
             throw BuyPropertyError.notEnoughMoneyInWallet
         }
         
-        // finish the transaction
+        // proceed the transaction
         session.player.wallet = (session.player.wallet - transactionCosts.propertyValue).rounded(toPlaces: 0)
         property.ownerID = session.player.id
         property.moneyValueWhenBought = transactionCosts.propertyValue

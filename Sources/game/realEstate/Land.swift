@@ -9,6 +9,7 @@ import Foundation
 
 class Land: Property, Codable {
     
+    var type: String { return "Land property" }
     var ownerID: String?
     var address: [MapPoint]
     var moneyValueWhenBought: Double?

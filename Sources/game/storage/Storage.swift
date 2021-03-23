@@ -22,6 +22,10 @@ class Storage: Codable {
         _ = StorageCoordinator.shared
     }
     
+    func getPlayer(id: String) -> Player? {
+        return self.players.first { $0.id == id }
+    }
+    
     private static func restore() -> Storage? {
         let path = Resource.absolutePath(forAppResource: "snapshot.json")
         if let storage = try? JSONDecoder().decode(Storage.self, from: Data(contentsOf: URL(fileURLWithPath: path))) {

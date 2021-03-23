@@ -36,9 +36,12 @@ class GameEngine {
 
                 switch self?.realEstateAgent.isForSale(address: point) ?? false {
                     case true:
-                        let payload = OpenWindow(title: "Clicked", width: 300, height: 300, initUrl: "/openSaleOffer.js?x=\(point.x)&y=\(point.y)", address: point)
+                        let payload = OpenWindow(title: "Sale offer", width: 300, height: 300, initUrl: "/openSaleOffer.js?x=\(point.x)&y=\(point.y)", address: point)
                         self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .openWindow, payload: payload)
                     case false:
+                        
+                        let payload = OpenWindow(title: "Property info", width: 300, height: 300, initUrl: "/openPropertyInfo.js?x=\(point.x)&y=\(point.y)", address: point)
+                        self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .openWindow, payload: payload)
                         break
                 }
                 
