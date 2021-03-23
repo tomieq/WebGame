@@ -41,3 +41,32 @@ hr {
 .grass {
     background-color: #9BAA4A;
 }
+
+.light {
+    color: #a1f1fe;
+}
+
+.hand {
+    cursor: pointer;
+}
+
+.btn {
+    border-radius: 4px;
+    background-color: #a1f1fe;
+    color: #252832;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-sm {
+    font-size: 0.93em;
+}
+
+.lightBorder {
+    border: 1px solid #a1f1fe;
+    border-radius: 4px;
+}
+
+.centered {
+    text-align: center;
+}
