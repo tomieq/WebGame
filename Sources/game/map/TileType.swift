@@ -9,7 +9,7 @@ import Foundation
 
 enum TileType {
     case grass
-    case soldLand(ownerID: String)
+    case soldLand
     case street(type: StreetType)
     case btsAntenna
     case building(size: Int)
@@ -22,7 +22,7 @@ extension TileType {
         switch self {
         case .grass:
             return TileImage(path: "tiles/grass.png", width: 600, height: 400)
-        case .soldLand(_):
+        case .soldLand:
             return TileImage(path: "tiles/sold-land.png", width: 600, height: 400)
         case .btsAntenna:
             return TileImage(path: "tiles/btsAntenna.png", width: 600, height: 800)
