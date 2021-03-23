@@ -151,8 +151,7 @@ class WebApplication {
                     code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
                     return code.response
             }
-            let land = Land(address: address)
-            self.gameEngine.realEstateAgent.buyProperty(land, player: session.player)
+            self.gameEngine.realEstateAgent.buyProperty(address: address, player: session.player)
             code.add(.closeWindow(windowIndex))
             return code.response
         }

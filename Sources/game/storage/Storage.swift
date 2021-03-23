@@ -12,10 +12,12 @@ class Storage: Codable {
     
     public static let shared = Storage.restore() ?? Storage()
     var players: [Player]
+    var landProperties: [Land]
     
     private init() {
         
         self.players = [Player(id: "p1", login: "John"), Player(id: "p2", login: "Steve")]
+        self.landProperties = []
         self.save()
         _ = StorageCoordinator.shared
     }

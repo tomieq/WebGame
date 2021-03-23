@@ -8,9 +8,18 @@
 import Foundation
 
 protocol Property {
-    var ownerID: String? { get }
+    var ownerID: String? { set get }
     var address: [MapPoint] { get }
-    var moneyValueWhenBought: Int? { get }
-    var currentMoneyValue: Int? { get }
+    var moneyValueWhenBought: Double? { set get }
+    var currentMoneyValue: Double? { set get }
     var mapTiles: [GameMapTile] { get }
+}
+
+protocol ResidentialProperty: Property {
+    var personMaxCapacity: UInt { get }
+    var personCurrentCapacity: UInt { get }
+}
+
+protocol BusinessProperty: Property {
+    var bissnessRangeRadius: UInt { get }
 }

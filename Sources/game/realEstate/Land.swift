@@ -11,8 +11,8 @@ class Land: Property, Codable {
     
     var ownerID: String?
     var address: [MapPoint]
-    var moneyValueWhenBought: Int?
-    var currentMoneyValue: Int?
+    var moneyValueWhenBought: Double?
+    var currentMoneyValue: Double?
     var mapTiles: [GameMapTile] {
         return [GameMapTile(address: address.first!, type: .soldLand)]
     }

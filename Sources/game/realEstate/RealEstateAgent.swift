@@ -14,14 +14,32 @@ class RealEstateAgent {
     init(map: GameMap) {
         self.map = map
         self.properties = []
+        
+        Storage.shared.landProperties.forEach { land in
+            self.properties.append(land)
+            let tile = GameMapTile(address: land.address.first!, type: .soldLand)
+            self.map.replaceTile(tile: tile)
+        }
     }
     
-    func buyProperty(_ property: Property, player: Player) {
+    func buyProperty(address: MapPoint, player: Player) {
         
-        if let price = self.evaluatePrice(property) {
-            player.wallet = player.wallet - price
+        guard self.map.getTile(address: address) == nil else {
+            fatalError("Buying other properties not implemented yet")
         }
+        let property = Land(address: address)
+        guard let price = self.evaluatePrice(property) else {
+            fatalError("TODO add proper error handling")
+        }
+        player.wallet = player.wallet - price
+        property.ownerID = player.id
+        property.moneyValueWhenBought = price
+        property.currentMoneyValue = price
+        
         self.properties.append(property)
+        if let land = property as? Land {
+            Storage.shared.landProperties.append(land)
+        }
         property.mapTiles.forEach {
             self.map.replaceTile(tile: $0)
         }
@@ -34,7 +52,7 @@ class RealEstateAgent {
     
     func evaluatePrice(_ property: Property) -> Double? {
         if let land = property as? Land, let value = self.evaluatePriceForLand(land) {
-            return value * (1 + self.occupiedSpaceOnMapFactor())
+            return (value * (1 + self.occupiedSpaceOnMapFactor())).rounded(toPlaces: 0)
         }
         return nil
     }
