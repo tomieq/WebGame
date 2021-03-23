@@ -118,7 +118,7 @@ class WebApplication {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
             }
             guard let address = request.mapPoint else {
-                return .ok(.text("Invalid request! Missing address."))
+                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
             }
             let land = Land(address: address)
             

@@ -28,7 +28,10 @@ class GameEngine {
                 self?.websocketHandler.sendToAll(commandType: .reloadMap, payload: "\(gameEvent.playerSession?.player.id ?? "nil")")
             case .tileClicked(let point):
 
+                let payload = OpenWindow(title: "Clicked", width: 300, height: 300, initUrl: "/openSaleOffer.js?x=\(point.x)&y=\(point.y)", address: point)
+                self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .openWindow, payload: payload)
                 
+                /*
                 if let points = self?.gameMap.getNeighbourAddresses(to: point, radius: 1) {
                     let payload = HighlightArea(points: points, color: "red")
                     self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .highlightArea, payload: payload)
@@ -41,16 +44,9 @@ class GameEngine {
                     let payload = HighlightArea(points: points, color: "orange")
                     self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .highlightArea, payload: payload)
                 }
-                if self?.gameMap.getTile(address: point) == nil {
-                    let land = Land(address: point)
-                    self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .alert, payload: "The value is \(self?.realEstateAgent.evaluatePrice(land) ?? 0)")
-                }
-                
-                var sizes = [4,6,8,10]
-                sizes.shuffle()
-                let tile = GameMapTile(address: point, type: .building(size: sizes.first!))
-                self?.realEstateAgent.putTile(tile)
-                self?.websocketHandler.sendToAll(commandType: .reloadMap, payload: "\(gameEvent.playerSession?.player.id ?? "nil")")
+ */
+
+
                 break
             case .vehicleTravelStarted(let payload):
                 switch gameEvent.playerSession {
