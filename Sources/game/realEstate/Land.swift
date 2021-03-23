@@ -13,8 +13,7 @@ class Land: Property, Codable {
     var ownerID: String?
     var address: [MapPoint]
     let name: String
-    var moneyValueWhenBought: Double?
-    var currentMoneyValue: Double?
+    var transactionNetValue: Double?
     var mapTiles: [GameMapTile] {
         return [GameMapTile(address: address.first!, type: .soldLand)]
     }

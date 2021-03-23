@@ -12,8 +12,7 @@ protocol Property {
     var name: String { get }
     var ownerID: String? { set get }
     var address: [MapPoint] { get }
-    var moneyValueWhenBought: Double? { set get }
-    var currentMoneyValue: Double? { set get }
+    var transactionNetValue: Double? { set get }
     var mapTiles: [GameMapTile] { get }
 }
 

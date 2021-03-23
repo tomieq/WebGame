@@ -47,8 +47,7 @@ class RealEstateAgent {
         // proceed the transaction
         session.player.wallet = (session.player.wallet - transactionCosts.propertyValue).rounded(toPlaces: 0)
         property.ownerID = session.player.id
-        property.moneyValueWhenBought = transactionCosts.propertyValue
-        property.currentMoneyValue = transactionCosts.propertyValue
+        property.transactionNetValue = transactionCosts.propertyValue
         
         self.properties.append(property)
         if let land = property as? Land {
