@@ -41,7 +41,7 @@ class GameTraffic {
     
     private func startRandomTraffic() {
         
-        var buildingPoints = self.gameMap.gameTiles.filter{ tile in
+        var buildingPoints = self.gameMap.tiles.filter{ tile in
             if case .building = tile.type { return true }
             return false
         }
@@ -54,6 +54,7 @@ class GameTraffic {
                         buildingPoints.shuffle()
                         if let startBuilding = buildingPoints.first?.address,
                             let endBuilding = buildingPoints.last?.address,
+                            startBuilding != endBuilding,
                             let startPoint = self?.streetNavi.findNearestStreetPoint(for: startBuilding),
                             let endPoint = self?.streetNavi.findNearestStreetPoint(for: endBuilding),
                             let travelPoints = self?.streetNavi.routePoints(from: startPoint, to: endPoint) {

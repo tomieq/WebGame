@@ -11,16 +11,18 @@ import RxCocoa
 
 class GameEngine {
     let gameMap: GameMap
+    let gameMapManager: GameMapManager
     let gameTraffic: GameTraffic
     let websocketHandler: WebsocketHandler
     let realEstateAgent: RealEstateAgent
     let disposeBag = DisposeBag()
     
     init() {
-        self.gameMap = GameMap(width: 25, height: 25, scale: 0.30, path: "maps/roadMap1")
+        self.gameMap = GameMap(width: 25, height: 25, scale: 0.30)
+        self.gameMapManager = GameMapManager(self.gameMap, path: "maps/roadMap1")
         self.gameTraffic = GameTraffic(gameMap: self.gameMap)
         self.websocketHandler = WebsocketHandler()
-        self.realEstateAgent = RealEstateAgent(map: self.gameMap)
+        self.realEstateAgent = RealEstateAgent(mapManager: self.gameMapManager)
 
         GameEventBus.gameEvents.asObservable().bind { [weak self] gameEvent in
             switch gameEvent.action {
@@ -36,13 +38,18 @@ class GameEngine {
 
                 switch self?.realEstateAgent.isForSale(address: point) ?? false {
                     case true:
-                        let payload = OpenWindow(title: "Sale offer", width: 300, height: 300, initUrl: "/openSaleOffer.js?x=\(point.x)&y=\(point.y)", address: point)
+                        let payload = OpenWindow(title: "Sale offer", width: 300, height: 250, initUrl: "/openSaleOffer.js?x=\(point.x)&y=\(point.y)", address: point)
                         self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .openWindow, payload: payload)
                     case false:
                         
-                        let payload = OpenWindow(title: "Property info", width: 300, height: 200, initUrl: "/openPropertyInfo.js?x=\(point.x)&y=\(point.y)", address: point)
-                        self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .openWindow, payload: payload)
-                        break
+                        if self?.realEstateAgent.getProperty(address: point)?.ownerID == gameEvent.playerSession?.player.id {
+                            
+                            let payload = OpenWindow(title: "Property management", width: 0.7, height: 0.5, initUrl: "/openPropertyManager.js?x=\(point.x)&y=\(point.y)", address: point)
+                            self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .openWindow, payload: payload)
+                        } else {
+                            let payload = OpenWindow(title: "Property info", width: 300, height: 200, initUrl: "/openPropertyInfo.js?x=\(point.x)&y=\(point.y)", address: point)
+                            self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .openWindow, payload: payload)
+                        }
                 }
                 
                 /*

@@ -11,17 +11,17 @@ class Land: Property, Codable {
     
     var type: String { return "Land property" }
     var ownerID: String?
-    var address: [MapPoint]
+    var address: MapPoint
     let name: String
     var transactionNetValue: Double?
-    var mapTiles: [GameMapTile] {
-        return [GameMapTile(address: address.first!, type: .soldLand)]
+    var monthlyMaintenanceCost: Double
+    var mapTile: GameMapTile {
+        return GameMapTile(address: address, type: .soldLand)
     }
     
     init(address: MapPoint) {
-        self.address = [address]
+        self.address = address
         self.name = "\(RandomNameGenerator.randomAdjective.capitalized) \(RandomNameGenerator.randomNoun.capitalized)"
+        self.monthlyMaintenanceCost = 100
     }
-
-
 }

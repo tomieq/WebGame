@@ -11,9 +11,9 @@ protocol Property {
     var type: String { get }
     var name: String { get }
     var ownerID: String? { set get }
-    var address: [MapPoint] { get }
+    var address: MapPoint { get }
     var transactionNetValue: Double? { set get }
-    var mapTiles: [GameMapTile] { get }
+    var monthlyMaintenanceCost: Double { set get }
 }
 
 protocol ResidentialProperty: Property {

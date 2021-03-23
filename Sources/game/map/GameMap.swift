@@ -12,19 +12,13 @@ class GameMap {
     let width: Int
     let height: Int
     let scale: Double
-    private var tiles: [GameMapTile] = []
-    var gameTiles: [GameMapTile] {
-        get {
-            return self.tiles
-        }
-    }
+    var tiles: [GameMapTile] = []
     
-    init(width: Int, height: Int, scale: Double, path: String) {
+    init(width: Int, height: Int, scale: Double) {
         self.width = width
         self.height = height
         self.scale = scale
-        let parser = GameMapFileParser()
-        self.tiles = parser.loadStreets(path)
+        self.tiles = []
     }
     
     func getTile(address: MapPoint) -> GameMapTile? {

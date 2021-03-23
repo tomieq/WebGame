@@ -30,7 +30,7 @@ class WebApplication {
             var html = canvasLayers.enumerated().map { (zIndex, canvasName) in
                 return Template.htmlNode(type: "canvas", attributes: ["id":canvasName,"style":"z-index:\(zIndex);"])
             }.joined(separator: "\n")
-            html.append(Template.htmlNode(type: "div", attributes: ["id":"wallet"], content: "$ 1000 000"))
+            html.append(Template.htmlNode(type: "div", attributes: ["id":"wallet"], content: "$ 1 000 000"))
             
             template.assign(variables: ["body": html, "playerSessionID": playerSession.id])
             return template.asResponse()
@@ -55,7 +55,7 @@ class WebApplication {
             let raw = Resource.getAppResource(relativePath: "templates/loadMap.js")
             let template = Template(raw: raw)
 
-            self.gameEngine.gameMap.gameTiles.forEach { tile in
+            self.gameEngine.gameMap.tiles.forEach { tile in
                 var variables = [String:String]()
                 variables["x"] = tile.address.x.string
                 variables["y"] = tile.address.y.string
@@ -208,6 +208,67 @@ class WebApplication {
             template.assign(variables: data)
             return .ok(.html(template.output()))
         }
+        
+        server.GET["/openPropertyManager.js"] = { request, _ in
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
+            }
+            guard let address = request.mapPoint else {
+                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
+            }
+            let js = JSResponse()
+            js.add(.loadHtml(windowIndex, htmlPath: "/propertyManager.html?\(address.asQueryParams)"))
+            js.add(.disableWindowResizing(windowIndex))
+            js.add(.centerWindow(windowIndex))
+            return js.response
+        }
+        
+        server.GET["/propertyManager.html"] = { request, _ in
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return .ok(.text("Invalid request! Missing window context."))
+            }
+            guard let address = request.mapPoint else {
+                return .ok(.text("Invalid request! Missing address."))
+            }
+            guard let property = self.gameEngine.realEstateAgent.getProperty(address: address) else {
+                return .ok(.text("Property at \(address.description) not found!"))
+            }
+            guard let ownerID = property.ownerID else {
+                return .ok(.text("Property at \(address.description) has no owner!"))
+            }
+            
+            let raw = Resource.getAppResource(relativePath: "templates/propertyManager.html")
+            let template = Template(raw: raw)
+            var data = [String:String]()
+            data["name"] = property.name
+            data["income"] = 0.0.money
+            data["monthlyCosts"] = property.monthlyMaintenanceCost
+            data["total"] = (-100.0).money
+            data["tileUrl"] = TileType.soldLand.image.path
+            data["tempUrl"] = JSCode.runScripts(windowIndex, paths: ["/buildRoad.js?\(address.asQueryParams)"]).js
+            template.assign(variables: data)
+            return .ok(.html(template.output()))
+        }
+        
+        server.GET["/buildRoad.js"] = { request, _ in
+            let code = JSResponse()
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
+            }
+            guard let address = request.mapPoint else {
+                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
+            }
+            guard let playerSessionID = request.queryParam("playerSessionID"),
+                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                    code.add(.closeWindow(windowIndex))
+                    code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
+                    return code.response
+            }
+            self.gameEngine.realEstateAgent.buildRoad(address: address, session: session)
+            code.add(.closeWindow(windowIndex))
+            return code.response
+        }
+        
         server.notFoundHandler = { request, responseHeaders in
             
             let filePath = Resource.absolutePath(forPublicResource: request.path)
