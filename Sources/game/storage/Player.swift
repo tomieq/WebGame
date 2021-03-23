@@ -17,6 +17,10 @@ class Player: Codable {
         self.login = login
         self.wallet = 1000000
     }
+    
+    func takeMoney(_ amount: Double) {
+        self.wallet = self.wallet - amount.rounded(toPlaces: 0)
+    }
 }
 
 class PlayerSession {

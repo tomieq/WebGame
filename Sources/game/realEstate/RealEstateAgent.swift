@@ -54,7 +54,7 @@ class RealEstateAgent {
         }
         
         // proceed the transaction
-        session.player.wallet = (session.player.wallet - transactionCost.total).rounded(toPlaces: 0)
+        session.player.takeMoney(transactionCost.total)
         property.ownerID = session.player.id
         property.transactionNetValue = transactionCost.propertyValue
         
@@ -94,7 +94,7 @@ class RealEstateAgent {
         Storage.shared.roadProperties.append(road)
         self.mapManager.addStreet(address: address)
         
-        session.player.wallet = (session.player.wallet - investmentCost.total).rounded(toPlaces: 0)
+        session.player.takeMoney(investmentCost.total)
         let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(session.player.wallet.money))
         GameEventBus.gameEvents.onNext(updateWalletEvent)
 
