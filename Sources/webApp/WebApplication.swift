@@ -106,6 +106,9 @@ class WebApplication {
             guard let address = request.mapPoint else {
                 return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
             }
+            guard self.gameEngine.realEstateAgent.isForSale(address: address) else {
+                return JSCode.showError(txt: "This property is not for sale", duration: 10).response
+            }
             let js = JSResponse()
             js.add(.loadHtml(windowIndex, htmlPath: "/saleOffer.html?\(address.asQueryParams)"))
             js.add(.setWindowTitle(windowIndex, title: "Land property"))

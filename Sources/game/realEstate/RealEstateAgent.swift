@@ -22,6 +22,10 @@ class RealEstateAgent {
         }
     }
     
+    func isForSale(address: MapPoint) -> Bool {
+        return self.map.getTile(address: address) == nil
+    }
+    
     func buyProperty(address: MapPoint, player: Player) {
         
         guard self.map.getTile(address: address) == nil else {

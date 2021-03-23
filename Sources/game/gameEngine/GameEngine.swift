@@ -28,8 +28,13 @@ class GameEngine {
                 self?.websocketHandler.sendToAll(commandType: .reloadMap, payload: "\(gameEvent.playerSession?.player.id ?? "nil")")
             case .tileClicked(let point):
 
-                let payload = OpenWindow(title: "Clicked", width: 300, height: 300, initUrl: "/openSaleOffer.js?x=\(point.x)&y=\(point.y)", address: point)
-                self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .openWindow, payload: payload)
+                switch self?.realEstateAgent.isForSale(address: point) ?? false {
+                    case true:
+                        let payload = OpenWindow(title: "Clicked", width: 300, height: 300, initUrl: "/openSaleOffer.js?x=\(point.x)&y=\(point.y)", address: point)
+                        self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .openWindow, payload: payload)
+                    case false:
+                        break
+                }
                 
                 /*
                 if let points = self?.gameMap.getNeighbourAddresses(to: point, radius: 1) {
