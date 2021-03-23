@@ -76,6 +76,19 @@ function resizeWindow(windowIndex, width, height) {
     osUpdateWindowMeta(appWindow);
 }
 
+function centerWindowHorizontally(windowIndex) {
+    osCenterWindow(windowIndex)
+}
+
+function centerWindowVertically(windowIndex) {
+    osCenterWindowVertically(windowIndex)
+}
+
+function centerWindow(windowIndex) {
+    centerWindowHorizontally(windowIndex);
+    centerWindowVertically(windowIndex);
+}
+
 function closeWindow(windowIndex) {
     amountOfOpenedWindows--;
     $("#appWindow" + windowIndex).remove();

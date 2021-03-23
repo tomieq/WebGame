@@ -27,6 +27,9 @@ enum JSCode {
     case setWindowActive(String)
     case resizeWindow(String, width: Int, height: Int)
     case disableWindowResizing(String)
+    case centerWindowHorizontally(String)
+    case centerWindowVertically(String)
+    case centerWindow(String)
     case closeWindow(String)
     case runScripts(String, paths: [String])
     case loadHtml(String, htmlPath: String)
@@ -52,6 +55,12 @@ extension JSCode {
             return "resizeWindow(\(windowIndex), \(width), \(height));";
         case .disableWindowResizing(let windowIndex):
             return "disableWindowResizing(\(windowIndex));"
+        case .centerWindowHorizontally(let windowIndex):
+            return "centerWindowHorizontally(\(windowIndex));"
+        case .centerWindowVertically(let windowIndex):
+            return "centerWindowVertically(\(windowIndex));"
+        case .centerWindow(let windowIndex):
+            return "centerWindow(\(windowIndex));"
         case .closeWindow(let windowIndex):
              return "closeWindow(\(windowIndex));";
         case .loadHtml(let windowIndex, let htmlPath):
