@@ -27,6 +27,9 @@ class RealEstateAgent {
     }
     
     func isForSale(address: MapPoint) -> Bool {
+        if self.getProperty(address: address)?.ownerID == "government" {
+            return true
+        }
         return self.mapManager.map.getTile(address: address) == nil
     }
     
@@ -72,6 +75,28 @@ class RealEstateAgent {
         
         let announcementEvent = GameEvent(playerSession: nil, action: .notification(UINotification(text: "New transaction on the market. Player \(session.player.login) has just bought property `\(property.name)`", level: .info, duration: 10)))
         GameEventBus.gameEvents.onNext(announcementEvent)
+    }
+    
+    func instantSell(address: MapPoint, session: PlayerSession) {
+        guard var property = self.getProperty(address: address) else {
+            fatalError()
+        }
+        guard property.ownerID == session.player.id else {
+            fatalError()
+        }
+        guard let government = Storage.shared.getPlayer(id: "government") else {
+            fatalError()
+        }
+        property.ownerID = government.id
+        self.saveProperties()
+        
+        let value = self.estimatePrice(property) ?? 0
+        let sellPrice = value * 0.85
+        
+        session.player.addIncome(sellPrice)
+        
+        let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(session.player.wallet.money))
+        GameEventBus.gameEvents.onNext(updateWalletEvent)
     }
     
     func buildRoad(address: MapPoint, session: PlayerSession) throws {

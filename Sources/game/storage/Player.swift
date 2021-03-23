@@ -28,6 +28,10 @@ class Player: Codable {
     func takeMoney(_ amount: Double) {
         self.wallet = self.wallet - amount.rounded(toPlaces: 0)
     }
+    
+    func addIncome(_ amount: Double) {
+        self.wallet = self.wallet + amount.rounded(toPlaces: 0)
+    }
 }
 
 class PlayerSession {

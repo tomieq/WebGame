@@ -249,6 +249,7 @@ class WebApplication {
             data["purchasePrice"] = property.transactionNetValue?.money ?? ""
             let estimatedValue = self.gameEngine.realEstateAgent.estimatePrice(property) ?? 0.0
             data["estimatedValue"] = estimatedValue.money
+            data["instantSellJS"] = JSCode.runScripts(windowIndex, paths: ["/instantSell.js?\(address.asQueryParams)"]).js
             data["instantSellPrice"] = (estimatedValue * 0.85).money
             
             let hasAccessToRoad = !self.gameEngine.gameMap.getNeighbourAddresses(to: address, radius: 1)
@@ -290,18 +291,24 @@ class WebApplication {
             guard let address = request.mapPoint else {
                 return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
             }
-            
-            let hasDirectAccessToRoad = ![address.move(.up),address.move(.down),address.move(.left),address.move(.right)]
-                .compactMap { self.gameEngine.gameMap.getTile(address: $0) }
-                .filter{ $0.isStreet() }.isEmpty
-            guard hasDirectAccessToRoad else {
-                return JSCode.showError(txt: "You cannot build road here as this property has no direct access to the public road.", duration: 10).response
+            guard let property = self.gameEngine.realEstateAgent.getProperty(address: address) else {
+                return JSCode.showError(txt: "Property at \(address.description) not found!", duration: 10).response
             }
             guard let playerSessionID = request.queryParam("playerSessionID"),
                 let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                     code.add(.closeWindow(windowIndex))
                     code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
                     return code.response
+            }
+            guard property.ownerID == session.player.id else {
+                code.add(.showError(txt: "You can invest only on yours properties.", duration: 10))
+                return code.response
+            }
+            let hasDirectAccessToRoad = ![address.move(.up),address.move(.down),address.move(.left),address.move(.right)]
+                .compactMap { self.gameEngine.gameMap.getTile(address: $0) }
+                .filter{ $0.isStreet() }.isEmpty
+            guard hasDirectAccessToRoad else {
+                return JSCode.showError(txt: "You cannot build road here as this property has no direct access to the public road.", duration: 10).response
             }
             do {
                 try self.gameEngine.realEstateAgent.buildRoad(address: address, session: session)
@@ -318,6 +325,33 @@ class WebApplication {
             } catch {
                 return JSCode.showError(txt: "Unexpected error [\(request.address ?? "")]", duration: 10).response
             }
+            code.add(.closeWindow(windowIndex))
+            return code.response
+        }
+        
+        server.GET["/instantSell.js"] = { request, _ in
+        let code = JSResponse()
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
+            }
+            guard let address = request.mapPoint else {
+                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
+            }
+            guard let property = self.gameEngine.realEstateAgent.getProperty(address: address) else {
+                return JSCode.showError(txt: "Property at \(address.description) not found!", duration: 10).response
+            }
+            guard let playerSessionID = request.queryParam("playerSessionID"),
+                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                    code.add(.closeWindow(windowIndex))
+                    code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
+                    return code.response
+            }
+            guard property.ownerID == session.player.id else {
+                code.add(.showError(txt: "You can sell only your properties.", duration: 10))
+                return code.response
+            }
+            self.gameEngine.realEstateAgent.instantSell(address: address, session: session)
+            code.add(.showSuccess(txt: "Successful sell transaction", duration: 5))
             code.add(.closeWindow(windowIndex))
             return code.response
         }

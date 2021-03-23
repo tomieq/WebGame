@@ -76,7 +76,7 @@ extension JSCode {
         case .showWarning(let txt, let duration):
             return "uiShowWarning('\(txt.escaped)', \(duration * 1000));";
         case .showSuccess(let txt, let duration):
-            return "uiShowSuccess(\'(\(txt.escaped))', \(duration * 1000));";
+            return "uiShowSuccess(\'\(txt.escaped)', \(duration * 1000));";
         case .showInfo(let txt, let duration):
             return "uiShowInfo('\(txt.escaped)', \(duration * 1000));";
         case .any(let code):
