@@ -7,9 +7,16 @@
 
 import Foundation
 
-struct Player: Codable {
+class Player: Codable {
     let id: String
     let login: String
+    var wallet: Double
+    
+    init(id: String, login: String) {
+        self.id = id
+        self.login = login
+        self.wallet = 1000000
+    }
 }
 
 class PlayerSession {
