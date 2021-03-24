@@ -127,13 +127,13 @@ class WebApplication {
             let land = Land(address: address)
             
             let value = self.gameEngine.realEstateAgent.estimatePrice(land) ?? 0.0
-            let transactionCosts = TransactionCost(propertyValue: value)
+            let transactionCosts = FinancialTransaction(netValue: value, taxPercent: TaxRates.propertyPurchaseTax, feePercent: 1)
             let raw = Resource.getAppResource(relativePath: "templates/saleOffer.html")
             let template = Template(raw: raw)
             var data = [String:String]()
-            data["value"] = transactionCosts.propertyValue.money
+            data["value"] = transactionCosts.netValue.money
             data["tax"] = transactionCosts.tax.money
-            data["taxRate"] = Int(transactionCosts.taxRate).string
+            data["taxRate"] = Int(transactionCosts.taxPercent).string
             data["transactionCosts"] = transactionCosts.fee.money
             data["total"] = transactionCosts.total.money
             data["buyScript"] = JSCode.runScripts(windowIndex, paths: ["/buyProperty.js?\(address.asQueryParams)"]).js
@@ -261,10 +261,11 @@ class WebApplication {
                 if hasAccessToRoad {
 
                     var investData = [String:String]()
+                    let investTransaction = FinancialTransaction(netValue: InvestmentPrice.buildingRoad, taxPercent: TaxRates.investmentTax)
                     investData["name"] = "Road"
-                    investData["investmentCost"] = InvestmentPrice.buildingRoad.money
-                    investData["investmentTax"] = (InvestmentPrice.buildingRoad * TaxRates.investmentTax / 100).money
-                    investData["investmentTotal"] = (InvestmentPrice.buildingRoad * (1 + TaxRates.investmentTax / 100)).money
+                    investData["investmentCost"] = investTransaction.netValue.money
+                    investData["investmentTax"] = investTransaction.tax.money
+                    investData["investmentTotal"] = investTransaction.total.money
                     investData["investmentDuration"] = "3 months"
                     investData["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/buildRoad.js?\(address.asQueryParams)"]).js
                     template.assign(variables: investData, inNest: "investment")

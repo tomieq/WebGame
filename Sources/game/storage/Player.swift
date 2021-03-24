@@ -7,6 +7,20 @@
 
 import Foundation
 
+enum SystemPlayerID: String, CaseIterable {
+    case government
+    case bank
+    
+    var login: String {
+        switch self {
+        case .government:
+            return "Government"
+        case .bank:
+            return "Central Bank"
+        }
+    }
+}
+
 enum PlayerType: String, Codable {
     case user
     case system
@@ -18,15 +32,15 @@ class Player: Codable {
     let type: PlayerType
     var wallet: Double
     
-    init(id: String, login: String, type: PlayerType = .user) {
+    init(id: String, login: String, type: PlayerType = .user, wallet: Double = 10000000) {
         self.id = id
         self.login = login
         self.type = type
-        self.wallet = 1000000
+        self.wallet = wallet
     }
     
-    func takeMoney(_ amount: Double) {
-        self.wallet = self.wallet - amount.rounded(toPlaces: 0)
+    func invest(_ investment: FinancialTransaction) {
+        self.wallet = self.wallet - investment.total
     }
     
     func addIncome(_ amount: Double) {
