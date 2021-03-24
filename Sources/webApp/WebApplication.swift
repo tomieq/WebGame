@@ -218,7 +218,9 @@ class WebApplication {
                 return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
             }
             let js = JSResponse()
+            js.add(.setWindowTitle(windowIndex, title: "Property management"))
             js.add(.loadHtml(windowIndex, htmlPath: "/propertyManager.html?\(address.asQueryParams)"))
+            js.add(.resizeWindow(windowIndex, width: 0.7, height: 0.5))
             js.add(.disableWindowResizing(windowIndex))
             js.add(.centerWindow(windowIndex))
             return js.response

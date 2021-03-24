@@ -160,13 +160,14 @@ function osBuildWindow(windowIndex, name, width, height) {
     titlebar.append(windowTitle);
     var content = osBuildDiv(windowIndex, "appWindowContent backgroundGray");
     content.attr("id", "appWindowContent" + windowIndex);
+    content.html('');
     var contentLoader = osBuildDiv(windowIndex, "appWindowContentLoader");
     contentLoader.attr("id", "appWindowContentLoader" + windowIndex);
     contentLoader.addClass("text-center");
-    content.html('');
+    contentLoader.html('<i class="fa fa-2x fa-cog faa-spin animated"></i>');
     appWindow.append(titlebar);
     appWindow.append(content);
-    contentLoader.html('<i class="fa fa-2x fa-cog faa-spin animated"></i>');
+    appWindow.append(contentLoader);
     
     return appWindow;
 }

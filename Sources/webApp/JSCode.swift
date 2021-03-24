@@ -25,7 +25,7 @@ enum JSCode {
     case setWindowContent(String, content: String)
     case setWindowTitle(String, title: String)
     case setWindowActive(String)
-    case resizeWindow(String, width: Int, height: Int)
+    case resizeWindow(String, width: Double, height: Double)
     case disableWindowResizing(String)
     case centerWindowHorizontally(String)
     case centerWindowVertically(String)
