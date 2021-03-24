@@ -1,0 +1,36 @@
+[START info]
+<p>
+    {text}
+</p>
+[END info]
+[START investment]
+<div class="lightBorder" style="width: 250px; padding:10px; margin: 5px; float: left">
+    <div class="centered" style="font-weight: bold;">{name}</div>
+    <table style="width: 100%; font-size: 0.9em;">
+    <tbody>
+    <tr>
+        <td>Build costs:</td>
+        <td style="text-align: right;">{investmentCost}</td>
+    </tr>
+    <tr>
+        <td>Value added tax</td>
+        <td style="text-align: right;">{investmentTax}</td>
+    </tr>
+    <tr>
+        <td>Total costs</td>
+        <td style="text-align: right;">{investmentTotal}</td>
+    </tr>
+    <tr>
+        <td>Build time</td>
+        <td style="text-align: right;">{investmentDuration}</td>
+    </tr>
+    <tr>
+        <td>Potential income/profit</td>
+        <td class="light hand" style="text-align: right;">Check</td>
+    </tr>
+    </tbody>
+    </table>
+    <br>
+    <div class="centered" style="margin-top: 15px;"><button class="btn" onclick="{actionJS}">{actionTitle}</button></div>
+</div>
+[END investment]

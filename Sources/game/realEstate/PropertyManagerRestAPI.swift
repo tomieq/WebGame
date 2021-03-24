@@ -102,7 +102,7 @@ class PropertyManagerRestAPI {
         }
         
         server.GET["/propertyInfo.html"] = { request, _ in
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let _ = request.queryParam("windowIndex") else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
             }
             guard let address = request.mapPoint else {
@@ -176,43 +176,10 @@ class PropertyManagerRestAPI {
             data["instantSellJS"] = JSCode.runScripts(windowIndex, paths: ["/instantSell.js?\(address.asQueryParams)"]).js
             data["instantSellPrice"] = (estimatedValue * 0.85).money
             
-            let hasAccessToRoad = !self.gameEngine.gameMap.getNeighbourAddresses(to: address, radius: 1)
-                .compactMap { self.gameEngine.gameMap.getTile(address: $0) }
-                .filter{ $0.isStreet() }.isEmpty
 
-            if property is Land {
+            if let land = property as? Land {
                 data["tileUrl"] = TileType.soldLand.image.path
-                if hasAccessToRoad {
-
-                    var buildRoadData = [String:String]()
-                    let investTransaction = Invoice(netValue: InvestmentPrice.buildingRoad(), taxPercent: TaxRates.investmentTax)
-                    buildRoadData["name"] = "Road"
-                    buildRoadData["investmentCost"] = investTransaction.netValue.money
-                    buildRoadData["investmentTax"] = investTransaction.tax.money
-                    buildRoadData["investmentTotal"] = investTransaction.total.money
-                    buildRoadData["investmentDuration"] = "3 months"
-                    buildRoadData["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/startInvestment.js?type=road&\(address.asQueryParams)"]).js
-                    buildRoadData["actionTitle"] = "Start investment"
-                    template.assign(variables: buildRoadData, inNest: "investment")
-                    
-                    [4, 6, 8, 10].forEach { storey in
-                        var buildHouseData = [String:String]()
-                        let invoice = Invoice(netValue: InvestmentPrice.buildingApartment(storey: storey), taxPercent: TaxRates.investmentTax)
-                        buildHouseData["name"] = "\(storey) storey Apartment"
-                        buildHouseData["investmentCost"] = invoice.netValue.money
-                        buildHouseData["investmentCost"] = invoice.netValue.money
-                        buildHouseData["investmentTax"] = invoice.tax.money
-                        buildHouseData["investmentTotal"] = invoice.total.money
-                        buildHouseData["investmentDuration"] = "\((9+storey)) months"
-                        buildHouseData["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/startInvestment.js?type=apartment&\(address.asQueryParams)&storey=\(storey)"]).js
-                        buildHouseData["actionTitle"] = "Start investment"
-                        template.assign(variables: buildHouseData, inNest: "investment")
-                    }
-                    
-                } else {
-                    let info = "This property has no access to the public road, so the investment options are very narrow."
-                    template.assign(variables: ["text":info], inNest: "info")
-                }
+                template.assign(variables: ["actions": self.landPropertyActions(land: land, windowIndex: windowIndex)])
             } else if property is Road {
                 data["tileUrl"] = TileType.street(type: .local(.localY)).image.path
 
@@ -297,5 +264,43 @@ class PropertyManagerRestAPI {
             code.add(.closeWindow(windowIndex))
             return code.response
         }
+    }
+    
+    private func landPropertyActions(land: Land, windowIndex: String) -> String {
+        let raw = Resource.getAppResource(relativePath: "templates/propertyManagerLand.html")
+        let template = Template(raw: raw)
+        
+        if self.gameEngine.realEstateAgent.hasDirectAccessToRoad(address: land.address) {
+
+            var buildRoadData = [String:String]()
+            let investTransaction = Invoice(netValue: InvestmentPrice.buildingRoad(), taxPercent: TaxRates.investmentTax)
+            buildRoadData["name"] = "Road"
+            buildRoadData["investmentCost"] = investTransaction.netValue.money
+            buildRoadData["investmentTax"] = investTransaction.tax.money
+            buildRoadData["investmentTotal"] = investTransaction.total.money
+            buildRoadData["investmentDuration"] = "3 months"
+            buildRoadData["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/startInvestment.js?type=road&\(land.address.asQueryParams)"]).js
+            buildRoadData["actionTitle"] = "Start investment"
+            template.assign(variables: buildRoadData, inNest: "investment")
+            
+            [4, 6, 8, 10].forEach { storey in
+                var buildHouseData = [String:String]()
+                let invoice = Invoice(netValue: InvestmentPrice.buildingApartment(storey: storey), taxPercent: TaxRates.investmentTax)
+                buildHouseData["name"] = "\(storey) storey Apartment"
+                buildHouseData["investmentCost"] = invoice.netValue.money
+                buildHouseData["investmentCost"] = invoice.netValue.money
+                buildHouseData["investmentTax"] = invoice.tax.money
+                buildHouseData["investmentTotal"] = invoice.total.money
+                buildHouseData["investmentDuration"] = "\((9+storey)) months"
+                buildHouseData["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/startInvestment.js?type=apartment&\(land.address.asQueryParams)&storey=\(storey)"]).js
+                buildHouseData["actionTitle"] = "Start investment"
+                template.assign(variables: buildHouseData, inNest: "investment")
+            }
+            
+        } else {
+            let info = "This property has no access to the public road, so the investment options are very narrow."
+            template.assign(variables: ["text": info], inNest: "info")
+        }
+        return template.output()
     }
 }

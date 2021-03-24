@@ -93,10 +93,11 @@ class RealEstateAgent {
         guard property.ownerID == session.player.id else {
             fatalError()
         }
-        guard let government = Storage.shared.getPlayer(id: "government") else {
+        guard let government = Storage.shared.getPlayer(id: SystemPlayerID.government.rawValue) else {
             fatalError()
         }
         property.ownerID = government.id
+        // road will dissapear as roads are not for sale
         if property is Road {
             self.properties = self.properties.filter { $0.address != address }
         }
@@ -219,7 +220,7 @@ class RealEstateAgent {
         return Double(self.mapManager.map.tiles.count) / Double(self.mapManager.map.width * self.mapManager.map.height)
     }
     
-    private func hasDirectAccessToRoad(address: MapPoint) -> Bool {
+    func hasDirectAccessToRoad(address: MapPoint) -> Bool {
         return ![address.move(.up),address.move(.down),address.move(.left),address.move(.right)]
         .compactMap { self.mapManager.map.getTile(address: $0) }
         .filter{ $0.isStreet() }.isEmpty
