@@ -8,7 +8,8 @@
 import Foundation
 
 class ResidentialBuilding: Property, Codable {
-    var type: String { return "\(self.storeyAmount) storey Apartment" }
+    let id: String
+    var type: String { return "\(self.storeyAmount)-storey Residential Building" }
     var ownerID: String?
     var address: MapPoint
     let name: String
@@ -20,6 +21,7 @@ class ResidentialBuilding: Property, Codable {
     let storeyAmount: Int
     
     init(land: Land, storeyAmount: Int) {
+        self.id = land.id
         self.address = land.address
         self.name = "\(land.name) Apartments"
         self.ownerID = land.ownerID

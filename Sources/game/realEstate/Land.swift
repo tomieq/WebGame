@@ -9,6 +9,7 @@ import Foundation
 
 class Land: Property, Codable {
     
+    let id: String
     var type: String { return "Land property" }
     var ownerID: String?
     var address: MapPoint
@@ -22,6 +23,7 @@ class Land: Property, Codable {
     }
     
     init(address: MapPoint) {
+        self.id = UUID().uuidString
         self.address = address
         self.name = "\(RandomNameGenerator.randomAdjective.capitalized) \(RandomNameGenerator.randomNoun.capitalized)"
         self.monthlyMaintenanceCost = 100

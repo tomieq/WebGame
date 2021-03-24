@@ -173,7 +173,7 @@ class PropertyManagerRestAPI {
             data["investmentsValue"] = property.investmentsNetValue.money
             let estimatedValue = self.gameEngine.realEstateAgent.estimatePrice(property) ?? 0.0
             data["estimatedValue"] = estimatedValue.money
-            data["instantSellJS"] = JSCode.runScripts(windowIndex, paths: ["/instantSell.js?\(address.asQueryParams)"]).js
+            data["instantSellJS"] = JSCode.runScripts(windowIndex, paths: ["/instantSell.js?\(address.asQueryParams)&propertyID=\(property.id)"]).js
             data["instantSellPrice"] = (estimatedValue * 0.85).money
             
 
@@ -187,7 +187,7 @@ class PropertyManagerRestAPI {
                 template.assign(variables: ["text":info], inNest: "info")
             } else if let apartment = property as? ResidentialBuilding {
                 data["tileUrl"] = TileType.building(size: apartment.storeyAmount).image.path
-                template.assign(variables: ["actions": self.apartmentPropertyActions(apartment: apartment, windowIndex: windowIndex)])
+                template.assign(variables: ["actions": self.buildingActions(building: apartment, windowIndex: windowIndex, session: session)])
            }
             
             template.assign(variables: data)
@@ -220,7 +220,7 @@ class PropertyManagerRestAPI {
                         guard let storeyValue = request.queryParam("storey"), let storeyAmount = Int(storeyValue) else {
                             return JSCode.showError(txt: "Invalid request! Missing storeyAmount.", duration: 10).response
                         }
-                        try self.gameEngine.realEstateAgent.buildApartment(address: address, session: session, storeyAmount: storeyAmount)
+                        try self.gameEngine.realEstateAgent.buildResidentialBuilding(address: address, session: session, storeyAmount: storeyAmount)
                     default:
                         return JSCode.showError(txt: "Invalid request! Invalid investmentType \(investmentType).", duration: 10).response
                 }
@@ -244,6 +244,9 @@ class PropertyManagerRestAPI {
             guard let address = request.mapPoint else {
                 return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
             }
+            guard let propertyID = request.queryParam("propertyID") else {
+                return JSCode.showError(txt: "Invalid request! Missing propertyID.", duration: 10).response
+            }
             guard let property = self.gameEngine.realEstateAgent.getProperty(address: address) else {
                 return JSCode.showError(txt: "Property at \(address.description) not found!", duration: 10).response
             }
@@ -260,6 +263,42 @@ class PropertyManagerRestAPI {
             self.gameEngine.realEstateAgent.instantSell(address: address, session: session)
             code.add(.showSuccess(txt: "Successful sell transaction", duration: 5))
             code.add(.closeWindow(windowIndex))
+            return code.response
+        }
+        
+        server.GET["/rentApartment.js"] = { request, _ in
+        let code = JSResponse()
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
+            }
+            guard let address = request.mapPoint else {
+                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
+            }
+            
+            guard let propertyID = request.queryParam("propertyID") else {
+                return JSCode.showError(txt: "Invalid request! Missing propertyID.", duration: 10).response
+            }
+            
+            guard let apartment = Storage.shared.getApartment(id: propertyID) as? Apartment else {
+                return JSCode.showError(txt: "Property \(propertyID) not found!", duration: 10).response
+            }
+            guard apartment.address == address else {
+                return JSCode.showError(txt: "Property address mismatch.", duration: 10).response
+            }
+            
+            guard let playerSessionID = request.queryParam("playerSessionID"),
+                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                    code.add(.closeWindow(windowIndex))
+                    code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
+                    return code.response
+            }
+            guard apartment.ownerID == session.player.id else {
+                code.add(.showError(txt: "You can rent only your properties.", duration: 10))
+                return code.response
+            }
+            self.gameEngine.realEstateAgent.rentApartment(apartment)
+            code.add(.showSuccess(txt: "Successful rental", duration: 5))
+            code.add(.loadHtml(windowIndex, htmlPath: "/propertyManager.html?\(apartment.address.asQueryParams)"))
             return code.response
         }
     }
@@ -303,17 +342,36 @@ class PropertyManagerRestAPI {
     }
     
     
-    private func apartmentPropertyActions(apartment: ResidentialBuilding, windowIndex: String) -> String {
+    private func buildingActions(building: ResidentialBuilding, windowIndex: String, session: PlayerSession) -> String {
         let raw = Resource.getAppResource(relativePath: "templates/propertyManagerApartment.html")
         let template = Template(raw: raw)
-        for i in (1...apartment.storeyAmount) {
-            let storey = apartment.storeyAmount - i + 1
+        let myApartments = Storage.shared.getApartments(address: building.address).filter{ $0.ownerID == session.player.id }
+        for i in (1...building.storeyAmount) {
+            let storey = building.storeyAmount - i + 1
             template.assign(variables: ["storey": storey.string], inNest: "storey")
         }
-        for storey in (1...apartment.storeyAmount) {
-            for flatNo in (1...2) {
-                template.assign(variables: ["flatNo": "\(storey).\(flatNo)"], inNest: "apartment")
+        myApartments.forEach { apartment in
+            var data = [String:String]()
+            data["name"] = apartment.name
+            data["status"] = apartment.isRented ? "RENTED" : "<i class='fa fa-exclamation-triangle'></i> EMPTY"
+            data["monthlyIncome"] = apartment.monthlyIncome.money
+            data["monthlyMaintenanceCost"] = apartment.monthlyMaintenanceCost.money
+            data["monthlyBalance"] = (apartment.monthlyIncome - apartment.monthlyMaintenanceCost).money
+            let estimatedPrice = self.gameEngine.realEstateAgent.estimatePrice(apartment) ?? 0
+            data["estimatedValue"] = estimatedPrice.money
+            data["instantSellPrice"] = (estimatedPrice * 0.85).money
+            data["instantSellJS"] = JSCode.runScripts(windowIndex, paths: ["/instantApartmentSell.js?\(apartment.address.asQueryParams)&propertyID=\(apartment.id)"]).js
+            
+            if apartment.isRented {
+                data["actionTitle"] = "Kick tenants"
+                data["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/kickTenantsFromApartment.js?\(apartment.address.asQueryParams)&propertyID=\(apartment.id)"]).js
+            } else {
+                
+                let estimatedRent = self.gameEngine.realEstateAgent.estimateRentFee(apartment).money
+                data["actionTitle"] = "Rent for \(estimatedRent)"
+                data["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/rentApartment.js?\(apartment.address.asQueryParams)&propertyID=\(apartment.id)"]).js
             }
+            template.assign(variables: data, inNest: "apartment")
         }
         return template.output()
     }

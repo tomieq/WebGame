@@ -2,27 +2,62 @@
 <tbody>
 [START storey]
 <tr>
-<td style="background-color: #1F5E71; padding: 4px;"> {storey}.1 $
+<td style="background-color: #1F5E71; padding: 4px; width: 50%;"> {storey}.1
 </td>
-<td style="background-color: #70311E; padding: 4px;"> {storey}.2 !
+<td style="background-color: #70311E; padding: 4px; width: 50%;"> {storey}.2 <i class="fa fa-exclamation-triangle"></i>
 </td>
 </tr>
 [END storey]
 </tbody>
 </table>
 
-<table style="border: 1px solid #a1f1fe; width: 400px; border-spacing: 10px; float: left; margin: 5px;">
+<table style="width: 400px; border-spacing: 10px; float: left; margin: 5px;">
 <tbody>
-[START apartment]
+
 <tr>
-<td style="padding: 4px; font-size: 0.9em;"> Apartment {flatNo}
-<div style="float: right;">Owner: Johny Cash</div>
-<br>Monthly income:
-<div style="float: right;">$ 3 750</div>
-<br>Monthly maintenance:
-<div style="float: right;">$ 930</div>
+<td>
+[START apartment]
+<table class="detailsTable"><tbody style="width: 100%">
+<tr>
+    <td colspan=2><strong>{name}</strong></td>
+</tr>
+<tr>
+    <td>Status</td>
+    <td style="text-align: right;">{status}</td>
+</tr>
+<tr>
+    <td>Action</td>
+    <td style="text-align: right;"><button class="btn btn-sm" onclick="{actionJS}">{actionTitle}</button></td>
+</tr>
+<tr>
+    <td>Monthly income</td>
+    <td style="text-align: right;">{monthlyIncome}</td>
+</tr>
+<tr>
+    <td>Monthly costs</td>
+    <td style="text-align: right;">{monthlyMaintenanceCost}</td>
+</tr>
+<tr>
+    <td>Monthly balance</td>
+    <td style="text-align: right;">{monthlyBalance}</td>
+</tr>
+<tr>
+    <td>Estimated current value</td>
+    <td style="text-align: right;">{estimatedValue}</td>
+</tr>
+<tr>
+    <td>Instant transaction offer</td>
+    <td style="text-align: right;"><button class="btn btn-sm" onclick="{instantSellJS}">Sell for {instantSellPrice}</button></td>
+</tr>
+<tr>
+    <td>Real Estate Market</td>
+    <td style="text-align: right;"><button class="btn btn-sm">Sell on market</button></td>
+</tr>
+</tbody></table>
+<br>
+[END apartment]
 </td>
 </tr>
-[END apartment]
+
 </tbody>
 </table>

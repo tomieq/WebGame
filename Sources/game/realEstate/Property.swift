@@ -8,6 +8,7 @@
 import Foundation
 
 protocol Property {
+    var id: String { get }
     var type: String { get }
     var name: String { get }
     var ownerID: String? { set get }

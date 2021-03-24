@@ -15,6 +15,7 @@ class Storage: Codable {
     var landProperties: [Land]
     var roadProperties: [Road]
     var residentialBuildings: [ResidentialBuilding]
+    var apartments: [Apartment]
     
     private init() {
         
@@ -27,12 +28,21 @@ class Storage: Codable {
         self.landProperties = []
         self.roadProperties = []
         self.residentialBuildings = []
+        self.apartments = []
         self.save()
         _ = StorageCoordinator.shared
     }
     
     func getPlayer(id: String) -> Player? {
         return self.players.first { $0.id == id }
+    }
+    
+    func getApartment(id: String) -> Apartment? {
+        return self.apartments.first{ $0.id == id }
+    }
+    
+    func getApartments(address: MapPoint) -> [Apartment] {
+        return self.apartments.filter{ $0.address == address }
     }
     
     private static func restore() -> Storage? {

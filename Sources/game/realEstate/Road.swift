@@ -9,6 +9,7 @@ import Foundation
 
 class Road: Property, Codable {
     
+    let id: String
     var type: String { return "Public street" }
     var ownerID: String?
     var address: MapPoint
@@ -19,6 +20,7 @@ class Road: Property, Codable {
     var monthlyIncome: Double
     
     init(land: Land) {
+        self.id = land.id
         self.address = land.address
         self.name = land.name
         self.ownerID = land.ownerID

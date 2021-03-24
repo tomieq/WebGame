@@ -25,9 +25,9 @@ class RealEstateAgent {
             self.mapManager.addStreet(address: road.address)
         }
         
-        Storage.shared.residentialBuildings.forEach { apartment in
-            self.properties.append(apartment)
-            let tile = GameMapTile(address: apartment.address, type: .building(size: apartment.storeyAmount))
+        Storage.shared.residentialBuildings.forEach { building in
+            self.properties.append(building)
+            let tile = GameMapTile(address: building.address, type: .building(size: building.storeyAmount))
             self.mapManager.map.replaceTile(tile: tile)
         }
     }
@@ -41,6 +41,10 @@ class RealEstateAgent {
     
     func getProperty(address: MapPoint) -> Property? {
         return self.properties.first { $0.address == address }
+    }
+
+    func getProperty(id: String) -> Property? {
+        return self.properties.first { $0.id == id }
     }
     
     private func saveProperties() {
@@ -112,6 +116,12 @@ class RealEstateAgent {
         GameEventBus.gameEvents.onNext(updateWalletEvent)
     }
     
+    func rentApartment(_ apartment: Apartment) {
+        let income = self.estimateRentFee(apartment)
+        apartment.monthlyIncome = income
+        apartment.isRented = true
+    }
+    
     func buildRoad(address: MapPoint, session: PlayerSession) throws {
         
         guard let land = (self.properties.first { $0.address == address}) as? Land else {
@@ -145,7 +155,7 @@ class RealEstateAgent {
     }
     
     
-    func buildApartment(address: MapPoint, session: PlayerSession, storeyAmount: Int) throws {
+    func buildResidentialBuilding(address: MapPoint, session: PlayerSession, storeyAmount: Int) throws {
         
         guard let land = (self.properties.first { $0.address == address}) as? Land else {
             throw StartInvestmentError.formalProblem(reason: "You can build road only on an empty land.")
@@ -163,9 +173,16 @@ class RealEstateAgent {
             throw StartInvestmentError.financialTransactionProblem(reason: reason)
         }
         
-        let apartment = ResidentialBuilding(land: land, storeyAmount: storeyAmount)
+        let building = ResidentialBuilding(land: land, storeyAmount: storeyAmount)
         self.properties = self.properties.filter { $0.address != address }
-        self.properties.append(apartment)
+        (1...building.storeyAmount).forEach { storey in
+            (1...2).forEach { flatNo in
+                let apartment = Apartment(building, storey: storey, flatNumber: flatNo)
+                apartment.monthlyBuildingFee = 930
+                Storage.shared.apartments.append(apartment)
+            }
+        }
+        self.properties.append(building)
         self.saveProperties()
         
         let tile = GameMapTile(address: address, type: .building(size: storeyAmount))
@@ -185,7 +202,14 @@ class RealEstateAgent {
         if let _ = property as? Road {
             return 0.0
         }
+        if let _ = property as? Apartment {
+            return 435000
+        }
         return nil
+    }
+    
+    func estimateRentFee(_ apartment: Apartment) -> Double {
+        return 2333.rounded(toPlaces: 0)
     }
     
     private func estimatePriceForLand(_ land: Land) -> Double? {
