@@ -24,6 +24,12 @@ class RealEstateAgent {
             self.properties.append(road)
             self.mapManager.addStreet(address: road.address)
         }
+        
+        Storage.shared.apartmentProperties.forEach { apartment in
+            self.properties.append(apartment)
+            let tile = GameMapTile(address: apartment.address, type: .building(size: apartment.storeyAmount))
+            self.mapManager.map.replaceTile(tile: tile)
+        }
     }
     
     func isForSale(address: MapPoint) -> Bool {
@@ -40,6 +46,7 @@ class RealEstateAgent {
     private func saveProperties() {
         Storage.shared.landProperties = self.properties.compactMap { $0 as? Land }
         Storage.shared.roadProperties = self.properties.compactMap { $0 as? Road }
+        Storage.shared.apartmentProperties = self.properties.compactMap { $0 as? Apartment }
     }
     
     func buyProperty(address: MapPoint, session: PlayerSession) throws {
@@ -60,7 +67,7 @@ class RealEstateAgent {
         }
         
         property.ownerID = session.player.id
-        property.transactionNetValue = invoice.netValue
+        property.purchaseNetValue = invoice.netValue
         
         self.properties = self.properties.filter { $0.address != address }
         self.properties.append(property)
@@ -107,12 +114,15 @@ class RealEstateAgent {
     func buildRoad(address: MapPoint, session: PlayerSession) throws {
         
         guard let land = (self.properties.first { $0.address == address}) as? Land else {
-            throw StartInvestmentError.invalidPropertyType
+            throw StartInvestmentError.formalProblem(reason: "You can build road only on an empty land.")
         }
         guard land.ownerID == session.player.id else {
-            throw StartInvestmentError.invalidOwner
+            throw StartInvestmentError.formalProblem(reason: "You can invest only on your properties.")
         }
-        let invoice = Invoice(netValue: InvestmentPrice.buildingRoad, taxPercent: TaxRates.investmentTax)
+        guard self.hasDirectAccessToRoad(address: address) else {
+            throw StartInvestmentError.formalProblem(reason: "You cannot build road here as this property has no direct access to the public road.")
+        }
+        let invoice = Invoice(netValue: InvestmentPrice.buildingRoad(), taxPercent: TaxRates.investmentTax)
         // process the transaction
         let transaction = FinancialTransaction(payerID: session.player.id, recipientID: SystemPlayerID.government.rawValue, invoice: invoice)
         if case .failure(let reason) = CentralBank.shared.process(transaction) {
@@ -124,8 +134,41 @@ class RealEstateAgent {
         self.properties.append(road)
         self.saveProperties()
         
-        Storage.shared.roadProperties.append(road)
         self.mapManager.addStreet(address: address)
+        
+        let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(session.player.wallet.money))
+        GameEventBus.gameEvents.onNext(updateWalletEvent)
+
+        let reloadMapEvent = GameEvent(playerSession: nil, action: .reloadMap)
+        GameEventBus.gameEvents.onNext(reloadMapEvent)
+    }
+    
+    
+    func buildApartment(address: MapPoint, session: PlayerSession, storeyAmount: Int) throws {
+        
+        guard let land = (self.properties.first { $0.address == address}) as? Land else {
+            throw StartInvestmentError.formalProblem(reason: "You can build road only on an empty land.")
+        }
+        guard land.ownerID == session.player.id else {
+            throw StartInvestmentError.formalProblem(reason: "You can invest only on your properties.")
+        }
+        guard self.hasDirectAccessToRoad(address: address) else {
+            throw StartInvestmentError.formalProblem(reason: "You cannot build apartment here as this property has no direct access to the public road.")
+        }
+        let invoice = Invoice(netValue: InvestmentPrice.buildingApartment(storey: storeyAmount), taxPercent: TaxRates.investmentTax)
+        // process the transaction
+        let transaction = FinancialTransaction(payerID: session.player.id, recipientID: SystemPlayerID.government.rawValue, invoice: invoice)
+        if case .failure(let reason) = CentralBank.shared.process(transaction) {
+            throw StartInvestmentError.financialTransactionProblem(reason: reason)
+        }
+        
+        let apartment = Apartment(land: land, storeyAmount: storeyAmount)
+        self.properties = self.properties.filter { $0.address != address }
+        self.properties.append(apartment)
+        self.saveProperties()
+        
+        let tile = GameMapTile(address: address, type: .building(size: storeyAmount))
+        self.mapManager.map.replaceTile(tile: tile)
         
         let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(session.player.wallet.money))
         GameEventBus.gameEvents.onNext(updateWalletEvent)
@@ -138,7 +181,7 @@ class RealEstateAgent {
         if let land = property as? Land, let value = self.estimatePriceForLand(land) {
             return value * (1 + self.occupiedSpaceOnMapFactor())
         }
-        if let road = property as? Road {
+        if let _ = property as? Road {
             return 0.0
         }
         return nil
@@ -172,8 +215,14 @@ class RealEstateAgent {
         return startPrice
     }
     
-    func occupiedSpaceOnMapFactor() -> Double {
+    private func occupiedSpaceOnMapFactor() -> Double {
         return Double(self.mapManager.map.tiles.count) / Double(self.mapManager.map.width * self.mapManager.map.height)
+    }
+    
+    private func hasDirectAccessToRoad(address: MapPoint) -> Bool {
+        return ![address.move(.up),address.move(.down),address.move(.left),address.move(.right)]
+        .compactMap { self.mapManager.map.getTile(address: $0) }
+        .filter{ $0.isStreet() }.isEmpty
     }
  }
 
@@ -185,7 +234,6 @@ enum BuyPropertyError: Error {
 }
 
 enum StartInvestmentError: Error {
-    case invalidOwner
-    case invalidPropertyType
+    case formalProblem(reason: String)
     case financialTransactionProblem(reason: String)
 }

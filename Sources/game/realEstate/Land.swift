@@ -13,7 +13,8 @@ class Land: Property, Codable {
     var ownerID: String?
     var address: MapPoint
     let name: String
-    var transactionNetValue: Double?
+    var purchaseNetValue: Double?
+    var investmentsNetValue: Double
     var monthlyMaintenanceCost: Double
     var monthlyIncome: Double
     var mapTile: GameMapTile {
@@ -25,5 +26,6 @@ class Land: Property, Codable {
         self.name = "\(RandomNameGenerator.randomAdjective.capitalized) \(RandomNameGenerator.randomNoun.capitalized)"
         self.monthlyMaintenanceCost = 100
         self.monthlyIncome = 0
+        self.investmentsNetValue = 0
     }
 }

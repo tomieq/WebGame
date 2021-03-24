@@ -220,13 +220,18 @@ class WebApplication {
             let js = JSResponse()
             js.add(.setWindowTitle(windowIndex, title: "Property management"))
             js.add(.loadHtml(windowIndex, htmlPath: "/propertyManager.html?\(address.asQueryParams)"))
-            js.add(.resizeWindow(windowIndex, width: 0.7, height: 0.5))
+            js.add(.resizeWindow(windowIndex, width: 0.7, height: 0.8))
             js.add(.disableWindowResizing(windowIndex))
             js.add(.centerWindow(windowIndex))
             return js.response
         }
         
         server.GET["/propertyManager.html"] = { request, _ in
+            
+            guard let playerSessionID = request.queryParam("playerSessionID"),
+                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                    return .ok(.text("Invalid request! Missing session ID."))
+            }
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return .ok(.text("Invalid request! Missing window context."))
             }
@@ -236,8 +241,8 @@ class WebApplication {
             guard let property = self.gameEngine.realEstateAgent.getProperty(address: address) else {
                 return .ok(.text("Property at \(address.description) not found!"))
             }
-            guard let ownerID = property.ownerID else {
-                return .ok(.text("Property at \(address.description) has no owner!"))
+            guard let ownerID = property.ownerID, session.player.id == ownerID else {
+                return .ok(.text("Property at \(address.description) is not yours!"))
             }
             
             let raw = Resource.getAppResource(relativePath: "templates/propertyManager.html")
@@ -248,7 +253,8 @@ class WebApplication {
             data["monthlyIncome"] = property.monthlyIncome.money
             data["monthlyCosts"] = property.monthlyMaintenanceCost.money
             data["balance"] = (property.monthlyIncome - property.monthlyMaintenanceCost).money
-            data["purchasePrice"] = property.transactionNetValue?.money ?? ""
+            data["purchasePrice"] = property.purchaseNetValue?.money ?? ""
+            data["investmentsValue"] = property.investmentsNetValue.money
             let estimatedValue = self.gameEngine.realEstateAgent.estimatePrice(property) ?? 0.0
             data["estimatedValue"] = estimatedValue.money
             data["instantSellJS"] = JSCode.runScripts(windowIndex, paths: ["/instantSell.js?\(address.asQueryParams)"]).js
@@ -262,15 +268,31 @@ class WebApplication {
                 data["tileUrl"] = TileType.soldLand.image.path
                 if hasAccessToRoad {
 
-                    var investData = [String:String]()
-                    let investTransaction = Invoice(netValue: InvestmentPrice.buildingRoad, taxPercent: TaxRates.investmentTax)
-                    investData["name"] = "Road"
-                    investData["investmentCost"] = investTransaction.netValue.money
-                    investData["investmentTax"] = investTransaction.tax.money
-                    investData["investmentTotal"] = investTransaction.total.money
-                    investData["investmentDuration"] = "3 months"
-                    investData["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/buildRoad.js?\(address.asQueryParams)"]).js
-                    template.assign(variables: investData, inNest: "investment")
+                    var buildRoadData = [String:String]()
+                    let investTransaction = Invoice(netValue: InvestmentPrice.buildingRoad(), taxPercent: TaxRates.investmentTax)
+                    buildRoadData["name"] = "Road"
+                    buildRoadData["investmentCost"] = investTransaction.netValue.money
+                    buildRoadData["investmentTax"] = investTransaction.tax.money
+                    buildRoadData["investmentTotal"] = investTransaction.total.money
+                    buildRoadData["investmentDuration"] = "3 months"
+                    buildRoadData["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/buildRoad.js?\(address.asQueryParams)"]).js
+                    buildRoadData["actionTitle"] = "Start investment"
+                    template.assign(variables: buildRoadData, inNest: "investment")
+                    
+                    [4, 6, 8, 10].forEach { storey in
+                        var buildHouseData = [String:String]()
+                        let invoice = Invoice(netValue: InvestmentPrice.buildingApartment(storey: storey), taxPercent: TaxRates.investmentTax)
+                        buildHouseData["name"] = "\(storey) storey Apartment"
+                        buildHouseData["investmentCost"] = invoice.netValue.money
+                        buildHouseData["investmentCost"] = invoice.netValue.money
+                        buildHouseData["investmentTax"] = invoice.tax.money
+                        buildHouseData["investmentTotal"] = invoice.total.money
+                        buildHouseData["investmentDuration"] = "\((9+storey)) months"
+                        buildHouseData["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/buildApartment.js?\(address.asQueryParams)&storey=\(storey)"]).js
+                        buildHouseData["actionTitle"] = "Start investment"
+                        template.assign(variables: buildHouseData, inNest: "investment")
+                    }
+                    
                 } else {
                     let info = "This property has no access to the public road, so the investment options are very narrow."
                     template.assign(variables: ["text":info], inNest: "info")
@@ -280,7 +302,12 @@ class WebApplication {
 
                 let info = "Roads do not make any income, but they increase market value of surrounding area. Notice that there are the maintenance costs there, so the best approach is to sell the road. Road cannot be destroyed by government or any other players."
                 template.assign(variables: ["text":info], inNest: "info")
-            }
+            } else if let apartment = property as? Apartment {
+                data["tileUrl"] = TileType.building(size: apartment.storeyAmount).image.path
+
+               let info = "Roads do not make any income, but they increase market value of surrounding area. Notice that there are the maintenance costs there, so the best approach is to sell the road. Road cannot be destroyed by government or any other players."
+               template.assign(variables: ["text":info], inNest: "info")
+           }
             
             template.assign(variables: data)
             return .ok(.html(template.output()))
@@ -303,27 +330,11 @@ class WebApplication {
                     code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
                     return code.response
             }
-            guard property.ownerID == session.player.id else {
-                code.add(.showError(txt: "You can invest only on yours properties.", duration: 10))
-                return code.response
-            }
-            let hasDirectAccessToRoad = ![address.move(.up),address.move(.down),address.move(.left),address.move(.right)]
-                .compactMap { self.gameEngine.gameMap.getTile(address: $0) }
-                .filter{ $0.isStreet() }.isEmpty
-            guard hasDirectAccessToRoad else {
-                return JSCode.showError(txt: "You cannot build road here as this property has no direct access to the public road.", duration: 10).response
-            }
             do {
                 try self.gameEngine.realEstateAgent.buildRoad(address: address, session: session)
-            } catch StartInvestmentError.invalidOwner {
-                code.add(.closeWindow(windowIndex))
-                code.add(.showError(txt: "You can invest only on your properties", duration: 10))
-                return code.response
-            } catch StartInvestmentError.invalidPropertyType {
-                code.add(.closeWindow(windowIndex))
-                code.add(.showError(txt: "You can build road only on an empty land", duration: 10))
-                return code.response
             } catch StartInvestmentError.financialTransactionProblem(let reason) {
+                return JSCode.showError(txt: reason , duration: 10).response
+            } catch StartInvestmentError.formalProblem(let reason) {
                 return JSCode.showError(txt: reason , duration: 10).response
             } catch {
                 return JSCode.showError(txt: "Unexpected error [\(request.address ?? "")]", duration: 10).response
@@ -331,6 +342,40 @@ class WebApplication {
             code.add(.closeWindow(windowIndex))
             return code.response
         }
+        
+        server.GET["/buildApartment.js"] = { request, _ in
+            let code = JSResponse()
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
+            }
+            guard let address = request.mapPoint else {
+                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
+            }
+            guard let property = self.gameEngine.realEstateAgent.getProperty(address: address) else {
+                return JSCode.showError(txt: "Property at \(address.description) not found!", duration: 10).response
+            }
+            guard let storeyValue = request.queryParam("storey"), let storeyAmount = Int(storeyValue) else {
+                return JSCode.showError(txt: "Invalid request! Missing storeyAmount.", duration: 10).response
+            }
+            guard let playerSessionID = request.queryParam("playerSessionID"),
+                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                    code.add(.closeWindow(windowIndex))
+                    code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
+                    return code.response
+            }
+            do {
+                try self.gameEngine.realEstateAgent.buildApartment(address: address, session: session, storeyAmount: storeyAmount)
+            } catch StartInvestmentError.financialTransactionProblem(let reason) {
+                return JSCode.showError(txt: reason , duration: 10).response
+            } catch StartInvestmentError.formalProblem(let reason) {
+                return JSCode.showError(txt: reason , duration: 10).response
+            } catch {
+                return JSCode.showError(txt: "Unexpected error [\(request.address ?? "")]", duration: 10).response
+            }
+            code.add(.closeWindow(windowIndex))
+            return code.response
+        }
+            
         
         server.GET["/instantSell.js"] = { request, _ in
         let code = JSResponse()

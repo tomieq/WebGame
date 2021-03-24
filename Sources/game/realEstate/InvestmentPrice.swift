@@ -8,5 +8,12 @@
 import Foundation
 
 class InvestmentPrice {
-    public static let buildingRoad: Double = 410000
+
+    public static func buildingRoad() -> Double {
+        return 410000
+    }
+    
+    public static func buildingApartment(storey: Int) -> Double {
+        return (2300000 + Double(storey) * 940000).rounded(toPlaces: 0)
+    }
 }

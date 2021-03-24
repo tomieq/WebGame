@@ -14,6 +14,7 @@ class Storage: Codable {
     var players: [Player]
     var landProperties: [Land]
     var roadProperties: [Road]
+    var apartmentProperties: [Apartment]
     
     private init() {
         
@@ -25,6 +26,7 @@ class Storage: Codable {
         self.players.append(Player(id: "p2", login: "Steve Poor"))
         self.landProperties = []
         self.roadProperties = []
+        self.apartmentProperties = []
         self.save()
         _ = StorageCoordinator.shared
     }
