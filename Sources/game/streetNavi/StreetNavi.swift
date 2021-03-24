@@ -6,14 +6,31 @@
 //
 
 import Foundation
+import RxSwift
 
 class StreetNavi {
     let adjacencyList = AdjacencyList<MapPoint>()
     private let gameMap: GameMap
+    private let disposeBag = DisposeBag()
     
     init(gameMap: GameMap) {
         // TODO AdjacencyList should be updated when map changes
         self.gameMap = gameMap
+        self.reload()
+        
+        GameEventBus.gameEvents.asObservable()
+            .filter {
+                if case GameEventAction.reloadMap = $0.action {
+                    return true
+                }
+                return false
+        }.bind{ [weak self] _ in
+            self?.reload()
+        }.disposed(by: self.disposeBag)
+    }
+    
+    func reload() {
+        self.adjacencyList.adjacencyDict = [:]
         // find all intersections - those are vertexes for Dijkstra's algorithm
         var vertexes = [Vertex<MapPoint>]()
         for x in (0...gameMap.width) {
