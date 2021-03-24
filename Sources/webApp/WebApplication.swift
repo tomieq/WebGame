@@ -127,7 +127,7 @@ class WebApplication {
             let land = Land(address: address)
             
             let value = self.gameEngine.realEstateAgent.estimatePrice(land) ?? 0.0
-            let transactionCosts = FinancialTransaction(netValue: value, taxPercent: TaxRates.propertyPurchaseTax, feePercent: 1)
+            let transactionCosts = Invoice(netValue: value, taxPercent: TaxRates.propertyPurchaseTax, feePercent: 1)
             let raw = Resource.getAppResource(relativePath: "templates/saleOffer.html")
             let template = Template(raw: raw)
             var data = [String:String]()
@@ -163,8 +163,8 @@ class WebApplication {
                 return code.response
             } catch BuyPropertyError.problemWithPrice {
                 return JSCode.showError(txt: "Internal problem with price evaluation...", duration: 10).response
-            } catch BuyPropertyError.notEnoughMoneyInWallet {
-                return JSCode.showError(txt: "You don't have enough money to buy this property", duration: 10).response
+            } catch BuyPropertyError.financialTransactionProblem(let reason) {
+                return JSCode.showError(txt: reason, duration: 10).response
             } catch {
                 return JSCode.showError(txt: "Unexpected error [\(request.address ?? "")]", duration: 10).response
             }
@@ -261,7 +261,7 @@ class WebApplication {
                 if hasAccessToRoad {
 
                     var investData = [String:String]()
-                    let investTransaction = FinancialTransaction(netValue: InvestmentPrice.buildingRoad, taxPercent: TaxRates.investmentTax)
+                    let investTransaction = Invoice(netValue: InvestmentPrice.buildingRoad, taxPercent: TaxRates.investmentTax)
                     investData["name"] = "Road"
                     investData["investmentCost"] = investTransaction.netValue.money
                     investData["investmentTax"] = investTransaction.tax.money
@@ -321,8 +321,8 @@ class WebApplication {
                 code.add(.closeWindow(windowIndex))
                 code.add(.showError(txt: "You can build road only on an empty land", duration: 10))
                 return code.response
-            } catch StartInvestmentError.notEnoughMoneyInWallet {
-                return JSCode.showError(txt: "You don't have enough money to start this investment", duration: 10).response
+            } catch StartInvestmentError.financialTransactionProblem(let reason) {
+                return JSCode.showError(txt: reason , duration: 10).response
             } catch {
                 return JSCode.showError(txt: "Unexpected error [\(request.address ?? "")]", duration: 10).response
             }

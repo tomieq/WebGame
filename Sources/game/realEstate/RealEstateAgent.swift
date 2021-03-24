@@ -27,7 +27,7 @@ class RealEstateAgent {
     }
     
     func isForSale(address: MapPoint) -> Bool {
-        if self.getProperty(address: address)?.ownerID == "government" {
+        if self.getProperty(address: address)?.ownerID == SystemPlayerID.government.rawValue {
             return true
         }
         return self.mapManager.map.getTile(address: address) == nil
@@ -51,15 +51,16 @@ class RealEstateAgent {
         guard let price = self.estimatePrice(property) else {
             throw BuyPropertyError.problemWithPrice
         }
-        let transactionCost = TransactionCost(propertyValue: price)
-        guard session.player.wallet > transactionCost.total else {
-            throw BuyPropertyError.notEnoughMoneyInWallet
+        let invoice = Invoice(netValue: price, taxPercent: TaxRates.propertyPurchaseTax, feePercent: 1)
+        
+        // process the transaction
+        let transaction = FinancialTransaction(payerID: session.player.id, recipientID: SystemPlayerID.government.rawValue, feeRecipientID: SystemPlayerID.realEstateAgency.rawValue, invoice: invoice)
+        if case .failure(let reason) = CentralBank.shared.process(transaction) {
+            throw BuyPropertyError.financialTransactionProblem(reason: reason)
         }
         
-        // proceed the transaction
-        session.player.takeMoney(transactionCost.total)
         property.ownerID = session.player.id
-        property.transactionNetValue = transactionCost.propertyValue
+        property.transactionNetValue = invoice.netValue
         
         self.properties = self.properties.filter { $0.address != address }
         self.properties.append(property)
@@ -111,10 +112,13 @@ class RealEstateAgent {
         guard land.ownerID == session.player.id else {
             throw StartInvestmentError.invalidOwner
         }
-        let investmentCost = InvestmentCost(investmentValue: InvestmentPrice.buildingRoad)
-        guard session.player.wallet > investmentCost.total else {
-            throw StartInvestmentError.notEnoughMoneyInWallet
+        let invoice = Invoice(netValue: InvestmentPrice.buildingRoad, taxPercent: TaxRates.investmentTax)
+        // process the transaction
+        let transaction = FinancialTransaction(payerID: session.player.id, recipientID: SystemPlayerID.government.rawValue, invoice: invoice)
+        if case .failure(let reason) = CentralBank.shared.process(transaction) {
+            throw StartInvestmentError.financialTransactionProblem(reason: reason)
         }
+        
         let road = Road(land: land)
         self.properties = self.properties.filter { $0.address != address }
         self.properties.append(road)
@@ -123,7 +127,6 @@ class RealEstateAgent {
         Storage.shared.roadProperties.append(road)
         self.mapManager.addStreet(address: address)
         
-        session.player.takeMoney(investmentCost.total)
         let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(session.player.wallet.money))
         GameEventBus.gameEvents.onNext(updateWalletEvent)
 
@@ -178,11 +181,11 @@ class RealEstateAgent {
 enum BuyPropertyError: Error {
     case propertyNotForSale
     case problemWithPrice
-    case notEnoughMoneyInWallet
+    case financialTransactionProblem(reason: String)
 }
 
 enum StartInvestmentError: Error {
     case invalidOwner
     case invalidPropertyType
-    case notEnoughMoneyInWallet
+    case financialTransactionProblem(reason: String)
 }

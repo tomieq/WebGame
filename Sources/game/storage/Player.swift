@@ -10,6 +10,7 @@ import Foundation
 enum SystemPlayerID: String, CaseIterable {
     case government
     case bank
+    case realEstateAgency
     
     var login: String {
         switch self {
@@ -17,6 +18,8 @@ enum SystemPlayerID: String, CaseIterable {
             return "Government"
         case .bank:
             return "Central Bank"
+        case .realEstateAgency:
+            return "Real Estate Agency"
         }
     }
 }
@@ -39,8 +42,8 @@ class Player: Codable {
         self.wallet = wallet
     }
     
-    func invest(_ investment: FinancialTransaction) {
-        self.wallet = self.wallet - investment.total
+    func pay(_ invoice: Invoice) {
+        self.wallet = self.wallet - invoice.total
     }
     
     func addIncome(_ amount: Double) {
