@@ -20,9 +20,9 @@ class GameEngine {
     init() {
         self.gameMap = GameMap(width: 25, height: 25, scale: 0.30)
         self.gameMapManager = GameMapManager(self.gameMap, path: "maps/roadMap1")
+        self.realEstateAgent = RealEstateAgent(mapManager: self.gameMapManager)
         self.gameTraffic = GameTraffic(gameMap: self.gameMap)
         self.websocketHandler = WebsocketHandler()
-        self.realEstateAgent = RealEstateAgent(mapManager: self.gameMapManager)
 
         GameEventBus.gameEvents.asObservable().bind { [weak self] gameEvent in
             switch gameEvent.action {
