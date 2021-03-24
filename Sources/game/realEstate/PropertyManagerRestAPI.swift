@@ -185,11 +185,9 @@ class PropertyManagerRestAPI {
 
                 let info = "Roads do not make any income, but they increase market value of surrounding area. Notice that there are the maintenance costs there, so the best approach is to sell the road. Road cannot be destroyed by government or any other players."
                 template.assign(variables: ["text":info], inNest: "info")
-            } else if let apartment = property as? Apartment {
+            } else if let apartment = property as? ResidentialBuilding {
                 data["tileUrl"] = TileType.building(size: apartment.storeyAmount).image.path
-
-               let info = "Roads do not make any income, but they increase market value of surrounding area. Notice that there are the maintenance costs there, so the best approach is to sell the road. Road cannot be destroyed by government or any other players."
-               template.assign(variables: ["text":info], inNest: "info")
+                template.assign(variables: ["actions": self.apartmentPropertyActions(apartment: apartment, windowIndex: windowIndex)])
            }
             
             template.assign(variables: data)
@@ -300,6 +298,22 @@ class PropertyManagerRestAPI {
         } else {
             let info = "This property has no access to the public road, so the investment options are very narrow."
             template.assign(variables: ["text": info], inNest: "info")
+        }
+        return template.output()
+    }
+    
+    
+    private func apartmentPropertyActions(apartment: ResidentialBuilding, windowIndex: String) -> String {
+        let raw = Resource.getAppResource(relativePath: "templates/propertyManagerApartment.html")
+        let template = Template(raw: raw)
+        for i in (1...apartment.storeyAmount) {
+            let storey = apartment.storeyAmount - i + 1
+            template.assign(variables: ["storey": storey.string], inNest: "storey")
+        }
+        for storey in (1...apartment.storeyAmount) {
+            for flatNo in (1...2) {
+                template.assign(variables: ["flatNo": "\(storey).\(flatNo)"], inNest: "apartment")
+            }
         }
         return template.output()
     }

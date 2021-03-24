@@ -1,5 +1,5 @@
 //
-//  Apartment.swift
+//  ResidentialBuilding.swift
 //  
 //
 //  Created by Tomasz Kucharski on 16/03/2021.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-class Apartment: Property, Codable {
+class ResidentialBuilding: Property, Codable {
     var type: String { return "\(self.storeyAmount) storey Apartment" }
     var ownerID: String?
     var address: MapPoint

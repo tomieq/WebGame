@@ -25,7 +25,7 @@ class RealEstateAgent {
             self.mapManager.addStreet(address: road.address)
         }
         
-        Storage.shared.apartmentProperties.forEach { apartment in
+        Storage.shared.residentialBuildings.forEach { apartment in
             self.properties.append(apartment)
             let tile = GameMapTile(address: apartment.address, type: .building(size: apartment.storeyAmount))
             self.mapManager.map.replaceTile(tile: tile)
@@ -46,7 +46,7 @@ class RealEstateAgent {
     private func saveProperties() {
         Storage.shared.landProperties = self.properties.compactMap { $0 as? Land }
         Storage.shared.roadProperties = self.properties.compactMap { $0 as? Road }
-        Storage.shared.apartmentProperties = self.properties.compactMap { $0 as? Apartment }
+        Storage.shared.residentialBuildings = self.properties.compactMap { $0 as? ResidentialBuilding }
     }
     
     func buyProperty(address: MapPoint, session: PlayerSession) throws {
@@ -163,7 +163,7 @@ class RealEstateAgent {
             throw StartInvestmentError.financialTransactionProblem(reason: reason)
         }
         
-        let apartment = Apartment(land: land, storeyAmount: storeyAmount)
+        let apartment = ResidentialBuilding(land: land, storeyAmount: storeyAmount)
         self.properties = self.properties.filter { $0.address != address }
         self.properties.append(apartment)
         self.saveProperties()
