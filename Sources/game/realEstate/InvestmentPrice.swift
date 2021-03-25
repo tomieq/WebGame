@@ -14,6 +14,6 @@ class InvestmentPrice {
     }
     
     public static func buildingApartment(storey: Int) -> Double {
-        return (2300000 + Double(storey) * 940000).rounded(toPlaces: 0)
+        return (2300000 + Double(storey) * 840000).rounded(toPlaces: 0)
     }
 }

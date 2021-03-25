@@ -42,7 +42,7 @@ class PropertyManagerRestAPI {
             }
             let land = Land(address: address)
             
-            let value = self.gameEngine.realEstateAgent.estimatePrice(land) ?? 0.0
+            let value = self.gameEngine.realEstateAgent.estimatePrice(land)
             let transactionCosts = Invoice(netValue: value, taxPercent: TaxRates.propertyPurchaseTax, feePercent: 1)
             let raw = Resource.getAppResource(relativePath: "templates/saleOffer.html")
             let template = Template(raw: raw)
@@ -77,8 +77,6 @@ class PropertyManagerRestAPI {
                 code.add(.closeWindow(windowIndex))
                 code.add(.showError(txt: "This property is not for sale any more.", duration: 10))
                 return code.response
-            } catch BuyPropertyError.problemWithPrice {
-                return JSCode.showError(txt: "Internal problem with price evaluation...", duration: 10).response
             } catch BuyPropertyError.financialTransactionProblem(let reason) {
                 return JSCode.showError(txt: reason, duration: 10).response
             } catch {
@@ -171,10 +169,10 @@ class PropertyManagerRestAPI {
             data["balance"] = (property.monthlyIncome - property.monthlyMaintenanceCost).money
             data["purchasePrice"] = property.purchaseNetValue?.money ?? ""
             data["investmentsValue"] = property.investmentsNetValue.money
-            let estimatedValue = self.gameEngine.realEstateAgent.estimatePrice(property) ?? 0.0
+            let estimatedValue = self.gameEngine.realEstateAgent.estimatePrice(property)
             data["estimatedValue"] = estimatedValue.money
             data["instantSellJS"] = JSCode.runScripts(windowIndex, paths: ["/instantSell.js?\(address.asQueryParams)&propertyID=\(property.id)"]).js
-            data["instantSellPrice"] = (estimatedValue * 0.85).money
+            data["instantSellPrice"] = (estimatedValue * PriceList.instantSellFraction).money
             
 
             if let land = property as? Land {

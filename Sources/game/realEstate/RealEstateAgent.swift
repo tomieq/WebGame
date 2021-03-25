@@ -59,9 +59,7 @@ class RealEstateAgent {
             throw BuyPropertyError.propertyNotForSale
         }
         var property = self.getProperty(address: address) ?? Land(address: address)
-        guard let price = self.estimatePrice(property) else {
-            throw BuyPropertyError.problemWithPrice
-        }
+        let price = self.estimatePrice(property)
         let invoice = Invoice(netValue: price, taxPercent: TaxRates.propertyPurchaseTax, feePercent: 1)
         
         // process the transaction
@@ -108,7 +106,7 @@ class RealEstateAgent {
         self.saveProperties()
         
         let value = self.estimatePrice(property) ?? 0
-        let sellPrice = value * 0.85
+        let sellPrice = (value * PriceList.instantSellFraction).rounded(toPlaces: 0)
         
         session.player.addIncome(sellPrice)
         
@@ -181,7 +179,7 @@ class RealEstateAgent {
         (1...building.storeyAmount).forEach { storey in
             (1...3).forEach { flatNo in
                 let apartment = Apartment(building, storey: storey, flatNumber: flatNo)
-                apartment.monthlyBuildingFee = 930
+                apartment.monthlyBuildingFee = PriceList.baseApartmentBuildingOwnerFee
                 Storage.shared.apartments.append(apartment)
             }
         }
@@ -199,7 +197,7 @@ class RealEstateAgent {
         GameEventBus.gameEvents.onNext(reloadMapEvent)
     }
     
-    func estimatePrice(_ property: Property) -> Double? {
+    func estimatePrice(_ property: Property) -> Double {
         if let land = property as? Land, let value = self.estimatePriceForLand(land) {
             return value * (1 + self.occupiedSpaceOnMapFactor())
         }
@@ -207,27 +205,34 @@ class RealEstateAgent {
             return 0.0
         }
         if let building = property as? ResidentialBuilding {
-            var basePrice = self.estimatePrice(Land(address: building.address)) ?? 0
+            var basePrice = self.estimatePrice(Land(address: building.address))
             let apartments = Storage.shared.getApartments(address: building.address).filter { $0.ownerID == building.ownerID }
             apartments.forEach { apartment in
-                basePrice = basePrice + (self.estimateApartmentValue(apartment))
+                basePrice += self.estimateApartmentValue(apartment)
             }
             return basePrice.rounded(toPlaces: 0)
         }
-        return nil
+        Logger.error("RealEstateAgent", "Couldn't estimate value for \(type(of: property)) \(property.id)!")
+        return 900000000
     }
     
     func estimateApartmentValue(_ apartment: Apartment) -> Double {
-        return 528000
+        if let building = self.getProperty(address: apartment.address) as? ResidentialBuilding {
+            let investmentCost = InvestmentPrice.buildingApartment(storey: building.storeyAmount)
+            let numberOfFlats = Double(3 * building.storeyAmount)
+            return (investmentCost/numberOfFlats + PriceList.baseBuildingDeveloperIncomeOnFlat).rounded(toPlaces: 0)
+        }
+        Logger.error("RealEstateAgent", "Apartment \(apartment.id) is detached from building!")
+        return 900000000
     }
     
     func estimateRentFee(_ apartment: Apartment) -> Double {
-        return 2333.rounded(toPlaces: 0)
+        return PriceList.baseApartmentRentalFee.rounded(toPlaces: 0)
     }
     
     private func estimatePriceForLand(_ land: Land) -> Double? {
         // in future add price relation to bus stop
-        var startPrice: Double = 90000
+        var startPrice = PriceList.baseLandValue
 
         for distance in (1...4) {
             for streetAddress in self.mapManager.map.getNeighbourAddresses(to: land.address, radius: distance) {
@@ -267,7 +272,6 @@ class RealEstateAgent {
 
 enum BuyPropertyError: Error {
     case propertyNotForSale
-    case problemWithPrice
     case financialTransactionProblem(reason: String)
 }
 
