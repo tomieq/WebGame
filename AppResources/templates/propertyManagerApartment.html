@@ -10,54 +10,12 @@
 [END storey]
 </tbody>
 </table>
+<div style="clear: both;"></div>
 
-<table style="width: 400px; border-spacing: 10px; float: left; margin: 5px;">
-<tbody>
 
-<tr>
-<td>
 [START apartment]
-<table class="detailsTable"><tbody style="width: 100%">
-<tr>
-    <td colspan=2><strong>{name}</strong></td>
-</tr>
-<tr>
-    <td>Status</td>
-    <td style="text-align: right;">{status}</td>
-</tr>
-<tr>
-    <td>Action</td>
-    <td style="text-align: right;"><button class="btn btn-sm" onclick="{actionJS}">{actionTitle}</button></td>
-</tr>
-<tr>
-    <td>Monthly rental income</td>
-    <td style="text-align: right;">{monthlyRentalFee}</td>
-</tr>
-<tr>
-    <td>Monthly bills</td>
-    <td style="text-align: right;">{monthlyBills}</td>
-</tr>
-<tr>
-    <td>Monthly balance</td>
-    <td style="text-align: right;">{monthlyBalance}</td>
-</tr>
-<tr>
-    <td>Estimated current value</td>
-    <td style="text-align: right;">{estimatedValue}</td>
-</tr>
-<tr>
-    <td>Instant transaction offer</td>
-    <td style="text-align: right;"><button class="btn btn-sm" onclick="{instantSellJS}">Sell for {instantSellPrice}</button></td>
-</tr>
-<tr>
-    <td>Real Estate Market</td>
-    <td style="text-align: right;"><button class="btn btn-sm">Sell on market</button></td>
-</tr>
-</tbody></table>
-<br>
+<div style="width: 400px; float: left; margin: 5px;">
+{apartmentView}
+</div>
 [END apartment]
-</td>
-</tr>
 
-</tbody>
-</table>

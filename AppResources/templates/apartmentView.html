@@ -1,0 +1,62 @@
+[START unrented]
+<table class="detailsTable"><tbody style="width: 100%">
+<tr>
+    <td colspan=2><strong>{name}</strong></td>
+</tr>
+<tr>
+    <td>Monthly bills</td>
+    <td style="text-align: right;">{monthlyBills}</td>
+</tr>
+<tr>
+    <td>Monthly balance</td>
+    <td style="text-align: right;">{monthlyBalance}</td>
+</tr>
+
+<tr>
+    <td colspan=2>
+        <table style="width: 100%; margin-top: 5px;"><tbody style="width: 100%"><tbody style="width: 100%">
+        <tr>
+            <td style="width:50%; vertical-align: top;">
+                RENTAL OPTIONS
+                <hr>
+                <button class="btn btn-sm" onclick="{actionJS}">Rent for {monthlyRentalFee} per month</button>
+            </td>
+            <td style="width:50%; vertical-align: top;">
+                SELLING OPTIONS
+                <hr>
+                Estimated value: {estimatedValue}
+                <br>
+                Instalt sell offer: {instantSellPrice}
+                <br><br>
+                <button class="btn btn-sm" onclick="{instantSellJS}">Sell for {instantSellPrice}</button>
+                or
+                <button class="btn btn-sm">Sell on market</button>
+            </td>
+        </tr>
+        </tbody></table>
+    </td>
+</tr>
+</tbody></table>
+[END unrented]
+[START rented]
+<table class="detailsTable"><tbody style="width: 100%">
+<tr>
+    <td colspan=2><strong>{name}</strong></td>
+</tr>
+<tr>
+    <td>Monthly rental income</td>
+    <td style="text-align: right;">{monthlyRentalFee}</td>
+</tr>
+<tr>
+    <td>Monthly bills</td>
+    <td style="text-align: right;">{monthlyBills}</td>
+</tr>
+<tr>
+    <td>Monthly balance</td>
+    <td style="text-align: right;">{monthlyBalance}</td>
+</tr>
+<tr>
+    <td colspan=2 style="text-align: right;"><button class="btn btn-sm btn-danger" onclick="{actionJS}">{actionTitle}</button></td>
+</tr>
+</tbody></table>
+[END rented]

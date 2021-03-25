@@ -115,9 +115,14 @@ class RealEstateAgent {
     }
     
     func rentApartment(_ apartment: Apartment) {
-        let income = self.estimateRentFee(apartment)
-        apartment.monthlyRentalFee = income
         apartment.isRented = true
+        if let building = self.getProperty(address: apartment.address) as? ResidentialBuilding {
+            self.recalculateFeesInTheBuilding(building)
+        }
+    }
+    
+    func unrentApartment(_ apartment: Apartment) {
+        apartment.isRented = false
         if let building = self.getProperty(address: apartment.address) as? ResidentialBuilding {
             self.recalculateFeesInTheBuilding(building)
         }
@@ -279,7 +284,7 @@ class RealEstateAgent {
                 case false:
                     apartment.monthlyRentalFee = 0
                     apartment.monthlyBills = 280
-                }
+            }
             
             if apartment.ownerID == building.ownerID {
                 apartment.monthlyBuildingFee = 0

@@ -291,8 +291,12 @@ class PropertyManagerRestAPI {
                 code.add(.showError(txt: "You can rent only your properties.", duration: 10))
                 return code.response
             }
-            self.gameEngine.realEstateAgent.rentApartment(apartment)
-            code.add(.showSuccess(txt: "Successful rental", duration: 5))
+            if let _ = request.queryParam("unrent") {
+                self.gameEngine.realEstateAgent.unrentApartment(apartment)
+            } else {
+                self.gameEngine.realEstateAgent.rentApartment(apartment)
+            }
+            code.add(.showSuccess(txt: "Action successed", duration: 5))
             code.add(.loadHtml(windowIndex, htmlPath: "/propertyManager.html?\(apartment.address.asQueryParams)"))
             return code.response
         }
@@ -345,28 +349,34 @@ class PropertyManagerRestAPI {
             let storey = building.storeyAmount - i + 1
             template.assign(variables: ["storey": storey.string], inNest: "storey")
         }
+        
+        let apartmentView = Template(raw: Resource.getAppResource(relativePath: "templates/apartmentView.html"))
         myApartments.forEach { apartment in
             var data = [String:String]()
             data["name"] = apartment.name
-            data["status"] = apartment.isRented ? "RENTED" : "<i class='fa fa-exclamation-triangle'></i> EMPTY"
-            data["monthlyRentalFee"] = apartment.monthlyRentalFee.money
+
+            
             data["monthlyBills"] = apartment.monthlyBills.money
             data["monthlyBalance"] = (apartment.monthlyRentalFee - apartment.monthlyBills).money
             let estimatedPrice = self.gameEngine.realEstateAgent.estimateApartmentValue(apartment)
-            data["estimatedValue"] = estimatedPrice.money
-            data["instantSellPrice"] = (estimatedPrice * 0.85).money
-            data["instantSellJS"] = JSCode.runScripts(windowIndex, paths: ["/instantApartmentSell.js?\(apartment.address.asQueryParams)&propertyID=\(apartment.id)"]).js
             
             if apartment.isRented {
-                data["actionTitle"] = "Kick tenants"
-                data["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/kickTenantsFromApartment.js?\(apartment.address.asQueryParams)&propertyID=\(apartment.id)"]).js
+                data["monthlyRentalFee"] = apartment.monthlyRentalFee.money
+                data["actionTitle"] = "Evict the tenants"
+                data["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/rentApartment.js?unrent=true&\(apartment.address.asQueryParams)&propertyID=\(apartment.id)"]).js
+                apartmentView.assign(variables: data, inNest: "rented")
             } else {
-                
+                data["monthlyRentalFee"] = self.gameEngine.realEstateAgent.estimateRentFee(apartment).money
+                data["estimatedValue"] = estimatedPrice.money
+                data["instantSellPrice"] = (estimatedPrice * 0.85).money
+                data["instantSellJS"] = JSCode.runScripts(windowIndex, paths: ["/instantApartmentSell.js?\(apartment.address.asQueryParams)&propertyID=\(apartment.id)"]).js
                 let estimatedRent = self.gameEngine.realEstateAgent.estimateRentFee(apartment).money
                 data["actionTitle"] = "Rent for \(estimatedRent)"
                 data["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/rentApartment.js?\(apartment.address.asQueryParams)&propertyID=\(apartment.id)"]).js
+                apartmentView.assign(variables: data, inNest: "unrented")
             }
-            template.assign(variables: data, inNest: "apartment")
+            template.assign(variables: ["apartmentView": apartmentView.output()], inNest: "apartment")
+            apartmentView.reset()
         }
         return template.output()
     }
