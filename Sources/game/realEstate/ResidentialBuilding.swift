@@ -8,12 +8,13 @@
 import Foundation
 
 class ResidentialBuilding: Property, Codable {
+    
     let id: String
     var type: String { return "\(self.storeyAmount)-storey Residential Building" }
     var ownerID: String?
     let address: MapPoint
     let name: String
-    let purchaseNetValue: Double?
+    var purchaseNetValue: Double?
     var investmentsNetValue: Double
     var monthlyMaintenanceCost: Double
     var monthlyIncome: Double
@@ -32,24 +33,6 @@ class ResidentialBuilding: Property, Codable {
         self.storeyAmount = storeyAmount
         self.investmentsNetValue = (land.investmentsNetValue + InvestmentPrice.buildingApartment(storey: self.storeyAmount)).rounded(toPlaces: 0)
         self.condition = 1.0
-        self.updateIncome()
-    }
-    
-    func updateIncome() {
-        let apartments = Storage.shared.getApartments(address: self.address)
-        var income: Double = 0
-        var spendings: Double = 1300 + 1100 * Double(storeyAmount)
-        apartments.forEach { apartment in
-            if apartment.ownerID == self.ownerID {
-                income += apartment.monthlyRentalFee
-                spendings += apartment.monthlyBills
-            } else {
-                apartment.monthlyBuildingFee = 540
-                income += apartment.monthlyBuildingFee
-            }
-        }
-        self.monthlyIncome = income.rounded(toPlaces: 0)
-        self.monthlyMaintenanceCost = spendings.rounded(toPlaces: 0)
     }
     
 }

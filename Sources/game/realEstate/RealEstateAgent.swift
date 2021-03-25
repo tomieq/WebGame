@@ -105,7 +105,7 @@ class RealEstateAgent {
         }
         self.saveProperties()
         
-        let value = self.estimatePrice(property) ?? 0
+        let value = self.estimatePrice(property)
         let sellPrice = (value * PriceList.instantSellFraction).rounded(toPlaces: 0)
         
         session.player.addIncome(sellPrice)
@@ -119,7 +119,7 @@ class RealEstateAgent {
         apartment.monthlyRentalFee = income
         apartment.isRented = true
         if let building = self.getProperty(address: apartment.address) as? ResidentialBuilding {
-            building.updateIncome()
+            self.recalculateFeesInTheBuilding(building)
         }
     }
     
@@ -183,7 +183,7 @@ class RealEstateAgent {
                 Storage.shared.apartments.append(apartment)
             }
         }
-        building.updateIncome()
+        self.recalculateFeesInTheBuilding(building)
         self.properties.append(building)
         self.saveProperties()
         
@@ -220,7 +220,7 @@ class RealEstateAgent {
         if let building = self.getProperty(address: apartment.address) as? ResidentialBuilding {
             let investmentCost = InvestmentPrice.buildingApartment(storey: building.storeyAmount)
             let numberOfFlats = Double(3 * building.storeyAmount)
-            let baseValue = investmentCost/numberOfFlats + PriceList.baseBuildingDeveloperIncomeOnFlat
+            let baseValue = investmentCost/numberOfFlats + PriceList.baseBuildingDeveloperIncomeOnFlatSellPrice
             // TODO: add dependency on neighbourhood
             return (baseValue * building.condition * apartment.condition).rounded(toPlaces: 0)
         }
@@ -258,6 +258,40 @@ class RealEstateAgent {
             startPrice = startPrice * 0.6
         }
         return startPrice
+    }
+    
+    private func recalculateFeesInTheBuilding(_ building: ResidentialBuilding) {
+        let apartments = Storage.shared.getApartments(address: building.address)
+        
+        let baseBuildingMonthlyCosts: Double = 1300 + 1100 * Double(building.storeyAmount)
+        let numberOfFlats = Double(building.storeyAmount * 3)
+        
+        let buildingCostPerFlat = (baseBuildingMonthlyCosts/numberOfFlats + PriceList.baseBuildingDeveloperIncomeOnFlatOwner).rounded(toPlaces: 0)
+        
+        var income: Double = 0
+        var spendings = baseBuildingMonthlyCosts
+        apartments.forEach { apartment in
+            
+            switch apartment.isRented {
+                case true:
+                    apartment.monthlyRentalFee = self.estimateRentFee(apartment)
+                    apartment.monthlyBills = 622
+                case false:
+                    apartment.monthlyRentalFee = 0
+                    apartment.monthlyBills = 280
+                }
+            
+            if apartment.ownerID == building.ownerID {
+                apartment.monthlyBuildingFee = 0
+                income += apartment.monthlyRentalFee
+                spendings += apartment.monthlyBills
+            } else {
+                apartment.monthlyBuildingFee = buildingCostPerFlat
+                income += apartment.monthlyBuildingFee
+            }
+        }
+        building.monthlyIncome = income.rounded(toPlaces: 0)
+        building.monthlyMaintenanceCost = spendings.rounded(toPlaces: 0)
     }
     
     private func occupiedSpaceOnMapFactor() -> Double {
