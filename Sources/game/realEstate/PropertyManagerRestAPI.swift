@@ -261,6 +261,40 @@ class PropertyManagerRestAPI {
             return code.response
         }
         
+        server.GET["/instantApartmentSell.js"] = { request, _ in
+        let code = JSResponse()
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
+            }
+            guard let address = request.mapPoint else {
+                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
+            }
+            guard let propertyID = request.queryParam("propertyID") else {
+                return JSCode.showError(txt: "Invalid request! Missing propertyID.", duration: 10).response
+            }
+            guard let apartment = Storage.shared.getApartment(id: propertyID) else {
+                return JSCode.showError(txt: "Apartment \(propertyID) not found!", duration: 10).response
+            }
+            guard apartment.address == address else {
+                return JSCode.showError(txt: "Property address mismatch.", duration: 10).response
+            }
+            
+            guard let playerSessionID = request.queryParam("playerSessionID"),
+                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                    code.add(.closeWindow(windowIndex))
+                    code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
+                    return code.response
+            }
+            guard apartment.ownerID == session.player.id else {
+                code.add(.showError(txt: "You can sell only your apartment.", duration: 10))
+                return code.response
+            }
+            self.gameEngine.realEstateAgent.instantApartmentSell(apartment, session: session)
+            code.add(.showSuccess(txt: "You have sold \(apartment.name)", duration: 5))
+            code.add(.loadHtml(windowIndex, htmlPath: "/propertyManager.html?\(apartment.address.asQueryParams)"))
+            return code.response
+        }
+        
         server.GET["/rentApartment.js"] = { request, _ in
         let code = JSResponse()
             guard let windowIndex = request.queryParam("windowIndex") else {
@@ -275,7 +309,7 @@ class PropertyManagerRestAPI {
             }
             
             guard let apartment = Storage.shared.getApartment(id: propertyID) else {
-                return JSCode.showError(txt: "Property \(propertyID) not found!", duration: 10).response
+                return JSCode.showError(txt: "Apartment \(propertyID) not found!", duration: 10).response
             }
             guard apartment.address == address else {
                 return JSCode.showError(txt: "Property address mismatch.", duration: 10).response

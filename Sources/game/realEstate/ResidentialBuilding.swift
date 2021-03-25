@@ -19,7 +19,7 @@ class ResidentialBuilding: Property, Codable {
     var monthlyMaintenanceCost: Double
     var monthlyIncome: Double
     var condition: Double
-    
+    let numberOfFlatsPerStorey = 4
     let storeyAmount: Int
     
     init(land: Land, storeyAmount: Int) {

@@ -90,19 +90,30 @@ class RealEstateAgent {
     
     func instantSell(address: MapPoint, session: PlayerSession) {
         guard var property = self.getProperty(address: address) else {
-            fatalError()
+            Logger.error("RealEstateAgent", "Could not find property at \(address.description)")
+            return
         }
         guard property.ownerID == session.player.id else {
-            fatalError()
+            Logger.error("RealEstateAgent", "Player \(session.player.login) is not owner of property \(property.id)")
+            return
         }
         guard let government = Storage.shared.getPlayer(id: SystemPlayerID.government.rawValue) else {
-            fatalError()
+            Logger.error("RealEstateAgent", "Could not goverment player")
+            return
         }
-        property.ownerID = government.id
         // road will dissapear as roads are not for sale
         if property is Road {
             self.properties = self.properties.filter { $0.address != address }
         }
+        if let building = property as? ResidentialBuilding {
+            let apartments = Storage.shared.getApartments(address: building.address).filter { $0.ownerID == building.ownerID }
+            for apartment in apartments {
+                apartment.ownerID = government.id
+            }
+            building.ownerID = government.id
+            self.recalculateFeesInTheBuilding(building)
+        }
+        property.ownerID = government.id
         self.saveProperties()
         
         let value = self.estimatePrice(property)
@@ -110,6 +121,27 @@ class RealEstateAgent {
         
         session.player.addIncome(sellPrice)
         
+        let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(session.player.wallet.money))
+        GameEventBus.gameEvents.onNext(updateWalletEvent)
+    }
+    
+    func instantApartmentSell(_ apartment: Apartment, session: PlayerSession) {
+        guard let government = Storage.shared.getPlayer(id: SystemPlayerID.government.rawValue) else {
+            Logger.error("RealEstateAgent", "Could not goverment player")
+            return
+        }
+        guard let building = self.getProperty(address: apartment.address) as? ResidentialBuilding else {
+            Logger.error("RealEstateAgent", "Could not find the building for apartment \(apartment.id)")
+            return
+        }
+        let value = self.estimateApartmentValue(apartment)
+        let sellPrice = (value * PriceList.instantSellFraction).rounded(toPlaces: 0)
+        
+        session.player.addIncome(sellPrice)
+        
+        apartment.ownerID = government.id
+        self.recalculateFeesInTheBuilding(building)
+    
         let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(session.player.wallet.money))
         GameEventBus.gameEvents.onNext(updateWalletEvent)
     }
@@ -182,7 +214,7 @@ class RealEstateAgent {
         let building = ResidentialBuilding(land: land, storeyAmount: storeyAmount)
         self.properties = self.properties.filter { $0.address != address }
         (1...building.storeyAmount).forEach { storey in
-            (1...3).forEach { flatNo in
+            (1...building.numberOfFlatsPerStorey).forEach { flatNo in
                 let apartment = Apartment(building, storey: storey, flatNumber: flatNo)
                 apartment.monthlyBuildingFee = PriceList.baseApartmentBuildingOwnerFee
                 Storage.shared.apartments.append(apartment)
@@ -224,8 +256,8 @@ class RealEstateAgent {
     func estimateApartmentValue(_ apartment: Apartment) -> Double {
         if let building = self.getProperty(address: apartment.address) as? ResidentialBuilding {
             let investmentCost = InvestmentPrice.buildingApartment(storey: building.storeyAmount)
-            let numberOfFlats = Double(3 * building.storeyAmount)
-            let baseValue = investmentCost/numberOfFlats + PriceList.baseBuildingDeveloperIncomeOnFlatSellPrice
+            let numberOfFlats = Double(building.numberOfFlatsPerStorey * building.storeyAmount)
+            let baseValue = (investmentCost/numberOfFlats + PriceList.baseBuildingDeveloperIncomeOnFlatSellPrice) * 1.42
             // TODO: add dependency on neighbourhood
             return (baseValue * building.condition * apartment.condition).rounded(toPlaces: 0)
         }
