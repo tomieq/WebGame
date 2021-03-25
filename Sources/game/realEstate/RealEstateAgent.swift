@@ -266,7 +266,10 @@ class RealEstateAgent {
     }
     
     func estimateRentFee(_ apartment: Apartment) -> Double {
-        return PriceList.baseApartmentRentalFee.rounded(toPlaces: 0)
+        if let building = self.getProperty(address: apartment.address) as? ResidentialBuilding {
+            return (PriceList.baseApartmentRentalFee * building.condition * apartment.condition).rounded(toPlaces: 0)
+        }
+        return 0.0
     }
     
     private func estimatePriceForLand(_ land: Land) -> Double? {

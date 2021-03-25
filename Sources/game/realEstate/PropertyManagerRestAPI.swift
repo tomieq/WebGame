@@ -378,18 +378,46 @@ class PropertyManagerRestAPI {
     private func buildingActions(building: ResidentialBuilding, windowIndex: String, session: PlayerSession) -> String {
         let raw = Resource.getAppResource(relativePath: "templates/propertyManagerApartment.html")
         let template = Template(raw: raw)
-        let myApartments = Storage.shared.getApartments(address: building.address).filter{ $0.ownerID == session.player.id }
+        let apartments = Storage.shared.getApartments(address: building.address)
         for i in (1...building.storeyAmount) {
             let storey = building.storeyAmount - i + 1
-            template.assign(variables: ["storey": storey.string], inNest: "storey")
+            
+            var html = ""
+            for flatNumber in (1...building.numberOfFlatsPerStorey) {
+                var attributes = [String:String]()
+                
+                let apartment = apartments.first { $0.storey == storey && $0.flatNumber == flatNumber }
+                
+                var css = "";
+                var text = ""
+                if apartment?.isRented ?? true {
+                    // is rented
+                    css = "background-color: #1F5E71;"
+                    text = ((apartment?.monthlyRentalFee ?? 0) - (apartment?.monthlyBills ?? 0)).money
+                } else if apartment?.ownerID != session.player.id {
+                    // is sold
+                    css = "border: 1px solid #1F5E71;"
+                    text = "Sold"
+                } else {
+                    // is unrented
+                    css = "background-color: #70311E;"
+                    text = (-1 * (apartment?.monthlyBills ?? 0)).money
+                }
+                
+                attributes["style"] = "width: \(Int(100/building.numberOfFlatsPerStorey))%; padding: 5px; \(css)"
+                let floated = Template.htmlNode(type: "div", attributes: ["style":"float: right;"], content: text)
+                html.append(Template.htmlNode(type: "td", attributes: attributes, content: "\(storey).\(flatNumber) \(floated)"))
+            }
+            template.assign(variables: ["tds": html], inNest: "storey")
         }
+        template.assign(variables: ["previewWidth":"\(120 * building.numberOfFlatsPerStorey)"])
         
         let apartmentView = Template(raw: Resource.getAppResource(relativePath: "templates/apartmentView.html"))
-        myApartments.forEach { apartment in
+        apartments.filter{ $0.ownerID == session.player.id }.forEach { apartment in
             var data = [String:String]()
             data["name"] = apartment.name
 
-            
+            data["condition"] = "\((apartment.condition * 100).rounded(toPlaces: 0))%"
             data["monthlyBills"] = apartment.monthlyBills.money
             data["monthlyBalance"] = (apartment.monthlyRentalFee - apartment.monthlyBills).money
             let estimatedPrice = self.gameEngine.realEstateAgent.estimateApartmentValue(apartment)

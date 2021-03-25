@@ -1,18 +1,16 @@
-<table style="border: 1px solid #a1f1fe; width: 200px; border-spacing: 10px; float: left; margin: 5px;">
+<p>Apartments in the building summary:</p>
+<table style="border: 1px solid #a1f1fe; width: {previewWidth}px; border-spacing: 10px; float: left; margin: 5px;">
 <tbody>
 [START storey]
-<tr>
-<td style="background-color: #1F5E71; padding: 4px; width: 50%;"> {storey}.1
-</td>
-<td style="background-color: #70311E; padding: 4px; width: 50%;"> {storey}.2 <i class="fa fa-exclamation-triangle"></i>
-</td>
+<tr style="">
+{tds}
 </tr>
 [END storey]
 </tbody>
 </table>
 <div style="clear: both;"></div>
 
-
+<p>Full list of your apartments in the building:</p>
 [START apartment]
 <div style="width: 400px; float: left; margin: 5px;">
 {apartmentView}
