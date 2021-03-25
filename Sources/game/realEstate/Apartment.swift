@@ -20,6 +20,7 @@ class Apartment: Codable {
     var monthlyRentalFee: Double
     var monthlyBills: Double
     var isRented: Bool
+    var condition: Double
     
     init(_ building: ResidentialBuilding, storey: Int, flatNumber: Int) {
         self.id = UUID().uuidString
@@ -32,5 +33,7 @@ class Apartment: Codable {
         self.monthlyRentalFee = 0
         self.monthlyBills = 622
         self.isRented = false
+        // condition varies from 0 to 1, 1 means 100%
+        self.condition = 1.0
     }
 }

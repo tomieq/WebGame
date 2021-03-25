@@ -220,7 +220,9 @@ class RealEstateAgent {
         if let building = self.getProperty(address: apartment.address) as? ResidentialBuilding {
             let investmentCost = InvestmentPrice.buildingApartment(storey: building.storeyAmount)
             let numberOfFlats = Double(3 * building.storeyAmount)
-            return (investmentCost/numberOfFlats + PriceList.baseBuildingDeveloperIncomeOnFlat).rounded(toPlaces: 0)
+            let baseValue = investmentCost/numberOfFlats + PriceList.baseBuildingDeveloperIncomeOnFlat
+            // TODO: add dependency on neighbourhood
+            return (baseValue * building.condition * apartment.condition).rounded(toPlaces: 0)
         }
         Logger.error("RealEstateAgent", "Apartment \(apartment.id) is detached from building!")
         return 900000000
