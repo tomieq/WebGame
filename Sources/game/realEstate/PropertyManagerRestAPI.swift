@@ -244,9 +244,6 @@ class PropertyManagerRestAPI {
             guard let address = request.mapPoint else {
                 return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
             }
-            guard let propertyID = request.queryParam("propertyID") else {
-                return JSCode.showError(txt: "Invalid request! Missing propertyID.", duration: 10).response
-            }
             guard let property = self.gameEngine.realEstateAgent.getProperty(address: address) else {
                 return JSCode.showError(txt: "Property at \(address.description) not found!", duration: 10).response
             }
@@ -279,7 +276,7 @@ class PropertyManagerRestAPI {
                 return JSCode.showError(txt: "Invalid request! Missing propertyID.", duration: 10).response
             }
             
-            guard let apartment = Storage.shared.getApartment(id: propertyID) as? Apartment else {
+            guard let apartment = Storage.shared.getApartment(id: propertyID) else {
                 return JSCode.showError(txt: "Property \(propertyID) not found!", duration: 10).response
             }
             guard apartment.address == address else {
@@ -354,10 +351,10 @@ class PropertyManagerRestAPI {
             var data = [String:String]()
             data["name"] = apartment.name
             data["status"] = apartment.isRented ? "RENTED" : "<i class='fa fa-exclamation-triangle'></i> EMPTY"
-            data["monthlyIncome"] = apartment.monthlyIncome.money
-            data["monthlyMaintenanceCost"] = apartment.monthlyMaintenanceCost.money
-            data["monthlyBalance"] = (apartment.monthlyIncome - apartment.monthlyMaintenanceCost).money
-            let estimatedPrice = self.gameEngine.realEstateAgent.estimatePrice(apartment) ?? 0
+            data["monthlyRentalFee"] = apartment.monthlyRentalFee.money
+            data["monthlyBills"] = apartment.monthlyBills.money
+            data["monthlyBalance"] = (apartment.monthlyRentalFee - apartment.monthlyBills).money
+            let estimatedPrice = self.gameEngine.realEstateAgent.estimateApartmentValue(apartment)
             data["estimatedValue"] = estimatedPrice.money
             data["instantSellPrice"] = (estimatedPrice * 0.85).money
             data["instantSellJS"] = JSCode.runScripts(windowIndex, paths: ["/instantApartmentSell.js?\(apartment.address.asQueryParams)&propertyID=\(apartment.id)"]).js

@@ -118,8 +118,11 @@ class RealEstateAgent {
     
     func rentApartment(_ apartment: Apartment) {
         let income = self.estimateRentFee(apartment)
-        apartment.monthlyIncome = income
+        apartment.monthlyRentalFee = income
         apartment.isRented = true
+        if let building = self.getProperty(address: apartment.address) as? ResidentialBuilding {
+            building.updateIncome()
+        }
     }
     
     func buildRoad(address: MapPoint, session: PlayerSession) throws {
@@ -176,12 +179,13 @@ class RealEstateAgent {
         let building = ResidentialBuilding(land: land, storeyAmount: storeyAmount)
         self.properties = self.properties.filter { $0.address != address }
         (1...building.storeyAmount).forEach { storey in
-            (1...2).forEach { flatNo in
+            (1...3).forEach { flatNo in
                 let apartment = Apartment(building, storey: storey, flatNumber: flatNo)
                 apartment.monthlyBuildingFee = 930
                 Storage.shared.apartments.append(apartment)
             }
         }
+        building.updateIncome()
         self.properties.append(building)
         self.saveProperties()
         
@@ -202,10 +206,19 @@ class RealEstateAgent {
         if let _ = property as? Road {
             return 0.0
         }
-        if let _ = property as? Apartment {
-            return 435000
+        if let building = property as? ResidentialBuilding {
+            var basePrice = self.estimatePrice(Land(address: building.address)) ?? 0
+            let apartments = Storage.shared.getApartments(address: building.address).filter { $0.ownerID == building.ownerID }
+            apartments.forEach { apartment in
+                basePrice = basePrice + (self.estimateApartmentValue(apartment))
+            }
+            return basePrice.rounded(toPlaces: 0)
         }
         return nil
+    }
+    
+    func estimateApartmentValue(_ apartment: Apartment) -> Double {
+        return 528000
     }
     
     func estimateRentFee(_ apartment: Apartment) -> Double {
