@@ -16,7 +16,7 @@ class GameMapManager {
         self.map = map
         let matrix = self.loadFileIntoMatrix(path)
         self.initCache(matrix: matrix)
-        self.map.tiles = self.initTiles(matrix: matrix)
+        self.map.setTiles(self.initTiles(matrix: matrix))
     }
     
     func addStreet(address: MapPoint) {

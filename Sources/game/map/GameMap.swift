@@ -12,22 +12,31 @@ class GameMap {
     let width: Int
     let height: Int
     let scale: Double
-    var tiles: [GameMapTile] = []
+    private var gameTiles: [MapPoint:GameMapTile]
+    var tiles: [GameMapTile] {
+        return Array(self.gameTiles.values)
+    }
     
     init(width: Int, height: Int, scale: Double) {
         self.width = width
         self.height = height
         self.scale = scale
-        self.tiles = []
+        self.gameTiles = [:]
+    }
+    
+    func setTiles(_ tiles: [GameMapTile]) {
+        self.gameTiles = [:]
+        for tile in tiles {
+            self.gameTiles[tile.address] = tile
+        }
     }
     
     func getTile(address: MapPoint) -> GameMapTile? {
-        return self.tiles.first{ $0.address == address }
+        return self.gameTiles[address]
     }
     
     func replaceTile(tile: GameMapTile) {
-        self.tiles = self.tiles.filter { $0.address != tile.address }
-        self.tiles.append(tile)
+        self.gameTiles[tile.address] = tile
     }
     
     func getNeighbourAddresses(to address: MapPoint, radius: Int) -> [MapPoint] {
