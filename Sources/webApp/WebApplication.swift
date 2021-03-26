@@ -26,8 +26,7 @@ class WebApplication {
             responseHeaders.setCookie(name: "sessionID", value: playerSession.id)
             Logger.info("WebApplication", "User \(player.login)(\(player.id)) started new session \(playerSession.id)")
             
-            let rawPage = Resource.getAppResource(relativePath: "templates/pageResponse.html")
-            let template = Template(raw: rawPage)
+            let template = Template(raw: ResourceCache.shared.getAppResource("templates/pageResponse.html"))
             
             let canvasLayers = ["canvasStreets", "canvasInteraction", "canvasTraffic", "canvasBuildings"]
             var html = canvasLayers.enumerated().map { (zIndex, canvasName) in
@@ -45,8 +44,8 @@ class WebApplication {
         
         
         server.GET["js/init.js"] = { request, _ in
-            let raw = Resource.getAppResource(relativePath: "templates/init.js")
-            let template = Template(raw: raw)
+
+            let template = Template(raw: ResourceCache.shared.getAppResource("templates/init.js"))
 
             var variables = [String:String]()
             variables["mapWidth"] = self.gameEngine.gameMap.width.string
@@ -59,8 +58,7 @@ class WebApplication {
         
         server.GET["js/loadMap.js"] = { request, _ in
 
-            let raw = Resource.getAppResource(relativePath: "templates/loadMap.js")
-            let template = Template(raw: raw)
+            let template = Template(raw: ResourceCache.shared.getAppResource("templates/loadMap.js"))
 
             for tile in self.gameEngine.gameMap.tiles {
                 var variables = [String:String]()
@@ -85,8 +83,7 @@ class WebApplication {
             guard let playerSessionID = request.queryParam("playerSessionID"), let _ = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return .ok(.text("alert('Invalid playerSessionID');"))
             }
-            let raw = Resource.getAppResource(relativePath: "templates/websockets.js")
-            let template = Template(raw: raw)
+            let template = Template(raw: ResourceCache.shared.getAppResource("templates/websockets.js"))
             template.assign(variables: ["url":"ws://192.168.88.50:5920/websocket", "playerSessionID": playerSessionID])
             return .ok(.javaScript(template.output()))
         }

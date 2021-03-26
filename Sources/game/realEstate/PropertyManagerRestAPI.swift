@@ -44,8 +44,7 @@ class PropertyManagerRestAPI {
             
             let value = self.gameEngine.realEstateAgent.estimatePrice(land)
             let transactionCosts = Invoice(netValue: value, taxPercent: TaxRates.propertyPurchaseTax, feePercent: 1)
-            let raw = Resource.getAppResource(relativePath: "templates/saleOffer.html")
-            let template = Template(raw: raw)
+            let template = Template(raw: ResourceCache.shared.getAppResource("templates/saleOffer.html"))
             var data = [String:String]()
             data["value"] = transactionCosts.netValue.money
             data["tax"] = transactionCosts.tax.money
@@ -114,8 +113,7 @@ class PropertyManagerRestAPI {
             }
             let owner = Storage.shared.getPlayer(id: ownerID)
             
-            let raw = Resource.getAppResource(relativePath: "templates/propertyInfo.html")
-            let template = Template(raw: raw)
+            let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyInfo.html"))
             var data = [String:String]()
             data["type"] = property.type
             data["name"] = property.name
@@ -159,8 +157,7 @@ class PropertyManagerRestAPI {
                 return .ok(.text("Property at \(address.description) is not yours!"))
             }
             
-            let raw = Resource.getAppResource(relativePath: "templates/propertyManager.html")
-            let template = Template(raw: raw)
+            let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManager.html"))
             var data = [String:String]()
             data["name"] = property.name
             data["type"] = property.type
@@ -337,8 +334,8 @@ class PropertyManagerRestAPI {
     }
     
     private func landPropertyActions(land: Land, windowIndex: String) -> String {
-        let raw = Resource.getAppResource(relativePath: "templates/propertyManagerLand.html")
-        let template = Template(raw: raw)
+
+        let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManagerLand.html"))
         
         if self.gameEngine.realEstateAgent.hasDirectAccessToRoad(address: land.address) {
 
@@ -376,8 +373,8 @@ class PropertyManagerRestAPI {
     
     
     private func buildingActions(building: ResidentialBuilding, windowIndex: String, session: PlayerSession) -> String {
-        let raw = Resource.getAppResource(relativePath: "templates/propertyManagerApartment.html")
-        let template = Template(raw: raw)
+
+        let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManagerApartment.html"))
         let apartments = Storage.shared.getApartments(address: building.address)
         for i in (1...building.storeyAmount) {
             let storey = building.storeyAmount - i + 1
@@ -412,7 +409,7 @@ class PropertyManagerRestAPI {
         }
         template.assign(variables: ["previewWidth":"\(120 * building.numberOfFlatsPerStorey)"])
         
-        let apartmentView = Template(raw: Resource.getAppResource(relativePath: "templates/apartmentView.html"))
+        let apartmentView = Template(raw: ResourceCache.shared.getAppResource("templates/apartmentView.html"))
         for apartment in (apartments.filter{ $0.ownerID == session.player.id }) {
             var data = [String:String]()
             data["name"] = apartment.name

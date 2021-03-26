@@ -9,6 +9,6 @@ import Foundation
 
 extension Template {
     convenience init(from path: String) {
-        self.init(raw: Resource.getAppResource(relativePath: path))
+        self.init(raw: ResourceCache.shared.getAppResource(path))
     }
 }
