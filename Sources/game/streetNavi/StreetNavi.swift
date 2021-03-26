@@ -14,7 +14,6 @@ class StreetNavi {
     private let disposeBag = DisposeBag()
     
     init(gameMap: GameMap) {
-        // TODO AdjacencyList should be updated when map changes
         self.gameMap = gameMap
         self.reload()
         
@@ -30,6 +29,7 @@ class StreetNavi {
     }
     
     func reload() {
+        Logger.info("StreetNavi", "Reload map data...")
         self.adjacencyList.adjacencyDict = [:]
         // find all intersections - those are vertexes for Dijkstra's algorithm
         var vertexes = [Vertex<MapPoint>]()

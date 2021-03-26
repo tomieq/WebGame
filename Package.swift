@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "WebGame",
     dependencies: [
-        .package(url: "https://github.com/tomieq/swifter.git", .upToNextMajor(from: "1.5.2")),
+        .package(url: "https://github.com/tomieq/swifter.git", .upToNextMajor(from: "1.5.4")),
         .package(url: "https://github.com/ReactiveX/RxSwift.git", .exact("6.1.0"))
     ],
     targets: [

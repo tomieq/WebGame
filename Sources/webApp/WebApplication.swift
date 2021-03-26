@@ -18,7 +18,7 @@ class WebApplication {
         self.propertyManagerAPI = PropertyManagerRestAPI(server, gameEngine: self.gameEngine)
 
         server.GET["/"] = { request, responseHeaders in
-            request.headers["connection"] = nil
+            request.disableKeepAlive = true
             guard let userID = request.queryParam("userID"), let player = (Storage.shared.players.first{ $0.id == userID }) else {
                     return .ok(.htmlBody("Invalid userID"))
             }
@@ -32,7 +32,7 @@ class WebApplication {
             var html = canvasLayers.enumerated().map { (zIndex, canvasName) in
                 return Template.htmlNode(type: "canvas", attributes: ["id":canvasName,"style":"z-index:\(zIndex);"])
             }.joined(separator: "\n")
-            html.append(Template.htmlNode(type: "div", attributes: ["id":"wallet"], content: "$ 1 000 000"))
+            html.append(Template.htmlNode(type: "div", attributes: ["id":"wallet"], content: player.wallet.money))
             let calendarIcon = Template.htmlNode(type: "i", attributes: ["class":"fa fa-calendar"], content: "")
             let now = GameDate(monthIteration: Storage.shared.monthIteration)
             let calendarContent = Template.htmlNode(type: "span", attributes: ["id":"gameDate"], content: "\(now.month)/\(now.year)")
@@ -44,7 +44,7 @@ class WebApplication {
         
         
         server.GET["js/init.js"] = { request, _ in
-            request.headers["connection"] = nil
+            request.disableKeepAlive = true
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/init.js"))
 
             var variables = [String:String]()
@@ -57,7 +57,7 @@ class WebApplication {
         }
         
         server.GET["js/loadMap.js"] = { request, _ in
-            request.headers["connection"] = nil
+            request.disableKeepAlive = true
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/loadMap.js"))
 
             for tile in self.gameEngine.gameMap.tiles {
@@ -106,7 +106,7 @@ class WebApplication {
         })
         
         server.notFoundHandler = { request, responseHeaders in
-            request.headers["connection"] = nil
+            request.disableKeepAlive = true
             let filePath = Resource.absolutePath(forPublicResource: request.path)
             if FileManager.default.fileExists(atPath: filePath) {
 
