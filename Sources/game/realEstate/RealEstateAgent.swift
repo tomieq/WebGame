@@ -15,17 +15,17 @@ class RealEstateAgent {
         self.mapManager = mapManager
         self.properties = []
         
-        Storage.shared.landProperties.forEach { land in
+        for land in Storage.shared.landProperties {
             self.properties.append(land)
             let tile = GameMapTile(address: land.address, type: .soldLand)
             self.mapManager.map.replaceTile(tile: tile)
         }
-        Storage.shared.roadProperties.forEach { road in
+        for road in Storage.shared.roadProperties {
             self.properties.append(road)
             self.mapManager.addStreet(address: road.address)
         }
         
-        Storage.shared.residentialBuildings.forEach { building in
+        for building in Storage.shared.residentialBuildings {
             self.properties.append(building)
             let tile = GameMapTile(address: building.address, type: .building(size: building.storeyAmount))
             self.mapManager.map.replaceTile(tile: tile)
@@ -217,8 +217,8 @@ class RealEstateAgent {
         
         let building = ResidentialBuilding(land: land, storeyAmount: storeyAmount)
         self.properties = self.properties.filter { $0.address != address }
-        (1...building.storeyAmount).forEach { storey in
-            (1...building.numberOfFlatsPerStorey).forEach { flatNo in
+        for storey in (1...building.storeyAmount) {
+            for flatNo in (1...building.numberOfFlatsPerStorey) {
                 let apartment = Apartment(building, storey: storey, flatNumber: flatNo)
                 apartment.monthlyBuildingFee = PriceList.baseApartmentBuildingOwnerFee
                 Storage.shared.apartments.append(apartment)
@@ -248,7 +248,7 @@ class RealEstateAgent {
         if let building = property as? ResidentialBuilding {
             var basePrice = self.estimatePrice(Land(address: building.address))
             let apartments = Storage.shared.getApartments(address: building.address).filter { $0.ownerID == building.ownerID }
-            apartments.forEach { apartment in
+            for apartment in apartments {
                 basePrice += self.estimateApartmentValue(apartment)
             }
             return basePrice.rounded(toPlaces: 0)
@@ -305,7 +305,6 @@ class RealEstateAgent {
     }
     
     func recalculateFeesInTheBuilding(_ building: ResidentialBuilding) {
-        let apartments = Storage.shared.getApartments(address: building.address)
         
         let baseBuildingMonthlyCosts: Double = 1300 + 1100 * Double(building.storeyAmount)
         let numberOfFlats = Double(building.storeyAmount * 3)
@@ -314,7 +313,7 @@ class RealEstateAgent {
         
         var income: Double = 0
         var spendings = baseBuildingMonthlyCosts
-        apartments.forEach { apartment in
+        for apartment in Storage.shared.getApartments(address: building.address) {
             
             switch apartment.isRented {
                 case true:

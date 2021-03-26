@@ -62,7 +62,7 @@ class WebApplication {
             let raw = Resource.getAppResource(relativePath: "templates/loadMap.js")
             let template = Template(raw: raw)
 
-            self.gameEngine.gameMap.tiles.forEach { tile in
+            for tile in self.gameEngine.gameMap.tiles {
                 var variables = [String:String]()
                 variables["x"] = tile.address.x.string
                 variables["y"] = tile.address.y.string

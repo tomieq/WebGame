@@ -48,9 +48,9 @@ class GameTraffic {
         
         Observable<Int>.interval(.seconds(10), scheduler: MainScheduler.instance).bind { [weak self] _ in
             
-            self?.runningCars.forEach { (session, vehicleList) in
+            for (session, vehicleList) in self?.runningCars ?? [:] {
                 if vehicleList.count < 4 {
-                    (0...(4-vehicleList.count)).forEach { _ in 
+                    for _ in (0...(4-vehicleList.count)) { 
                         buildingPoints.shuffle()
                         if let startBuilding = buildingPoints.first?.address,
                             let endBuilding = buildingPoints.last?.address,

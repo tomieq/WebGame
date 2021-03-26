@@ -30,7 +30,7 @@ class WebsocketHandler {
         let command = WebsocketOutCommand<T>(commandType, payload)
         if let json = command.toJSONString() {
             Logger.info("WebsocketHandler", "Send to \(playerSessionID ?? "nil"): \(json)")
-            self.activeSessions.filter{ $0.playerSession?.id == playerSessionID}.forEach { playerSession in
+            for playerSession in (self.activeSessions.filter{ $0.playerSession?.id == playerSessionID}) {
                 playerSession.websocketSession.writeText(json)
             }
         } else {
@@ -43,7 +43,7 @@ class WebsocketHandler {
         let command = WebsocketOutCommand<T>(commandType, payload)
         if let json = command.toJSONString() {
             Logger.info("WebsocketHandler", "Send to all: \(json)")
-            self.activeSessions.forEach { playerSession in
+            for playerSession in self.activeSessions {
                 playerSession.websocketSession.writeText(json)
             }
         } else {

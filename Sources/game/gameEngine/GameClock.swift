@@ -40,7 +40,7 @@ class GameClock {
                 }
             }
         }
-        self.realEstateAgent.getProperties().compactMap { $0 as? ResidentialBuilding }.forEach { building in
+        for building in (self.realEstateAgent.getProperties().compactMap { $0 as? ResidentialBuilding }) {
             self.realEstateAgent.recalculateFeesInTheBuilding(building)
         }
         

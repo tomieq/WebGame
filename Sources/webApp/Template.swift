@@ -41,7 +41,7 @@ class Template {
                 nests[nestName] = self.subContent(from: nestStart, to: nestEnd)
            }
         }
-        nests.forEach { txt in
+        for txt in nests {
            self.content = self.content.replacingOccurrences(of: txt.value, with: self.nestTag(txt.key))
         }
     }
@@ -72,7 +72,7 @@ class Template {
     func assign(variables: [String:String]?, inNest nestName: String) {
         if let nestContent = self.nestedContent[nestName] {
             var content = "\(nestContent)"
-            variables?.forEach { variable in
+            for variable in variables ?? [:] {
                 content = content.replacingOccurrences(of: "{\(variable.key)}", with: variable.value)
             }
             let nestTag = self.nestTag(nestName)
@@ -81,7 +81,7 @@ class Template {
     }
     
     func assign(variables: [String:String]) {
-        variables.forEach { variable in
+        for variable in variables {
             self.content = self.content.replacingOccurrences(of: "{\(variable.key)}", with: variable.value)
         }
     }

@@ -41,7 +41,7 @@ class StreetNavi {
             }
         }
         // find all edges
-        vertexes.forEach { vertex in
+        for vertex in vertexes {
             self.findNeighbourVertexes(for: vertex, using: self.adjacencyList, type: .directed);
         }
     }
@@ -49,7 +49,7 @@ class StreetNavi {
     private func findNeighbourVertexes(for vertex: Vertex<MapPoint>, using graphable: AdjacencyList<MapPoint>, type: EdgeType) {
         let vertexAddress = vertex.data
         
-        MapDirection.allCases.forEach { direction in
+        for direction in MapDirection.allCases {
             var naighbourAddress = vertexAddress.move(direction)
             var distance = 1;
             while let neighbourTile = self.gameMap.getTile(address: naighbourAddress) {
@@ -75,7 +75,7 @@ class StreetNavi {
                 return nil
         }
         
-        [startTile, stopTile].forEach { tile in
+        for tile in [startTile, stopTile] {
             if !tile.isVertex() {
                 let tileVertex = naviEngine.createVertex(data: tile.address)
                 self.findNeighbourVertexes(for: tileVertex, using: naviEngine, type: .undirected)
@@ -84,7 +84,7 @@ class StreetNavi {
         
         if let edges = naviEngine.dijkstra(from: naviEngine.createVertex(data: startAddress), to: naviEngine.createVertex(data: stopAddress)) {
             var points: [MapPoint] = [startAddress]
-            edges.forEach { edge in
+            for edge in edges {
                 points.append(edge.destination.data)
             }
             Logger.debug("StreetNavi", "Found the way from \(startAddress.description) to \(stopAddress.description): [ \(points.map{$0.description}.joined(separator: " --> ")) ]")

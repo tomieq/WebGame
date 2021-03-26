@@ -24,7 +24,7 @@ class GameMapManager {
         if let tile = self.evaluateLocalStreetMapTile(address: address) {
             self.map.replaceTile(tile: tile)
         }
-        self.map.getNeighbourAddresses(to: address, radius: 1).forEach { addr in
+        for addr in self.map.getNeighbourAddresses(to: address, radius: 1) {
             switch (self.streetCache.first { $0.address == addr}) {
                 case .none:
                     break
@@ -49,9 +49,9 @@ class GameMapManager {
         if let content = try? String(contentsOfFile: Resource.absolutePath(forAppResource: path)) {
             let lines = content.components(separatedBy: "\n")
             
-            lines.enumerated().forEach { (y, line) in
+            for (y, line) in lines.enumerated() {
                 let elements = line.components(separatedBy: ",")
-                elements.enumerated().forEach { (x, chr) in
+                for (x, chr) in elements.enumerated() {
                     if matrix[x] == nil { matrix[x] = [:] }
                     matrix[x]?[y] = GameMapFileEntry(rawValue: chr)
                 }
@@ -61,8 +61,8 @@ class GameMapManager {
     }
 
     private func initCache(matrix: MapMatrix) {
-        matrix.forEach { dataX in
-            dataX.value.forEach { dataY in
+        for dataX in matrix {
+            for dataY in dataX.value {
                 switch dataY.value {
                     case .localStreet:
                         self.streetCache.append(StreetCache(address: MapPoint(x: dataX.key, y: dataY.key), type: .localStreet))
@@ -77,8 +77,8 @@ class GameMapManager {
 
     private func initTiles(matrix: MapMatrix) -> [GameMapTile] {
         var mapTiles: [GameMapTile] = []
-        matrix.forEach { dataX in
-            dataX.value.forEach { dataY in
+        for dataX in matrix {
+            for dataY in dataX.value {
                 
                 switch dataY.value {
                     

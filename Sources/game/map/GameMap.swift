@@ -39,11 +39,11 @@ class GameMap {
         let xMax = address.x + radius
         let yMin = address.y - radius
         let yMax = address.y + radius
-        (xMin...xMax).forEach { x in
+        for x in (xMin...xMax) {
             points.append(MapPoint(x: x, y: yMin))
             points.append(MapPoint(x: x, y: yMax))
         }
-        ((yMin + 1)...(yMax - 1)).forEach { y in
+        for y in ((yMin + 1)...(yMax - 1)) {
             points.append(MapPoint(x: xMin, y: y))
             points.append(MapPoint(x: xMax, y: y))
         }

@@ -353,7 +353,7 @@ class PropertyManagerRestAPI {
             buildRoadData["actionTitle"] = "Start investment"
             template.assign(variables: buildRoadData, inNest: "investment")
             
-            [4, 6, 8, 10].forEach { storey in
+            for storey in [4, 6, 8, 10] {
                 var buildHouseData = [String:String]()
                 let invoice = Invoice(netValue: InvestmentPrice.buildingApartment(storey: storey), taxPercent: TaxRates.investmentTax)
                 buildHouseData["name"] = "\(storey) storey Apartment"
@@ -413,7 +413,7 @@ class PropertyManagerRestAPI {
         template.assign(variables: ["previewWidth":"\(120 * building.numberOfFlatsPerStorey)"])
         
         let apartmentView = Template(raw: Resource.getAppResource(relativePath: "templates/apartmentView.html"))
-        apartments.filter{ $0.ownerID == session.player.id }.forEach { apartment in
+        for apartment in (apartments.filter{ $0.ownerID == session.player.id }) {
             var data = [String:String]()
             data["name"] = apartment.name
 
