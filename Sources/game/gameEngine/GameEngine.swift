@@ -38,8 +38,10 @@ class GameEngine {
                 }
             case .reloadMap:
                 self?.websocketHandler.sendToAll(commandType: .reloadMap, payload: "\(gameEvent.playerSession?.player.id ?? "nil")")
-            case .updateWallet(let wallet):
-                self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .updateWallet, payload: wallet)
+                case .updateWallet(let wallet):
+                    self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .updateWallet, payload: wallet)
+            case .updateGameDate(let date):
+                self?.websocketHandler.sendToAll(commandType: .updateGameDate, payload: date)
             case .tileClicked(let point):
 
                 switch self?.realEstateAgent.isForSale(address: point) ?? false {

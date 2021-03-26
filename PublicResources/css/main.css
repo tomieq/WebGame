@@ -27,6 +27,21 @@ canvas {
     padding: 6px;
 }
 
+#gameClock {
+    position: fixed;
+    top: 0px;
+    left: 50%;
+    width: 110px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin-left: -55px;
+    background-color: #252832;
+    text-align: center;
+    z-index: 6;
+    color: #FF8000;
+    box-shadow: 0px 0px 10px #141414;
+}
+
 hr {
     border: 1px solid #5B9AAD;
 }

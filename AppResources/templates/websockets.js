@@ -91,6 +91,9 @@ class WebSocketHandler {
             case "updateWallet":
                 updateWallet(json["payload"]);
                 break;
+            case "updateGameDate":
+                updateGameDate(json["payload"]);
+                break;
             case "notification":
                 var payload = json["payload"];
                 new Noty({

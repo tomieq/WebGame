@@ -16,10 +16,14 @@ class GameClock {
     init(realEstateAgent: RealEstateAgent) {
         self.realEstateAgent = realEstateAgent
         
-        Observable<Int>.interval(.seconds(300), scheduler: MainScheduler.instance).bind { [weak self] _ in
+        Observable<Int>.interval(.seconds(33), scheduler: MainScheduler.instance).bind { [weak self] _ in
             Logger.info("GameClock", "End of the month")
             self?.endTheMonth()
             Storage.shared.monthIteration += 1
+            
+            let now = GameDate(monthIteration: Storage.shared.monthIteration)
+            let updateDateEvent = GameEvent(playerSession: nil, action: .updateGameDate("\(now.month)/\(now.year)"))
+            GameEventBus.gameEvents.onNext(updateDateEvent)
         }.disposed(by: self.disposeBag)
     }
     

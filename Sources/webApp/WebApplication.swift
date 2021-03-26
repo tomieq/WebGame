@@ -34,6 +34,10 @@ class WebApplication {
                 return Template.htmlNode(type: "canvas", attributes: ["id":canvasName,"style":"z-index:\(zIndex);"])
             }.joined(separator: "\n")
             html.append(Template.htmlNode(type: "div", attributes: ["id":"wallet"], content: "$ 1 000 000"))
+            let calendarIcon = Template.htmlNode(type: "i", attributes: ["class":"fa fa-calendar"], content: "")
+            let now = GameDate(monthIteration: Storage.shared.monthIteration)
+            let calendarContent = Template.htmlNode(type: "span", attributes: ["id":"gameDate"], content: "\(now.month)/\(now.year)")
+            html.append(Template.htmlNode(type: "div", attributes: ["id":"gameClock"], content: "\(calendarIcon) \(calendarContent)"))
             
             template.assign(variables: ["body": html, "playerSessionID": playerSession.id])
             return template.asResponse()

@@ -14,6 +14,7 @@ enum WebsocketCommandOutType: String, Codable {
     case openWindow
     case notification
     case updateWallet
+    case updateGameDate
 }
 
 class WebsocketOutCommand<T: Codable>: Codable {
