@@ -11,7 +11,7 @@ import Foundation
 class Template {
     
     private var content: String = ""
-    private var contentCache: String
+    private let contentCache: String
     private var nestedContent: [String:String] = [:]
     private let nestPattern = #"(\[START)[(\s)+]([a-zA-Z0-9-_]+)\](.+?)(\[END\s[a-zA-Z0-9-_]+\])"#
     

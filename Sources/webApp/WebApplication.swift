@@ -64,11 +64,12 @@ class WebApplication {
                 var variables = [String:String]()
                 variables["x"] = tile.address.x.string
                 variables["y"] = tile.address.y.string
-                variables["path"] = tile.type.image.path
-                variables["imageWidth"] = tile.type.image.width.string
-                variables["imageHeight"] = tile.type.image.height.string
+                let image = tile.type.image
+                variables["path"] = image.path
+                variables["imageWidth"] = image.width.string
+                variables["imageHeight"] = image.height.string
 
-                if case .street(_) = tile.type {
+                if tile.isStreet() {
                     template.assign(variables: variables, inNest: "street")
                 } else {
                     template.assign(variables: variables, inNest: "building")
