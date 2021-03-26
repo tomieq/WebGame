@@ -32,7 +32,7 @@ class ResidentialBuilding: Property, Codable {
         self.monthlyIncome = 0
         self.storeyAmount = storeyAmount
         self.investmentsNetValue = (land.investmentsNetValue + InvestmentPrice.buildingApartment(storey: self.storeyAmount)).rounded(toPlaces: 0)
-        self.condition = 1.0
+        self.condition = 100.0
     }
     
 }

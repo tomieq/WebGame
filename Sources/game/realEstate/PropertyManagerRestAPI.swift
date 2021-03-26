@@ -417,7 +417,7 @@ class PropertyManagerRestAPI {
             var data = [String:String]()
             data["name"] = apartment.name
 
-            data["condition"] = "\((apartment.condition * 100).rounded(toPlaces: 0))%"
+            data["condition"] = "\(String(format: "%0.2f", apartment.condition))%"
             data["monthlyBills"] = apartment.monthlyBills.money
             data["monthlyBalance"] = (apartment.monthlyRentalFee - apartment.monthlyBills).money
             let estimatedPrice = self.gameEngine.realEstateAgent.estimateApartmentValue(apartment)

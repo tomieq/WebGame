@@ -259,7 +259,7 @@ class RealEstateAgent {
             let numberOfFlats = Double(building.numberOfFlatsPerStorey * building.storeyAmount)
             let baseValue = (investmentCost/numberOfFlats + PriceList.baseBuildingDeveloperIncomeOnFlatSellPrice) * 1.42
             // TODO: add dependency on neighbourhood
-            return (baseValue * building.condition * apartment.condition).rounded(toPlaces: 0)
+            return (baseValue * building.condition/100 * apartment.condition/100).rounded(toPlaces: 0)
         }
         Logger.error("RealEstateAgent", "Apartment \(apartment.id) is detached from building!")
         return 900000000
@@ -267,7 +267,7 @@ class RealEstateAgent {
     
     func estimateRentFee(_ apartment: Apartment) -> Double {
         if let building = self.getProperty(address: apartment.address) as? ResidentialBuilding {
-            return (PriceList.baseApartmentRentalFee * building.condition * apartment.condition).rounded(toPlaces: 0)
+            return (PriceList.baseApartmentRentalFee * building.condition/100 * apartment.condition/100).rounded(toPlaces: 0)
         }
         return 0.0
     }
