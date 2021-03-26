@@ -17,6 +17,7 @@ class PropertyManagerRestAPI {
         self.gameEngine = gameEngine
         
         server.GET["/openSaleOffer.js"] = { request, _ in
+            request.headers["connection"] = nil
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
             }
@@ -34,6 +35,7 @@ class PropertyManagerRestAPI {
         }
         
         server.GET["/saleOffer.html"] = { request, _ in
+            request.headers["connection"] = nil
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
             }
@@ -57,6 +59,7 @@ class PropertyManagerRestAPI {
         }
         
         server.GET["/buyLandProperty.js"] = {request, _ in
+            request.headers["connection"] = nil
             let code = JSResponse()
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
@@ -86,6 +89,7 @@ class PropertyManagerRestAPI {
         }
         
         server.GET["/openPropertyInfo.js"] = { request, _ in
+            request.headers["connection"] = nil
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
             }
@@ -99,6 +103,7 @@ class PropertyManagerRestAPI {
         }
         
         server.GET["/propertyInfo.html"] = { request, _ in
+            request.headers["connection"] = nil
             guard let _ = request.queryParam("windowIndex") else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
             }
@@ -123,6 +128,7 @@ class PropertyManagerRestAPI {
         }
         
         server.GET["/openPropertyManager.js"] = { request, _ in
+            request.headers["connection"] = nil
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
             }
@@ -139,7 +145,7 @@ class PropertyManagerRestAPI {
         }
         
         server.GET["/propertyManager.html"] = { request, _ in
-            
+            request.headers["connection"] = nil
             guard let playerSessionID = request.queryParam("playerSessionID"),
                 let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                     return .ok(.text("Invalid request! Missing session ID."))
@@ -190,6 +196,7 @@ class PropertyManagerRestAPI {
         }
         
         server.GET["/startInvestment.js"] = { request, _ in
+            request.headers["connection"] = nil
             let code = JSResponse()
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
@@ -232,7 +239,8 @@ class PropertyManagerRestAPI {
         }
         
         server.GET["/instantSell.js"] = { request, _ in
-        let code = JSResponse()
+            request.headers["connection"] = nil
+            let code = JSResponse()
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
             }
@@ -259,7 +267,8 @@ class PropertyManagerRestAPI {
         }
         
         server.GET["/instantApartmentSell.js"] = { request, _ in
-        let code = JSResponse()
+            request.headers["connection"] = nil
+            let code = JSResponse()
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
             }
@@ -293,7 +302,8 @@ class PropertyManagerRestAPI {
         }
         
         server.GET["/rentApartment.js"] = { request, _ in
-        let code = JSResponse()
+            request.headers["connection"] = nil
+            let code = JSResponse()
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
             }
@@ -427,7 +437,7 @@ class PropertyManagerRestAPI {
             } else {
                 data["monthlyRentalFee"] = self.gameEngine.realEstateAgent.estimateRentFee(apartment).money
                 data["estimatedValue"] = estimatedPrice.money
-                data["instantSellPrice"] = (estimatedPrice * 0.85).money
+                data["instantSellPrice"] = (estimatedPrice * PriceList.instantSellFraction).money
                 data["instantSellJS"] = JSCode.runScripts(windowIndex, paths: ["/instantApartmentSell.js?\(apartment.address.asQueryParams)&propertyID=\(apartment.id)"]).js
                 let estimatedRent = self.gameEngine.realEstateAgent.estimateRentFee(apartment).money
                 data["actionTitle"] = "Rent for \(estimatedRent)"
