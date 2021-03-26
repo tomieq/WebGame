@@ -40,15 +40,17 @@ class GameClock {
                 }
             }
         }
-        for building in (self.realEstateAgent.getProperties().compactMap { $0 as? ResidentialBuilding }) {
-            self.realEstateAgent.recalculateFeesInTheBuilding(building)
+        
+        for land in Storage.shared.landProperties {
+            self.applyWalletChanges(property: land)
         }
         
-        for property in self.realEstateAgent.getProperties() {
-            if let player = (Storage.shared.players.first { $0.id == property.ownerID }), player.type == .user {
-                player.addIncome(property.monthlyIncome)
-                player.wallet -= property.monthlyMaintenanceCost
-            }
+        for road in Storage.shared.roadProperties {
+            self.applyWalletChanges(property: road)
+        }
+        for building in Storage.shared.residentialBuildings {
+            self.realEstateAgent.recalculateFeesInTheBuilding(building)
+            self.applyWalletChanges(property: building)
         }
         
         for session in PlayerSessionManager.shared.getActiveSessions() {
@@ -56,6 +58,13 @@ class GameClock {
             GameEventBus.gameEvents.onNext(updateWalletEvent)
         }
         
+    }
+    
+    private func applyWalletChanges(property: Property) {
+        if let player = (Storage.shared.players.first { $0.id == property.ownerID }), player.type == .user {
+            player.addIncome(property.monthlyIncome)
+            player.wallet -= property.monthlyMaintenanceCost
+        }
     }
 }
 

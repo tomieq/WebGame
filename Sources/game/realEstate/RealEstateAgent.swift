@@ -7,26 +7,33 @@
 
 import Foundation
 
+enum PropertyType {
+    case land
+    case road
+    case residentialBuilding
+}
+
+
 class RealEstateAgent {
     private let mapManager: GameMapManager
-    private var properties: [Property]
+    private var mapping: [MapPoint:PropertyType]
     
     init(mapManager: GameMapManager) {
         self.mapManager = mapManager
-        self.properties = []
+        self.mapping = [:]
         
         for land in Storage.shared.landProperties {
-            self.properties.append(land)
+            self.mapping[land.address] = .land
             let tile = GameMapTile(address: land.address, type: .soldLand)
             self.mapManager.map.replaceTile(tile: tile)
         }
         for road in Storage.shared.roadProperties {
-            self.properties.append(road)
+            self.mapping[road.address] = .road
             self.mapManager.addStreet(address: road.address)
         }
         
         for building in Storage.shared.residentialBuildings {
-            self.properties.append(building)
+            self.mapping[building.address] = .residentialBuilding
             let tile = GameMapTile(address: building.address, type: .building(size: building.storeyAmount))
             self.mapManager.map.replaceTile(tile: tile)
         }
@@ -40,30 +47,26 @@ class RealEstateAgent {
     }
     
     func getProperty(address: MapPoint) -> Property? {
-        return self.properties.first { $0.address == address }
+        guard let type = self.mapping[address] else {
+            return nil
+        }
+        switch type {
+        case .land:
+            return Storage.shared.landProperties.first { $0.address == address }
+        case .road:
+            return Storage.shared.roadProperties.first { $0.address == address }
+        case .residentialBuilding:
+            return Storage.shared.residentialBuildings.first { $0.address == address }
+        }
     }
 
-    func getProperty(id: String) -> Property? {
-        return self.properties.first { $0.id == id }
-    }
-    
-    func getProperties() -> [Property] {
-        return self.properties
-    }
-    
-    private func saveProperties() {
-        Storage.shared.landProperties = self.properties.compactMap { $0 as? Land }
-        Storage.shared.roadProperties = self.properties.compactMap { $0 as? Road }
-        Storage.shared.residentialBuildings = self.properties.compactMap { $0 as? ResidentialBuilding }
-    }
-    
-    func buyProperty(address: MapPoint, session: PlayerSession) throws {
+    func buyLandProperty(address: MapPoint, session: PlayerSession) throws {
         
         guard self.isForSale(address: address) else {
             throw BuyPropertyError.propertyNotForSale
         }
-        var property = self.getProperty(address: address) ?? Land(address: address)
-        let price = self.estimatePrice(property)
+        let land = (Storage.shared.landProperties.first{ $0.address == address }) ?? Land(address: address)
+        let price = self.estimatePrice(land)
         let invoice = Invoice(netValue: price, taxPercent: TaxRates.propertyPurchaseTax, feePercent: 1)
         
         // process the transaction
@@ -72,15 +75,14 @@ class RealEstateAgent {
             throw BuyPropertyError.financialTransactionProblem(reason: reason)
         }
         
-        property.ownerID = session.player.id
-        property.purchaseNetValue = invoice.netValue
+        land.ownerID = session.player.id
+        land.purchaseNetValue = invoice.netValue
         
-        self.properties = self.properties.filter { $0.address != address }
-        self.properties.append(property)
-        self.saveProperties()
-        if let land = property as? Land {
-            self.mapManager.map.replaceTile(tile: land.mapTile)
-        }
+        self.mapping[land.address] = .land
+        Storage.shared.landProperties = Storage.shared.landProperties.filter { $0.address != address }
+        Storage.shared.landProperties.append(land)
+
+        self.mapManager.map.replaceTile(tile: land.mapTile)
         
         let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(session.player.wallet.money))
         GameEventBus.gameEvents.onNext(updateWalletEvent)
@@ -88,7 +90,7 @@ class RealEstateAgent {
         let reloadMapEvent = GameEvent(playerSession: nil, action: .reloadMap)
         GameEventBus.gameEvents.onNext(reloadMapEvent)
         
-        let announcementEvent = GameEvent(playerSession: nil, action: .notification(UINotification(text: "New transaction on the market. Player \(session.player.login) has just bought property `\(property.name)`", level: .info, duration: 10)))
+        let announcementEvent = GameEvent(playerSession: nil, action: .notification(UINotification(text: "New transaction on the market. Player \(session.player.login) has just bought property `\(land.name)`", level: .info, duration: 10)))
         GameEventBus.gameEvents.onNext(announcementEvent)
     }
     
@@ -107,7 +109,8 @@ class RealEstateAgent {
         }
         // road will dissapear as roads are not for sale
         if property is Road {
-            self.properties = self.properties.filter { $0.address != address }
+            Storage.shared.roadProperties = Storage.shared.roadProperties.filter { $0.address != address }
+            self.mapping[property.address] = nil
         }
         if let building = property as? ResidentialBuilding {
             let apartments = Storage.shared.getApartments(address: building.address).filter { $0.ownerID == building.ownerID }
@@ -118,7 +121,6 @@ class RealEstateAgent {
             self.recalculateFeesInTheBuilding(building)
         }
         property.ownerID = government.id
-        self.saveProperties()
         
         let value = self.estimatePrice(property)
         let sellPrice = (value * PriceList.instantSellFraction).rounded(toPlaces: 0)
@@ -134,7 +136,7 @@ class RealEstateAgent {
             Logger.error("RealEstateAgent", "Could not goverment player")
             return
         }
-        guard let building = self.getProperty(address: apartment.address) as? ResidentialBuilding else {
+        guard let building = (Storage.shared.residentialBuildings.first { $0.address == apartment.address }) else {
             Logger.error("RealEstateAgent", "Could not find the building for apartment \(apartment.id)")
             return
         }
@@ -152,21 +154,21 @@ class RealEstateAgent {
     
     func rentApartment(_ apartment: Apartment) {
         apartment.isRented = true
-        if let building = self.getProperty(address: apartment.address) as? ResidentialBuilding {
+        if let building = (Storage.shared.residentialBuildings.first { $0.address == apartment.address }) {
             self.recalculateFeesInTheBuilding(building)
         }
     }
     
     func unrentApartment(_ apartment: Apartment) {
         apartment.isRented = false
-        if let building = self.getProperty(address: apartment.address) as? ResidentialBuilding {
+        if let building = (Storage.shared.residentialBuildings.first { $0.address == apartment.address }) {
             self.recalculateFeesInTheBuilding(building)
         }
     }
     
     func buildRoad(address: MapPoint, session: PlayerSession) throws {
         
-        guard let land = (self.properties.first { $0.address == address}) as? Land else {
+        guard let land = (Storage.shared.landProperties.first { $0.address == address}) else {
             throw StartInvestmentError.formalProblem(reason: "You can build road only on an empty land.")
         }
         guard land.ownerID == session.player.id else {
@@ -183,9 +185,9 @@ class RealEstateAgent {
         }
         
         let road = Road(land: land)
-        self.properties = self.properties.filter { $0.address != address }
-        self.properties.append(road)
-        self.saveProperties()
+        Storage.shared.landProperties = Storage.shared.landProperties.filter { $0.address != address }
+        Storage.shared.roadProperties.append(road)
+        self.mapping[land.address] = .road
         
         self.mapManager.addStreet(address: address)
         
@@ -199,7 +201,7 @@ class RealEstateAgent {
     
     func buildResidentialBuilding(address: MapPoint, session: PlayerSession, storeyAmount: Int) throws {
         
-        guard let land = (self.properties.first { $0.address == address}) as? Land else {
+        guard let land = (Storage.shared.landProperties.first { $0.address == address}) else {
             throw StartInvestmentError.formalProblem(reason: "You can build road only on an empty land.")
         }
         guard land.ownerID == session.player.id else {
@@ -216,7 +218,9 @@ class RealEstateAgent {
         }
         
         let building = ResidentialBuilding(land: land, storeyAmount: storeyAmount)
-        self.properties = self.properties.filter { $0.address != address }
+        
+        
+
         for storey in (1...building.storeyAmount) {
             for flatNo in (1...building.numberOfFlatsPerStorey) {
                 let apartment = Apartment(building, storey: storey, flatNumber: flatNo)
@@ -225,8 +229,9 @@ class RealEstateAgent {
             }
         }
         self.recalculateFeesInTheBuilding(building)
-        self.properties.append(building)
-        self.saveProperties()
+        Storage.shared.landProperties = Storage.shared.landProperties.filter { $0.address != address }
+        Storage.shared.residentialBuildings.append(building)
+        self.mapping[land.address] = .residentialBuilding
         
         let tile = GameMapTile(address: address, type: .building(size: storeyAmount))
         self.mapManager.map.replaceTile(tile: tile)
@@ -258,7 +263,7 @@ class RealEstateAgent {
     }
     
     func estimateApartmentValue(_ apartment: Apartment) -> Double {
-        if let building = self.getProperty(address: apartment.address) as? ResidentialBuilding {
+        if let building = (Storage.shared.residentialBuildings.first{ $0.address == apartment.address }) {
             let investmentCost = InvestmentPrice.buildingApartment(storey: building.storeyAmount)
             let numberOfFlats = Double(building.numberOfFlatsPerStorey * building.storeyAmount)
             let baseValue = (investmentCost/numberOfFlats + PriceList.baseBuildingDeveloperIncomeOnFlatSellPrice) * 1.42
@@ -270,7 +275,7 @@ class RealEstateAgent {
     }
     
     func estimateRentFee(_ apartment: Apartment) -> Double {
-        if let building = self.getProperty(address: apartment.address) as? ResidentialBuilding {
+        if let building = (Storage.shared.residentialBuildings.first { $0.address == apartment.address }) {
             return (PriceList.baseApartmentRentalFee * building.condition/100 * apartment.condition/100).rounded(toPlaces: 0)
         }
         return 0.0

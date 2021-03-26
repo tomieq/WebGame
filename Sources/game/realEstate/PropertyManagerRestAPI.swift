@@ -51,12 +51,12 @@ class PropertyManagerRestAPI {
             data["taxRate"] = Int(transactionCosts.taxPercent).string
             data["transactionCosts"] = transactionCosts.fee.money
             data["total"] = transactionCosts.total.money
-            data["buyScript"] = JSCode.runScripts(windowIndex, paths: ["/buyProperty.js?\(address.asQueryParams)"]).js
+            data["buyScript"] = JSCode.runScripts(windowIndex, paths: ["/buyLandProperty.js?\(address.asQueryParams)"]).js
             template.assign(variables: data)
             return .ok(.html(template.output()))
         }
         
-        server.GET["/buyProperty.js"] = {request, _ in
+        server.GET["/buyLandProperty.js"] = {request, _ in
             let code = JSResponse()
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
@@ -71,7 +71,7 @@ class PropertyManagerRestAPI {
                     return code.response
             }
             do {
-                try self.gameEngine.realEstateAgent.buyProperty(address: address, session: session)
+                try self.gameEngine.realEstateAgent.buyLandProperty(address: address, session: session)
             } catch BuyPropertyError.propertyNotForSale {
                 code.add(.closeWindow(windowIndex))
                 code.add(.showError(txt: "This property is not for sale any more.", duration: 10))
