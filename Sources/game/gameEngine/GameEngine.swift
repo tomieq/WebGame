@@ -15,6 +15,7 @@ class GameEngine {
     let gameTraffic: GameTraffic
     let websocketHandler: WebsocketHandler
     let realEstateAgent: RealEstateAgent
+    let gameClock: GameClock
     let disposeBag = DisposeBag()
     
     init() {
@@ -23,12 +24,17 @@ class GameEngine {
         self.realEstateAgent = RealEstateAgent(mapManager: self.gameMapManager)
         self.gameTraffic = GameTraffic(gameMap: self.gameMap)
         self.websocketHandler = WebsocketHandler()
+        self.gameClock = GameClock(realEstateAgent: self.realEstateAgent)
 
         GameEventBus.gameEvents.asObservable().bind { [weak self] gameEvent in
             switch gameEvent.action {
             case .userConnected:
                 if let session = gameEvent.playerSession {
                     self?.websocketHandler.sendTo(playerSessionID: session.id, commandType: .updateWallet, payload: session.player.wallet.money)
+                }
+            case .userDisconnected:
+                if let session = gameEvent.playerSession {
+                    PlayerSessionManager.shared.destroyPlayerSession(playerSessionID: session.id)
                 }
             case .reloadMap:
                 self?.websocketHandler.sendToAll(commandType: .reloadMap, payload: "\(gameEvent.playerSession?.player.id ?? "nil")")

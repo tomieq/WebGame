@@ -16,9 +16,11 @@ class Storage: Codable {
     var roadProperties: [Road]
     var residentialBuildings: [ResidentialBuilding]
     var apartments: [Apartment]
+    var monthIteration: Int
     
     private init() {
         
+        self.monthIteration = 0
         self.players = []
         for id in SystemPlayerID.allCases {
             self.players.append(Player(id: id.rawValue, login: id.login, type: .system, wallet: 0))

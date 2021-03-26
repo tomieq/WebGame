@@ -47,6 +47,10 @@ class RealEstateAgent {
         return self.properties.first { $0.id == id }
     }
     
+    func getProperties() -> [Property] {
+        return self.properties
+    }
+    
     private func saveProperties() {
         Storage.shared.landProperties = self.properties.compactMap { $0 as? Land }
         Storage.shared.roadProperties = self.properties.compactMap { $0 as? Road }
@@ -300,7 +304,7 @@ class RealEstateAgent {
         return startPrice
     }
     
-    private func recalculateFeesInTheBuilding(_ building: ResidentialBuilding) {
+    func recalculateFeesInTheBuilding(_ building: ResidentialBuilding) {
         let apartments = Storage.shared.getApartments(address: building.address)
         
         let baseBuildingMonthlyCosts: Double = 1300 + 1100 * Double(building.storeyAmount)

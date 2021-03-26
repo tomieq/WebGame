@@ -16,6 +16,10 @@ class PlayerSessionManager {
         self.playerSessions = []
     }
     
+    func getActiveSessions() -> [PlayerSession] {
+        return self.playerSessions
+    }
+    
     func createPlayerSession(for player: Player) -> PlayerSession {
         let playerSession = PlayerSession(player: player)
         self.playerSessions.append(playerSession)
