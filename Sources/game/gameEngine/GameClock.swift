@@ -19,6 +19,7 @@ class GameClock {
         Observable<Int>.interval(.seconds(33), scheduler: MainScheduler.instance).bind { [weak self] _ in
             Logger.info("GameClock", "End of the month")
             self?.endTheMonth()
+            self?.pruneBankTransactionArchive()
             Storage.shared.monthIteration += 1
             
             let now = GameDate(monthIteration: Storage.shared.monthIteration)
@@ -73,6 +74,12 @@ class GameClock {
             let costsTransaction = FinancialTransaction(payerID: owner.id, recipientID: government.id, invoice: costsInvoice)
             CentralBank.shared.process(costsTransaction)
         }
+    }
+    
+    private func pruneBankTransactionArchive() {
+        let currentMonth = Storage.shared.monthIteration
+        let borderMonth = currentMonth - 12
+        Storage.shared.transactionArchive = Storage.shared.transactionArchive.filter { $0.monthIteration > borderMonth }
     }
 }
 

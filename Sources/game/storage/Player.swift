@@ -42,8 +42,8 @@ class Player: Codable {
         self.wallet = wallet
     }
     
-    func pay(_ invoice: Invoice) {
-        self.wallet -= invoice.total
+    func pay(_ amount: Double) {
+        self.wallet -= amount.rounded(toPlaces: 0)
     }
     
     func receiveMoney(_ amount: Double) {

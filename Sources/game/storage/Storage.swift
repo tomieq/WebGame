@@ -11,6 +11,8 @@ import RxSwift
 class Storage: Codable {
     
     public static let shared = Storage.restore() ?? Storage()
+    var bankTransactionCounter: Int
+    var transactionArchive: [TransactionArchive]
     var players: [Player]
     var landProperties: [Land]
     var roadProperties: [Road]
@@ -20,6 +22,8 @@ class Storage: Codable {
     
     private init() {
         
+        self.bankTransactionCounter = 1
+        self.transactionArchive = []
         self.monthIteration = 0
         self.players = []
         for id in SystemPlayerID.allCases {
