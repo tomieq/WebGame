@@ -11,4 +11,6 @@ class TaxRates {
     public static let propertyPurchaseTax: Int = 8
     public static let investmentTax: Int = 23
     public static let incomeTax: Int = 18
+    public static let instantSellTax: Int = 0
+    public static let monthlyBuildingCostsTax: Int = 0
 }

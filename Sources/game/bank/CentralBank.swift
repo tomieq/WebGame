@@ -14,6 +14,7 @@ class CentralBank {
         
     }
     
+    @discardableResult
     func process(_ transaction: FinancialTransaction) -> FinancialTransactionResult {
         let payer = Storage.shared.getPlayer(id: transaction.payerID)
         
@@ -26,9 +27,9 @@ class CentralBank {
         let government = Storage.shared.getPlayer(id: SystemPlayerID.government.rawValue)
         
         payer?.pay(transaction.invoice)
-        recipient?.addIncome(transaction.invoice.netValue)
-        feeRecipient?.addIncome(transaction.invoice.fee)
-        government?.addIncome(transaction.invoice.tax)
+        recipient?.receiveMoney(transaction.invoice.netValue)
+        feeRecipient?.receiveMoney(transaction.invoice.fee)
+        government?.receiveMoney(transaction.invoice.tax)
         return .success
     }
 }

@@ -46,7 +46,7 @@ class Player: Codable {
         self.wallet -= invoice.total
     }
     
-    func addIncome(_ amount: Double) {
+    func receiveMoney(_ amount: Double) {
         self.wallet += amount.rounded(toPlaces: 0)
     }
 }

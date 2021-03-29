@@ -125,7 +125,9 @@ class RealEstateAgent {
         let value = self.estimatePrice(property)
         let sellPrice = (value * PriceList.instantSellFraction).rounded(toPlaces: 0)
         
-        session.player.addIncome(sellPrice)
+        let invoice = Invoice(netValue: sellPrice, taxPercent: TaxRates.instantSellTax)
+        let transaction = FinancialTransaction(payerID: government.id, recipientID: session.player.id, invoice: invoice)
+        CentralBank.shared.process(transaction)
         
         let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(session.player.wallet.money))
         GameEventBus.gameEvents.onNext(updateWalletEvent)
@@ -143,7 +145,9 @@ class RealEstateAgent {
         let value = self.estimateApartmentValue(apartment)
         let sellPrice = (value * PriceList.instantSellFraction).rounded(toPlaces: 0)
         
-        session.player.addIncome(sellPrice)
+        let invoice = Invoice(netValue: sellPrice, taxPercent: TaxRates.instantSellTax)
+        let transaction = FinancialTransaction(payerID: government.id, recipientID: session.player.id, invoice: invoice)
+        CentralBank.shared.process(transaction)
         
         apartment.ownerID = government.id
         self.recalculateFeesInTheBuilding(building)
