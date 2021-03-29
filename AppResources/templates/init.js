@@ -3,6 +3,7 @@ var gameStreetMap;
 var gameInteractionMap;
 var gameTraffic;
 var gameBuildingsMap;
+var mouseOverMenu = false;
 
 $( document ).ready(function() {
     var canvasStreets  = $('#canvasStreets');
@@ -22,7 +23,7 @@ $( document ).ready(function() {
                     
     var lastMousePoint = new MapPoint(-1, -1);
     $(window).on('mousemove', function(e) {
-        if (amountOfOpenedWindows != 0) { return; }
+        if (!isMapInteractive()) { return; }
         var point = e2MapPoint(e);
         if (lastMousePoint.x != point.x || lastMousePoint.y != point.y) {
             gameInteractionMap.clearMap();
@@ -39,11 +40,26 @@ $( document ).ready(function() {
              syncData("tileClicked", point);
         }
     });
+    $("#mainMenu").mouseenter(function(){
+        mouseOverMenu = true;
+    }).mouseleave(function(){
+        mouseOverMenu = false;
+    });
     $.getScript( "js/loadMap.js", function( data, textStatus, jqxhr ) {
       console.log( "Load was performed." );
     });
 
 });
+
+function isMapInteractive() {
+    if (amountOfOpenedWindows != 0) {
+        return false;
+    }
+    if (mouseOverMenu) {
+        return false;
+    }
+    return true;
+}
 
 function e2MapPoint(e) {
     var tileWidth = calculator.tileWidth * calculator.canvasScale / 2;

@@ -165,11 +165,14 @@ class PropertyManagerRestAPI {
             
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManager.html"))
             var data = [String:String]()
+            let incomeTax = property.monthlyIncome * Double(TaxRates.incomeTax) / 100
             data["name"] = property.name
             data["type"] = property.type
             data["monthlyIncome"] = property.monthlyIncome.money
+            data["taxRate"] = TaxRates.incomeTax.string
+            data["monthlyIncomeTax"] = incomeTax.money
             data["monthlyCosts"] = property.monthlyMaintenanceCost.money
-            data["balance"] = (property.monthlyIncome - property.monthlyMaintenanceCost).money
+            data["balance"] = (property.monthlyIncome - property.monthlyMaintenanceCost - incomeTax).money
             data["purchasePrice"] = property.purchaseNetValue?.money ?? ""
             data["investmentsValue"] = property.investmentsNetValue.money
             let estimatedValue = self.gameEngine.realEstateAgent.estimatePrice(property)
@@ -423,14 +426,16 @@ class PropertyManagerRestAPI {
         for apartment in (apartments.filter{ $0.ownerID == session.player.id }) {
             var data = [String:String]()
             data["name"] = apartment.name
-
+            let incomeTax = (apartment.monthlyRentalFee * Double(TaxRates.incomeTax) / 100)
             data["condition"] = "\(String(format: "%0.2f", apartment.condition))%"
             data["monthlyBills"] = apartment.monthlyBills.money
-            data["monthlyBalance"] = (apartment.monthlyRentalFee - apartment.monthlyBills).money
+            data["monthlyBalance"] = (apartment.monthlyRentalFee - apartment.monthlyBills - incomeTax).money
             let estimatedPrice = self.gameEngine.realEstateAgent.estimateApartmentValue(apartment)
             
             if apartment.isRented {
                 data["monthlyRentalFee"] = apartment.monthlyRentalFee.money
+                data["taxRate"] = TaxRates.incomeTax.string
+                data["monthlyIncomeTax"] = incomeTax.money
                 data["actionTitle"] = "Evict the tenants"
                 data["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/rentApartment.js?unrent=true&\(apartment.address.asQueryParams)&propertyID=\(apartment.id)"]).js
                 apartmentView.assign(variables: data, inNest: "rented")

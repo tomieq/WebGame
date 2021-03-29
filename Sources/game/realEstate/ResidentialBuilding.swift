@@ -22,6 +22,10 @@ class ResidentialBuilding: Property, Codable {
     let numberOfFlatsPerStorey = 4
     let storeyAmount: Int
     
+    var numberOfFlats: Int {
+        return self.numberOfFlatsPerStorey * self.storeyAmount
+    }
+    
     init(land: Land, storeyAmount: Int) {
         self.id = land.id
         self.address = land.address

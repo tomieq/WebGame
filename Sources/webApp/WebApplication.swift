@@ -29,16 +29,19 @@ class WebApplication {
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/pageResponse.html"))
             
             let canvasLayers = ["canvasStreets", "canvasInteraction", "canvasTraffic", "canvasBuildings"]
-            var html = canvasLayers.enumerated().map { (zIndex, canvasName) in
+            let html = canvasLayers.enumerated().map { (zIndex, canvasName) in
                 return Template.htmlNode(type: "canvas", attributes: ["id":canvasName,"style":"z-index:\(zIndex);"])
             }.joined(separator: "\n")
-            html.append(Template.htmlNode(type: "div", attributes: ["id":"wallet"], content: player.wallet.money))
-            let calendarIcon = Template.htmlNode(type: "i", attributes: ["class":"fa fa-calendar"], content: "")
-            let now = GameDate(monthIteration: Storage.shared.monthIteration)
-            let calendarContent = Template.htmlNode(type: "span", attributes: ["id":"gameDate"], content: "\(now.month)/\(now.year)")
-            html.append(Template.htmlNode(type: "div", attributes: ["id":"gameClock"], content: "\(calendarIcon) \(calendarContent)"))
             
-            template.assign(variables: ["body": html, "playerSessionID": playerSession.id])
+            let now = GameDate(monthIteration: Storage.shared.monthIteration)
+            
+            var data = [String:String]()
+            data["openBankTransactions"] = JSCode.openWindow(name: "Bank operations", path: "js/openBankTransactions.js", width: 500, height: 0.8).js
+            data["body"] = html
+            data["money"] = player.wallet.money
+            data["gameDate"] = now.text
+            data["playerSessionID"] = playerSession.id
+            template.assign(variables: data)
             return template.asResponse()
         }
         
@@ -80,13 +83,47 @@ class WebApplication {
         
         
         server.GET["js/websockets.js"] = { request, _ in
-
+            request.disableKeepAlive = true
             guard let playerSessionID = request.queryParam("playerSessionID"), let _ = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return .ok(.text("alert('Invalid playerSessionID');"))
             }
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/websockets.js"))
             template.assign(variables: ["url":"ws://192.168.88.50:5920/websocket", "playerSessionID": playerSessionID])
             return .ok(.javaScript(template.output()))
+        }
+        
+        server.GET["js/openBankTransactions.js"] = { request, _ in
+            request.disableKeepAlive = true
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
+            }
+            let code = JSResponse()
+            code.add(.loadHtml(windowIndex, htmlPath: "bankTransactions.html"))
+            return code.response
+        }
+        
+        server.GET["bankTransactions.html"] = { request, _ in
+            guard let playerSessionID = request.queryParam("playerSessionID"),
+                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                    return .ok(.text("Invalid request! Missing session ID."))
+            }
+            var html = ""
+            let template = Template.init(from: "/templates/bankTransaction.html")
+            for transaction in (Storage.shared.transactionArchive.filter{ $0.playerID == session.player.id }) {
+                var data = [String:String]()
+                data["number"] = transaction.id.string
+                data["date"] = GameDate(monthIteration: transaction.monthIteration).text
+                data["title"] = transaction.title
+                template.assign(variables: data)
+                if transaction.amount > 0 {
+                    template.assign(variables: ["money":transaction.amount.money], inNest: "income")
+                } else {
+                    template.assign(variables: ["money":transaction.amount.money], inNest: "cost")
+                }
+                html.append(template.output())
+                template.reset()
+            }
+            return .ok(.text(html))
         }
 
         server["/websocket"] = websocket(text: { (session, text) in

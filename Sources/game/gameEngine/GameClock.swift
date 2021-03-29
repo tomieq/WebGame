@@ -23,7 +23,7 @@ class GameClock {
             Storage.shared.monthIteration += 1
             
             let now = GameDate(monthIteration: Storage.shared.monthIteration)
-            let updateDateEvent = GameEvent(playerSession: nil, action: .updateGameDate("\(now.month)/\(now.year)"))
+            let updateDateEvent = GameEvent(playerSession: nil, action: .updateGameDate(now.text))
             GameEventBus.gameEvents.onNext(updateDateEvent)
         }.disposed(by: self.disposeBag)
     }
@@ -73,6 +73,7 @@ class GameClock {
             let costsInvoice = Invoice(title: "Monthly costs in \(property.name)", netValue: property.monthlyMaintenanceCost, taxPercent: TaxRates.monthlyBuildingCostsTax)
             let costsTransaction = FinancialTransaction(payerID: owner.id, recipientID: government.id, invoice: costsInvoice)
             CentralBank.shared.process(costsTransaction)
+            CentralBank.shared.taxRefund(receiverID: ownerID, transaction: incomeTransaction, costs: property.monthlyMaintenanceCost)
         }
     }
     
@@ -87,6 +88,10 @@ struct GameDate {
     let monthIteration: Int
     let month: Int
     let year: Int
+    
+    var text: String {
+        return "\(month)/\(year)"
+    }
     
     init(monthIteration: Int) {
         self.monthIteration = monthIteration

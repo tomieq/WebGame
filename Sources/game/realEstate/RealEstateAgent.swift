@@ -104,7 +104,7 @@ class RealEstateAgent {
             return
         }
         guard let government = Storage.shared.getPlayer(id: SystemPlayerID.government.rawValue) else {
-            Logger.error("RealEstateAgent", "Could not goverment player")
+            Logger.error("RealEstateAgent", "Could not find goverment player")
             return
         }
         // road will dissapear as roads are not for sale
@@ -128,6 +128,7 @@ class RealEstateAgent {
         let invoice = Invoice(title: "Selling property \(property.name)", netValue: sellPrice, taxPercent: TaxRates.instantSellTax)
         let transaction = FinancialTransaction(payerID: government.id, recipientID: session.player.id, invoice: invoice)
         CentralBank.shared.process(transaction)
+        CentralBank.shared.taxRefund(receiverID: session.player.id, transaction: transaction, costs: (property.investmentsNetValue + (property.purchaseNetValue ?? 0.0)))
         
         let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(session.player.wallet.money))
         GameEventBus.gameEvents.onNext(updateWalletEvent)
@@ -148,6 +149,8 @@ class RealEstateAgent {
         let invoice = Invoice(title: "Selling apartment \(apartment.name)", netValue: sellPrice, taxPercent: TaxRates.instantSellTax)
         let transaction = FinancialTransaction(payerID: government.id, recipientID: session.player.id, invoice: invoice)
         CentralBank.shared.process(transaction)
+        let costs = (((building.purchaseNetValue ?? 0.0) + building.investmentsNetValue)/(Double(building.numberOfFlats))).rounded(toPlaces: 0)
+        CentralBank.shared.taxRefund(receiverID: session.player.id, transaction: transaction, costs: costs)
         
         apartment.ownerID = government.id
         self.recalculateFeesInTheBuilding(building)
