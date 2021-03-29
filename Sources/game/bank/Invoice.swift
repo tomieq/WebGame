@@ -9,6 +9,7 @@ import Foundation
 
 class Invoice {
     
+    let title: String
     let netValue: Double
     let tax: Double
     let total: Double
@@ -18,7 +19,8 @@ class Invoice {
     private let taxRate: Double
     private let feeRate: Double
     
-    init(netValue: Double, taxPercent: Int, feePercent: Int = 0) {
+    init(title: String, netValue: Double, taxPercent: Int, feePercent: Int = 0) {
+        self.title = title
         self.netValue = netValue.rounded(toPlaces: 0)
         self.taxPercent = taxPercent
         self.feePercent = feePercent

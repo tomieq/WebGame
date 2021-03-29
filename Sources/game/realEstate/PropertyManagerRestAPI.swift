@@ -45,7 +45,7 @@ class PropertyManagerRestAPI {
             let property = self.gameEngine.realEstateAgent.getProperty(address: address) ?? Land(address: address)
             
             let value = self.gameEngine.realEstateAgent.estimatePrice(property)
-            let transactionCosts = Invoice(netValue: value, taxPercent: TaxRates.propertyPurchaseTax, feePercent: 1)
+            let transactionCosts = Invoice(title: "Offer", netValue: value, taxPercent: TaxRates.propertyPurchaseTax, feePercent: 1)
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/saleOffer.html"))
             var data = [String:String]()
             data["value"] = transactionCosts.netValue.money
@@ -350,7 +350,7 @@ class PropertyManagerRestAPI {
         if self.gameEngine.realEstateAgent.hasDirectAccessToRoad(address: land.address) {
 
             var buildRoadData = [String:String]()
-            let investTransaction = Invoice(netValue: InvestmentPrice.buildingRoad(), taxPercent: TaxRates.investmentTax)
+            let investTransaction = Invoice(title: "Build road offer", netValue: InvestmentPrice.buildingRoad(), taxPercent: TaxRates.investmentTax)
             buildRoadData["name"] = "Road"
             buildRoadData["investmentCost"] = investTransaction.netValue.money
             buildRoadData["investmentTax"] = investTransaction.tax.money
@@ -362,7 +362,7 @@ class PropertyManagerRestAPI {
             
             for storey in [4, 6, 8, 10] {
                 var buildHouseData = [String:String]()
-                let invoice = Invoice(netValue: InvestmentPrice.buildingApartment(storey: storey), taxPercent: TaxRates.investmentTax)
+                let invoice = Invoice(title: "Invest offer", netValue: InvestmentPrice.buildingApartment(storey: storey), taxPercent: TaxRates.investmentTax)
                 buildHouseData["name"] = "\(storey) storey Apartment"
                 buildHouseData["investmentCost"] = invoice.netValue.money
                 buildHouseData["investmentCost"] = invoice.netValue.money

@@ -67,7 +67,7 @@ class RealEstateAgent {
         }
         let land = (Storage.shared.landProperties.first{ $0.address == address }) ?? Land(address: address)
         let price = self.estimatePrice(land)
-        let invoice = Invoice(netValue: price, taxPercent: TaxRates.propertyPurchaseTax, feePercent: 1)
+        let invoice = Invoice(title: "Purchase land \(land.name)", netValue: price, taxPercent: TaxRates.propertyPurchaseTax, feePercent: 1)
         
         // process the transaction
         let transaction = FinancialTransaction(payerID: session.player.id, recipientID: SystemPlayerID.government.rawValue, feeRecipientID: SystemPlayerID.realEstateAgency.rawValue, invoice: invoice)
@@ -125,7 +125,7 @@ class RealEstateAgent {
         let value = self.estimatePrice(property)
         let sellPrice = (value * PriceList.instantSellFraction).rounded(toPlaces: 0)
         
-        let invoice = Invoice(netValue: sellPrice, taxPercent: TaxRates.instantSellTax)
+        let invoice = Invoice(title: "Selling property \(property.name)", netValue: sellPrice, taxPercent: TaxRates.instantSellTax)
         let transaction = FinancialTransaction(payerID: government.id, recipientID: session.player.id, invoice: invoice)
         CentralBank.shared.process(transaction)
         
@@ -145,7 +145,7 @@ class RealEstateAgent {
         let value = self.estimateApartmentValue(apartment)
         let sellPrice = (value * PriceList.instantSellFraction).rounded(toPlaces: 0)
         
-        let invoice = Invoice(netValue: sellPrice, taxPercent: TaxRates.instantSellTax)
+        let invoice = Invoice(title: "Selling apartment \(apartment.name)", netValue: sellPrice, taxPercent: TaxRates.instantSellTax)
         let transaction = FinancialTransaction(payerID: government.id, recipientID: session.player.id, invoice: invoice)
         CentralBank.shared.process(transaction)
         
@@ -181,7 +181,7 @@ class RealEstateAgent {
         guard self.hasDirectAccessToRoad(address: address) else {
             throw StartInvestmentError.formalProblem(reason: "You cannot build road here as this property has no direct access to the public road.")
         }
-        let invoice = Invoice(netValue: InvestmentPrice.buildingRoad(), taxPercent: TaxRates.investmentTax)
+        let invoice = Invoice(title: "Build road on property \(land.name)", netValue: InvestmentPrice.buildingRoad(), taxPercent: TaxRates.investmentTax)
         // process the transaction
         let transaction = FinancialTransaction(payerID: session.player.id, recipientID: SystemPlayerID.government.rawValue, invoice: invoice)
         if case .failure(let reason) = CentralBank.shared.process(transaction) {
@@ -214,16 +214,13 @@ class RealEstateAgent {
         guard self.hasDirectAccessToRoad(address: address) else {
             throw StartInvestmentError.formalProblem(reason: "You cannot build apartment here as this property has no direct access to the public road.")
         }
-        let invoice = Invoice(netValue: InvestmentPrice.buildingApartment(storey: storeyAmount), taxPercent: TaxRates.investmentTax)
+        let building = ResidentialBuilding(land: land, storeyAmount: storeyAmount)
+        let invoice = Invoice(title: "Build \(storeyAmount)-storey \(building.name)", netValue: InvestmentPrice.buildingApartment(storey: storeyAmount), taxPercent: TaxRates.investmentTax)
         // process the transaction
         let transaction = FinancialTransaction(payerID: session.player.id, recipientID: SystemPlayerID.government.rawValue, invoice: invoice)
         if case .failure(let reason) = CentralBank.shared.process(transaction) {
             throw StartInvestmentError.financialTransactionProblem(reason: reason)
         }
-        
-        let building = ResidentialBuilding(land: land, storeyAmount: storeyAmount)
-        
-        
 
         for storey in (1...building.storeyAmount) {
             for flatNo in (1...building.numberOfFlatsPerStorey) {
