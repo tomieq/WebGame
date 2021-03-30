@@ -15,24 +15,31 @@ class GameTraffic {
     let streetNavi: StreetNavi
     private let disposeBag = DisposeBag()
     private var runningCars: [PlayerSession:[VehicleTravelStarted]]
+    private var buildingPoints: [MapPoint]
     
     
     init(gameMap: GameMap) {
         self.gameMap = gameMap
         self.runningCars = [:]
         self.streetNavi = StreetNavi(gameMap: self.gameMap)
+        self.buildingPoints = self.gameMap.tiles.filter{ $0.isBuilding() }.map{ $0.address }
         self.startRandomTraffic()
         
         GameEventBus.gameEvents.asObservable().bind { [weak self] event in
-            guard let session = event.playerSession else { return }
+            
             switch event.action {
                 
             case .userConnected:
+                guard let session = event.playerSession else { return }
                 self?.runningCars[session] = []
             case .userDisconnected:
+                guard let session = event.playerSession else { return }
                 self?.runningCars[session] = nil
             case .vehicleTravelFinished(let payload):
+                guard let session = event.playerSession else { return }
                 self?.runningCars[session] = self?.runningCars[session]?.filter { $0.id != payload.id } ?? []
+            case .reloadMap:
+                self?.buildingPoints = self?.gameMap.tiles.filter{ $0.isBuilding() }.map{ $0.address } ?? []
             default:
                 break
             }
@@ -41,19 +48,14 @@ class GameTraffic {
     
     private func startRandomTraffic() {
         
-        var buildingPoints = self.gameMap.tiles.filter{ tile in
-            if case .building = tile.type { return true }
-            return false
-        }
-        
         Observable<Int>.interval(.seconds(10), scheduler: MainScheduler.instance).bind { [weak self] _ in
             
             for (session, vehicleList) in self?.runningCars ?? [:] {
                 if vehicleList.count < 4 {
                     for _ in (0...(4-vehicleList.count)) { 
-                        buildingPoints.shuffle()
-                        if let startBuilding = buildingPoints.first?.address,
-                            let endBuilding = buildingPoints.last?.address,
+                        self?.buildingPoints.shuffle()
+                        if let startBuilding = self?.buildingPoints.first,
+                            let endBuilding = self?.buildingPoints.last,
                             startBuilding != endBuilding,
                             let startPoint = self?.streetNavi.findNearestStreetPoint(for: startBuilding),
                             let endPoint = self?.streetNavi.findNearestStreetPoint(for: endBuilding),
