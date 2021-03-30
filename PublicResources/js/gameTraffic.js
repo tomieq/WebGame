@@ -25,8 +25,17 @@ class GameTraffic {
         }
     }
 
+    clearMap() {
+        var t = this;
+        this.canvas.draw({
+          fn: function(ctx) {
+            ctx.clearRect(0, 0, t.calculator.canvasWidth, t.calculator.canvasHeight);
+          }
+        });
+    }
+    
     updateFrame() {
-        this.canvas.clearCanvas();
+        this.clearMap();
         if( this.movableObjects.length == 0) {
             console.log("Traffic finished");
             clearInterval(this.moveInterval);

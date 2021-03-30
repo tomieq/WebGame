@@ -31,7 +31,12 @@ class GameMap {
     }
 
     clearMap() {
-        this.canvas.clearCanvas();
+        var t = this;
+        this.canvas.draw({
+          fn: function(ctx) {
+            ctx.clearRect(0, 0, t.calculator.canvasWidth, t.calculator.canvasHeight);
+          }
+        });
     }
 
     setTiles(gameMap, fillWithGrass) {
