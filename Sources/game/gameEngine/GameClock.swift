@@ -20,6 +20,7 @@ class GameClock {
             Logger.info("GameClock", "End of the month")
             self?.endTheMonth()
             self?.pruneBankTransactionArchive()
+            self?.finishConstructions()
             Storage.shared.monthIteration += 1
             
             let now = GameDate(monthIteration: Storage.shared.monthIteration)
@@ -51,8 +52,10 @@ class GameClock {
         }
         
         for building in Storage.shared.residentialBuildings {
-            self.realEstateAgent.recalculateFeesInTheBuilding(building)
-            self.applyWalletChanges(property: building)
+            if !building.isUnderConstruction {
+                self.realEstateAgent.recalculateFeesInTheBuilding(building)
+                self.applyWalletChanges(property: building)
+            }
         }
         
         for session in PlayerSessionManager.shared.getActiveSessions() {
@@ -68,12 +71,19 @@ class GameClock {
             
             let incomeInvoice = Invoice(title: "Monthly income from \(property.name)", netValue: property.monthlyIncome, taxPercent: TaxRates.incomeTax)
             let incomeTransaction = FinancialTransaction(payerID: government.id, recipientID: owner.id, invoice: incomeInvoice)
-            CentralBank.shared.process(incomeTransaction)
+            if property.monthlyIncome > 0 {
+                CentralBank.shared.process(incomeTransaction)
+            }
             
             let costsInvoice = Invoice(title: "Monthly costs in \(property.name)", netValue: property.monthlyMaintenanceCost, taxPercent: TaxRates.monthlyBuildingCostsTax)
             let costsTransaction = FinancialTransaction(payerID: owner.id, recipientID: government.id, invoice: costsInvoice)
-            CentralBank.shared.process(costsTransaction)
-            CentralBank.shared.taxRefund(receiverID: ownerID, transaction: incomeTransaction, costs: property.monthlyMaintenanceCost)
+            
+            if property.monthlyMaintenanceCost > 0 {
+                CentralBank.shared.process(costsTransaction)
+            }
+            if property.monthlyIncome > 0 {
+                CentralBank.shared.taxRefund(receiverID: ownerID, transaction: incomeTransaction, costs: property.monthlyMaintenanceCost)
+            }
         }
     }
     
@@ -81,6 +91,23 @@ class GameClock {
         let currentMonth = Storage.shared.monthIteration
         let borderMonth = currentMonth - 12
         Storage.shared.transactionArchive = Storage.shared.transactionArchive.filter { $0.monthIteration > borderMonth }
+    }
+    
+    private func finishConstructions() {
+        var updateMap = false
+        let currentMonth = Storage.shared.monthIteration
+        for building in (Storage.shared.residentialBuildings.filter{ $0.isUnderConstruction }) {
+            if building.constructionFinishMonth == currentMonth {
+                building.isUnderConstruction = false
+                let tile = GameMapTile(address: building.address, type: .building(size: building.storeyAmount))
+                self.realEstateAgent.mapManager.map.replaceTile(tile: tile)
+                updateMap = true
+            }
+        }
+        if updateMap {
+            let reloadMapEvent = GameEvent(playerSession: nil, action: .reloadMap)
+            GameEventBus.gameEvents.onNext(reloadMapEvent)
+        }
     }
 }
 

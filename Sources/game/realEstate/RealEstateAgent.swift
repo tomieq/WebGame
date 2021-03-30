@@ -15,7 +15,7 @@ enum PropertyType {
 
 
 class RealEstateAgent {
-    private let mapManager: GameMapManager
+    let mapManager: GameMapManager
     private var mapping: [MapPoint:PropertyType]
     
     init(mapManager: GameMapManager) {
@@ -34,8 +34,13 @@ class RealEstateAgent {
         
         for building in Storage.shared.residentialBuildings {
             self.mapping[building.address] = .residentialBuilding
-            let tile = GameMapTile(address: building.address, type: .building(size: building.storeyAmount))
-            self.mapManager.map.replaceTile(tile: tile)
+            if building.isUnderConstruction {
+                let tile = GameMapTile(address: building.address, type: .buildingUnderConstruction(size: building.storeyAmount))
+                self.mapManager.map.replaceTile(tile: tile)
+            } else {
+                let tile = GameMapTile(address: building.address, type: .building(size: building.storeyAmount))
+                self.mapManager.map.replaceTile(tile: tile)
+            }
         }
     }
     
@@ -218,6 +223,8 @@ class RealEstateAgent {
             throw StartInvestmentError.formalProblem(reason: "You cannot build apartment here as this property has no direct access to the public road.")
         }
         let building = ResidentialBuilding(land: land, storeyAmount: storeyAmount)
+        building.isUnderConstruction = true
+        building.constructionFinishMonth = Storage.shared.monthIteration + 85
         let invoice = Invoice(title: "Build \(storeyAmount)-storey \(building.name)", netValue: InvestmentPrice.buildingApartment(storey: storeyAmount), taxPercent: TaxRates.investmentTax)
         // process the transaction
         let transaction = FinancialTransaction(payerID: session.player.id, recipientID: SystemPlayerID.government.rawValue, invoice: invoice)
@@ -237,7 +244,7 @@ class RealEstateAgent {
         Storage.shared.residentialBuildings.append(building)
         self.mapping[land.address] = .residentialBuilding
         
-        let tile = GameMapTile(address: address, type: .building(size: storeyAmount))
+        let tile = GameMapTile(address: address, type: .buildingUnderConstruction(size: storeyAmount))
         self.mapManager.map.replaceTile(tile: tile)
         
         let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(session.player.wallet.money))
