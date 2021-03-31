@@ -13,10 +13,18 @@ class GameCalculator {
         this.tileHeight = 345;
         this.mapWidth = mapWidth;
         this.mapHeight = mapHeight;
-        this.canvasWidth = ((this.mapWidth + this.mapHeight) * this.tileWidth/2);
-        this.canvasHeight = ((this.mapHeight + this.mapWidth - 1) * this.tileHeight * 0.5 + this.canvasTopMargin);
+        this.canvasWidth = this.pow2ceil((this.mapWidth + this.mapHeight) * this.tileWidth/2);
+        this.canvasHeight = this.pow2ceil((this.mapHeight + this.mapWidth - 1) * this.tileHeight * 0.5 + this.canvasTopMargin);
     }
 
+    pow2ceil(v) {
+      var p = 2;
+      while (v >>= 1) {
+        p <<= 1;
+      }
+      return p;
+    }
+                            
     setupCanvas(canvas) {
         console.log("Canvas width: " + this.canvasWidth + " canvas height: " + this.canvasHeight);
 
