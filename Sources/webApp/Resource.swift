@@ -9,7 +9,7 @@ import Foundation
 
 class Resource {
     private static let appResourcesDir = FileManager.default.currentDirectoryPath + "/AppResources/"
-    private static let publicResourcesPath = FileManager.default.currentDirectoryPath + "/PublicResources/"
+    private static let publicResourcesDir = FileManager.default.currentDirectoryPath + "/PublicResources/"
     
     
     static func getAppResource(relativePath: String) -> String {
