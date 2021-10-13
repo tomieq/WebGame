@@ -17,4 +17,6 @@ protocol Property {
     var investmentsNetValue: Double { set get }
     var monthlyMaintenanceCost: Double { set get }
     var monthlyIncome: Double { set get }
+    var isUnderConstruction: Bool { set get }
+    var constructionFinishMonth: Int? { set get }
 }

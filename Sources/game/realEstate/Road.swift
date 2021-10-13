@@ -18,6 +18,8 @@ class Road: Property, Codable {
     var investmentsNetValue: Double
     var monthlyMaintenanceCost: Double
     var monthlyIncome: Double
+    var isUnderConstruction: Bool
+    var constructionFinishMonth: Int?
     
     init(land: Land) {
         self.id = land.id
@@ -28,5 +30,7 @@ class Road: Property, Codable {
         self.monthlyMaintenanceCost = 580
         self.monthlyIncome = 0
         self.investmentsNetValue = (land.investmentsNetValue + InvestmentPrice.buildingRoad()).rounded(toPlaces: 0)
+        self.isUnderConstruction = false
+        self.constructionFinishMonth = nil
     }
 }
