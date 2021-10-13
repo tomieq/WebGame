@@ -231,15 +231,6 @@ class RealEstateAgent {
         if case .failure(let reason) = CentralBank.shared.process(transaction) {
             throw StartInvestmentError.financialTransactionProblem(reason: reason)
         }
-
-        for storey in (1...building.storeyAmount) {
-            for flatNo in (1...building.numberOfFlatsPerStorey) {
-                let apartment = Apartment(building, storey: storey, flatNumber: flatNo)
-                apartment.monthlyBuildingFee = PriceList.baseApartmentBuildingOwnerFee
-                Storage.shared.apartments.append(apartment)
-            }
-        }
-        self.recalculateFeesInTheBuilding(building)
         Storage.shared.landProperties = Storage.shared.landProperties.filter { $0.address != address }
         Storage.shared.residentialBuildings.append(building)
         self.mapping[land.address] = .residentialBuilding

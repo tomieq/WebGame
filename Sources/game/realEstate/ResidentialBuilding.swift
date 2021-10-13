@@ -34,7 +34,7 @@ class ResidentialBuilding: Property, Codable {
         self.name = "\(land.name) Apartments"
         self.ownerID = land.ownerID
         self.purchaseNetValue = land.purchaseNetValue
-        self.monthlyMaintenanceCost = 0
+        self.monthlyMaintenanceCost = land.monthlyMaintenanceCost
         self.monthlyIncome = 0
         self.storeyAmount = storeyAmount
         self.investmentsNetValue = (land.investmentsNetValue + InvestmentPrice.buildingApartment(storey: self.storeyAmount)).rounded(toPlaces: 0)

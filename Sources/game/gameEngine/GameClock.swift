@@ -99,6 +99,16 @@ class GameClock {
         for building in (Storage.shared.residentialBuildings.filter{ $0.isUnderConstruction }) {
             if building.constructionFinishMonth == currentMonth {
                 building.isUnderConstruction = false
+                
+                for storey in (1...building.storeyAmount) {
+                    for flatNo in (1...building.numberOfFlatsPerStorey) {
+                        let apartment = Apartment(building, storey: storey, flatNumber: flatNo)
+                        apartment.monthlyBuildingFee = PriceList.baseApartmentBuildingOwnerFee
+                        Storage.shared.apartments.append(apartment)
+                    }
+                }
+                self.realEstateAgent.recalculateFeesInTheBuilding(building)
+                
                 let tile = GameMapTile(address: building.address, type: .building(size: building.storeyAmount))
                 self.realEstateAgent.mapManager.map.replaceTile(tile: tile)
                 updateMap = true

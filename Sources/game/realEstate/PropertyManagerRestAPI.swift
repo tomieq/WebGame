@@ -391,7 +391,7 @@ class PropertyManagerRestAPI {
     private func buildingActions(building: ResidentialBuilding, windowIndex: String, session: PlayerSession) -> String {
 
         if building.isUnderConstruction, let constructionFinishMonth = building.constructionFinishMonth {
-            return "Building is under construction. Planned investment finish time is \(GameDate(monthIteration: constructionFinishMonth).text)"
+            return "Building is under construction. Your investment will finish on \(GameDate(monthIteration: constructionFinishMonth).text)"
         }
         let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManagerApartment.html"))
         let apartments = Storage.shared.getApartments(address: building.address)
