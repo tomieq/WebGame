@@ -20,6 +20,6 @@ struct FinancialTransaction: Codable {
         self.recipientID = recipientID
         self.feeRecipientID = feeRecipientID
         self.invoice = invoice
-        self.incomeTax = ((invoice.netValue * Double(TaxRates.incomeTax))/100).rounded(toPlaces: 0)
+        self.incomeTax = (invoice.netValue * TaxRates.incomeTax).rounded(toPlaces: 0)
     }
 }

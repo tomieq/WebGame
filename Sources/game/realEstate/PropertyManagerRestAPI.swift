@@ -165,11 +165,11 @@ class PropertyManagerRestAPI {
             
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManager.html"))
             var data = [String:String]()
-            let incomeTax = property.monthlyIncome * Double(TaxRates.incomeTax) / 100
+            let incomeTax = property.monthlyIncome * TaxRates.incomeTax
             data["name"] = property.name
             data["type"] = property.type
             data["monthlyIncome"] = property.monthlyIncome.money
-            data["taxRate"] = TaxRates.incomeTax.string
+            data["taxRate"] = (TaxRates.incomeTax*100).string
             data["monthlyIncomeTax"] = incomeTax.money
             data["monthlyCosts"] = property.monthlyMaintenanceCost.money
             data["balance"] = (property.monthlyIncome - property.monthlyMaintenanceCost - incomeTax).money
@@ -193,7 +193,12 @@ class PropertyManagerRestAPI {
                 let info = "Roads do not make any income, but they increase market value of surrounding area. Notice that there are the maintenance costs there, so the best approach is to sell the road. Road cannot be destroyed by government or any other players."
                 template.assign(variables: ["text":info], inNest: "info")
             } else if let apartment = property as? ResidentialBuilding {
-                data["tileUrl"] = TileType.building(size: apartment.storeyAmount).image.path
+                if apartment.isUnderConstruction {
+                    data["tileUrl"] = TileType.buildingUnderConstruction(size: apartment.storeyAmount).image.path
+                } else {
+                    data["tileUrl"] = TileType.building(size: apartment.storeyAmount).image.path
+                }
+                
                 template.assign(variables: ["actions": self.buildingActions(building: apartment, windowIndex: windowIndex, session: session)])
            }
             
@@ -432,7 +437,7 @@ class PropertyManagerRestAPI {
         for apartment in (apartments.filter{ $0.ownerID == session.player.id }) {
             var data = [String:String]()
             data["name"] = apartment.name
-            let incomeTax = (apartment.monthlyRentalFee * Double(TaxRates.incomeTax) / 100)
+            let incomeTax = apartment.monthlyRentalFee * TaxRates.incomeTax
             data["condition"] = "\(String(format: "%0.2f", apartment.condition))%"
             data["monthlyBills"] = apartment.monthlyBills.money
             data["monthlyBalance"] = (apartment.monthlyRentalFee - apartment.monthlyBills - incomeTax).money

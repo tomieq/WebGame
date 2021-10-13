@@ -39,7 +39,7 @@ class CentralBank {
             government?.receiveMoney(transaction.incomeTax)
             if let recipient = recipient, recipient.type == .user {
                 self.archive(playerID: recipient.id, title: transaction.invoice.title, amount: transaction.invoice.netValue)
-                self.archive(playerID: recipient.id, title: "Income tax (\(TaxRates.incomeTax)%) for \(transaction.invoice.title)", amount: -1 * transaction.incomeTax)
+                self.archive(playerID: recipient.id, title: "Income tax (\((TaxRates.incomeTax*100).rounded(toPlaces: 0))%) for \(transaction.invoice.title)", amount: -1 * transaction.incomeTax)
             }
         } else {
             recipient?.receiveMoney(transaction.invoice.netValue)
