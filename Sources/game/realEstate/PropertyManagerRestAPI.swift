@@ -177,9 +177,12 @@ class PropertyManagerRestAPI {
             data["investmentsValue"] = property.investmentsNetValue.money
             let estimatedValue = self.gameEngine.realEstateAgent.estimatePrice(property)
             data["estimatedValue"] = estimatedValue.money
-            data["instantSellJS"] = JSCode.runScripts(windowIndex, paths: ["/instantSell.js?\(address.asQueryParams)&propertyID=\(property.id)"]).js
-            data["instantSellPrice"] = (estimatedValue * PriceList.instantSellFraction).money
-            
+            if !property.isUnderConstruction {
+                var data = [String:String]()
+                data["instantSellJS"] = JSCode.runScripts(windowIndex, paths: ["/instantSell.js?\(address.asQueryParams)&propertyID=\(property.id)"]).js
+                data["instantSellPrice"] = (estimatedValue * PriceList.instantSellFraction).money
+                template.assign(variables: data, inNest: "sellOptions")
+            }
 
             if let land = property as? Land {
                 data["tileUrl"] = TileType.soldLand.image.path
