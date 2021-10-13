@@ -224,7 +224,7 @@ class RealEstateAgent {
         }
         let building = ResidentialBuilding(land: land, storeyAmount: storeyAmount)
         building.isUnderConstruction = true
-        building.constructionFinishMonth = Storage.shared.monthIteration + 1
+        building.constructionFinishMonth = Storage.shared.monthIteration + InvestmentDuration.buildingApartment(storey: storeyAmount)
         let invoice = Invoice(title: "Build \(storeyAmount)-storey \(building.name)", netValue: InvestmentPrice.buildingApartment(storey: storeyAmount), taxRate: TaxRates.investmentTax)
         // process the transaction
         let transaction = FinancialTransaction(payerID: session.player.id, recipientID: SystemPlayerID.government.rawValue, invoice: invoice)

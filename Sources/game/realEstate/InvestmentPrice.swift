@@ -17,3 +17,12 @@ class InvestmentPrice {
         return (2300000 + Double(storey) * 840000).rounded(toPlaces: 0)
     }
 }
+
+class InvestmentDuration {
+    public static func buildingRoad() -> Int {
+        return 3
+    }
+    public static func buildingApartment(storey: Int) -> Int {
+        return 9 + storey
+    }
+}

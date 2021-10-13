@@ -358,7 +358,7 @@ class PropertyManagerRestAPI {
             buildRoadData["investmentCost"] = investTransaction.netValue.money
             buildRoadData["investmentTax"] = investTransaction.tax.money
             buildRoadData["investmentTotal"] = investTransaction.total.money
-            buildRoadData["investmentDuration"] = "3 months"
+            buildRoadData["investmentDuration"] = "\(InvestmentDuration.buildingRoad()) months"
             buildRoadData["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/startInvestment.js?type=road&\(land.address.asQueryParams)"]).js
             buildRoadData["actionTitle"] = "Start investment"
             template.assign(variables: buildRoadData, inNest: "investment")
@@ -371,7 +371,7 @@ class PropertyManagerRestAPI {
                 buildHouseData["investmentCost"] = invoice.netValue.money
                 buildHouseData["investmentTax"] = invoice.tax.money
                 buildHouseData["investmentTotal"] = invoice.total.money
-                buildHouseData["investmentDuration"] = "\((9+storey)) months"
+                buildHouseData["investmentDuration"] = "\(InvestmentDuration.buildingApartment(storey: storey)) months"
                 buildHouseData["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/startInvestment.js?type=apartment&\(land.address.asQueryParams)&storey=\(storey)"]).js
                 buildHouseData["actionTitle"] = "Start investment"
                 template.assign(variables: buildHouseData, inNest: "investment")
