@@ -69,13 +69,13 @@ class GameClock {
         if let ownerID = property.ownerID, let owner = Storage.shared.getPlayer(id: ownerID), owner.type == .user,
             let government = Storage.shared.getPlayer(id: SystemPlayerID.government.rawValue) {
             
-            let incomeInvoice = Invoice(title: "Monthly income from \(property.name)", netValue: property.monthlyIncome, taxPercent: TaxRates.incomeTax)
+            let incomeInvoice = Invoice(title: "Monthly income from \(property.name)", netValue: property.monthlyIncome, taxRate: TaxRates.incomeTax)
             let incomeTransaction = FinancialTransaction(payerID: government.id, recipientID: owner.id, invoice: incomeInvoice)
             if property.monthlyIncome > 0 {
                 CentralBank.shared.process(incomeTransaction)
             }
             
-            let costsInvoice = Invoice(title: "Monthly costs in \(property.name)", netValue: property.monthlyMaintenanceCost, taxPercent: TaxRates.monthlyBuildingCostsTax)
+            let costsInvoice = Invoice(title: "Monthly costs in \(property.name)", netValue: property.monthlyMaintenanceCost, taxRate: TaxRates.monthlyBuildingCostsTax)
             let costsTransaction = FinancialTransaction(payerID: owner.id, recipientID: government.id, invoice: costsInvoice)
             
             if property.monthlyMaintenanceCost > 0 {

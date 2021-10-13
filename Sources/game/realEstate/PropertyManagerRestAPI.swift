@@ -45,12 +45,12 @@ class PropertyManagerRestAPI {
             let property = self.gameEngine.realEstateAgent.getProperty(address: address) ?? Land(address: address)
             
             let value = self.gameEngine.realEstateAgent.estimatePrice(property)
-            let transactionCosts = Invoice(title: "Offer", netValue: value, taxPercent: TaxRates.propertyPurchaseTax, feePercent: 1)
+            let transactionCosts = Invoice(title: "Offer", netValue: value, taxRate: TaxRates.propertyPurchaseTax, feeRate: 0.01)
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/saleOffer.html"))
             var data = [String:String]()
             data["value"] = transactionCosts.netValue.money
             data["tax"] = transactionCosts.tax.money
-            data["taxRate"] = Int(transactionCosts.taxPercent).string
+            data["taxRate"] = transactionCosts.taxPercent.string
             data["transactionCosts"] = transactionCosts.fee.money
             data["total"] = transactionCosts.total.money
             data["buyScript"] = JSCode.runScripts(windowIndex, paths: ["/buyLandProperty.js?\(address.asQueryParams)"]).js
@@ -353,7 +353,7 @@ class PropertyManagerRestAPI {
         if self.gameEngine.realEstateAgent.hasDirectAccessToRoad(address: land.address) {
 
             var buildRoadData = [String:String]()
-            let investTransaction = Invoice(title: "Build road offer", netValue: InvestmentPrice.buildingRoad(), taxPercent: TaxRates.investmentTax)
+            let investTransaction = Invoice(title: "Build road offer", netValue: InvestmentPrice.buildingRoad(), taxRate: TaxRates.investmentTax)
             buildRoadData["name"] = "Road"
             buildRoadData["investmentCost"] = investTransaction.netValue.money
             buildRoadData["investmentTax"] = investTransaction.tax.money
@@ -365,7 +365,7 @@ class PropertyManagerRestAPI {
             
             for storey in [4, 6, 8, 10] {
                 var buildHouseData = [String:String]()
-                let invoice = Invoice(title: "Invest offer", netValue: InvestmentPrice.buildingApartment(storey: storey), taxPercent: TaxRates.investmentTax)
+                let invoice = Invoice(title: "Invest offer", netValue: InvestmentPrice.buildingApartment(storey: storey), taxRate: TaxRates.investmentTax)
                 buildHouseData["name"] = "\(storey) storey Apartment"
                 buildHouseData["investmentCost"] = invoice.netValue.money
                 buildHouseData["investmentCost"] = invoice.netValue.money
