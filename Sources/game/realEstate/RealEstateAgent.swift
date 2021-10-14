@@ -71,8 +71,8 @@ class RealEstateAgent {
             throw BuyPropertyError.propertyNotForSale
         }
         let land = (Storage.shared.landProperties.first{ $0.address == address }) ?? Land(address: address)
-        let price = self.estimatePrice(land)
-        let invoice = Invoice(title: "Purchase land \(land.name)", netValue: price, taxRate: TaxRates.propertyPurchaseTax, feeRate: 0.01)
+        let price = self.estimateValue(land)
+        let invoice = Invoice(title: "Purchase land \(land.name)", netValue: price, taxRate: TaxRates.propertyPurchaseTax, feeRate: PriceList.realEstateSellPropertyCommisionFee)
         
         // process the transaction
         let transaction = FinancialTransaction(payerID: session.player.id, recipientID: SystemPlayerID.government.rawValue, feeRecipientID: SystemPlayerID.realEstateAgency.rawValue, invoice: invoice)
@@ -127,8 +127,8 @@ class RealEstateAgent {
         }
         property.ownerID = government.id
         
-        let value = self.estimatePrice(property)
-        let sellPrice = (value * PriceList.instantSellFraction).rounded(toPlaces: 0)
+        let value = self.estimateValue(property)
+        let sellPrice = (value * PriceList.instantSellValue).rounded(toPlaces: 0)
         
         let invoice = Invoice(title: "Selling property \(property.name)", netValue: sellPrice, taxRate: TaxRates.instantSellTax)
         let transaction = FinancialTransaction(payerID: government.id, recipientID: session.player.id, invoice: invoice)
@@ -141,7 +141,7 @@ class RealEstateAgent {
     
     func instantApartmentSell(_ apartment: Apartment, session: PlayerSession) {
         guard let government = Storage.shared.getPlayer(id: SystemPlayerID.government.rawValue) else {
-            Logger.error("RealEstateAgent", "Could not goverment player")
+            Logger.error("RealEstateAgent", "Could not find goverment player")
             return
         }
         guard let building = (Storage.shared.residentialBuildings.first { $0.address == apartment.address }) else {
@@ -149,14 +149,17 @@ class RealEstateAgent {
             return
         }
         let value = self.estimateApartmentValue(apartment)
-        let sellPrice = (value * PriceList.instantSellFraction).rounded(toPlaces: 0)
+        let sellPrice = (value * PriceList.instantSellValue).rounded(toPlaces: 0)
         
         let invoice = Invoice(title: "Selling apartment \(apartment.name)", netValue: sellPrice, taxRate: TaxRates.instantSellTax)
         let transaction = FinancialTransaction(payerID: government.id, recipientID: session.player.id, invoice: invoice)
         CentralBank.shared.process(transaction)
-        let costs = (((building.purchaseNetValue ?? 0.0) + building.investmentsNetValue)/(Double(building.numberOfFlats))).rounded(toPlaces: 0)
-        CentralBank.shared.taxRefund(receiverID: session.player.id, transaction: transaction, costs: costs)
         
+        // if user had built this building, he had costs, so this costs' taxes can be refunded
+        if building.ownerID == session.player.id {
+            let costs = (((building.purchaseNetValue ?? 0.0) + building.investmentsNetValue)/(Double(building.numberOfFlats))).rounded(toPlaces: 0)
+            CentralBank.shared.taxRefund(receiverID: session.player.id, transaction: transaction, costs: costs)
+        }
         apartment.ownerID = government.id
         self.recalculateFeesInTheBuilding(building)
     
@@ -189,7 +192,7 @@ class RealEstateAgent {
         guard self.hasDirectAccessToRoad(address: address) else {
             throw StartInvestmentError.formalProblem(reason: "You cannot build road here as this property has no direct access to the public road.")
         }
-        let invoice = Invoice(title: "Build road on property \(land.name)", netValue: InvestmentPrice.buildingRoad(), taxRate: TaxRates.investmentTax)
+        let invoice = Invoice(title: "Build road on property \(land.name)", netValue: InvestmentCost.makeRoadCost(), taxRate: TaxRates.investmentTax)
         // process the transaction
         let transaction = FinancialTransaction(payerID: session.player.id, recipientID: SystemPlayerID.government.rawValue, invoice: invoice)
         if case .failure(let reason) = CentralBank.shared.process(transaction) {
@@ -225,7 +228,7 @@ class RealEstateAgent {
         let building = ResidentialBuilding(land: land, storeyAmount: storeyAmount)
         building.isUnderConstruction = true
         building.constructionFinishMonth = Storage.shared.monthIteration + InvestmentDuration.buildingApartment(storey: storeyAmount)
-        let invoice = Invoice(title: "Build \(storeyAmount)-storey \(building.name)", netValue: InvestmentPrice.buildingApartment(storey: storeyAmount), taxRate: TaxRates.investmentTax)
+        let invoice = Invoice(title: "Build \(storeyAmount)-storey \(building.name)", netValue: InvestmentCost.makeResidentialBuildingCost(storey: storeyAmount), taxRate: TaxRates.investmentTax)
         // process the transaction
         let transaction = FinancialTransaction(payerID: session.player.id, recipientID: SystemPlayerID.government.rawValue, invoice: invoice)
         if case .failure(let reason) = CentralBank.shared.process(transaction) {
@@ -245,15 +248,15 @@ class RealEstateAgent {
         GameEventBus.gameEvents.onNext(reloadMapEvent)
     }
     
-    func estimatePrice(_ property: Property) -> Double {
-        if let land = property as? Land, let value = self.estimatePriceForLand(land) {
+    func estimateValue(_ property: Property) -> Double {
+        if let land = property as? Land, let value = self.estimateLandValue(land) {
             return value * (1 + self.occupiedSpaceOnMapFactor())
         }
         if let _ = property as? Road {
             return 0.0
         }
         if let building = property as? ResidentialBuilding {
-            var basePrice = self.estimatePrice(Land(address: building.address))
+            var basePrice = self.estimateValue(Land(address: building.address))
             let apartments = Storage.shared.getApartments(address: building.address).filter { $0.ownerID == building.ownerID }
             for apartment in apartments {
                 basePrice += self.estimateApartmentValue(apartment)
@@ -266,9 +269,9 @@ class RealEstateAgent {
     
     func estimateApartmentValue(_ apartment: Apartment) -> Double {
         if let building = (Storage.shared.residentialBuildings.first{ $0.address == apartment.address }) {
-            let investmentCost = InvestmentPrice.buildingApartment(storey: building.storeyAmount)
+            let investmentCost = InvestmentCost.makeResidentialBuildingCost(storey: building.storeyAmount)
             let numberOfFlats = Double(building.numberOfFlatsPerStorey * building.storeyAmount)
-            let baseValue = (investmentCost/numberOfFlats + PriceList.baseBuildingDeveloperIncomeOnFlatSellPrice) * 1.42
+            let baseValue = (investmentCost/numberOfFlats + PriceList.residentialBuildingOwnerIncomeOnFlatSellPrice) * 1.42
             // TODO: add dependency on neighbourhood
             return (baseValue * building.condition/100 * apartment.condition/100).rounded(toPlaces: 0)
         }
@@ -278,12 +281,12 @@ class RealEstateAgent {
     
     func estimateRentFee(_ apartment: Apartment) -> Double {
         if let building = (Storage.shared.residentialBuildings.first { $0.address == apartment.address }) {
-            return (PriceList.baseApartmentRentalFee * building.condition/100 * apartment.condition/100).rounded(toPlaces: 0)
+            return (PriceList.monthlyApartmentRentalFee * building.condition/100 * apartment.condition/100).rounded(toPlaces: 0)
         }
         return 0.0
     }
     
-    private func estimatePriceForLand(_ land: Land) -> Double? {
+    private func estimateLandValue(_ land: Land) -> Double? {
         // in future add price relation to bus stop
         var startPrice = PriceList.baseLandValue
 
@@ -292,31 +295,34 @@ class RealEstateAgent {
                 if let tile = self.mapManager.map.getTile(address: streetAddress), tile.isStreet() {
                     
                     if distance == 1 {
-                        for buildingAddress in self.mapManager.map.getNeighbourAddresses(to: land.address, radius: 1) {
-                            if let tile = self.mapManager.map.getTile(address: buildingAddress), tile.isBuilding() {
-                                return startPrice * 1.65
+                        
+                        for buildingDistance in (1...3) {
+                            var numberOfBuildings = 0
+                            for buildingAddress in self.mapManager.map.getNeighbourAddresses(to: land.address, radius: 1) {
+                                if let tile = self.mapManager.map.getTile(address: buildingAddress), tile.isBuilding() {
+                                    numberOfBuildings += 1
+                                }
                             }
-                        }
-                        for buildingAddress in self.mapManager.map.getNeighbourAddresses(to: land.address, radius: 2) {
-                            if let tile = self.mapManager.map.getTile(address: buildingAddress), tile.isBuilding() {
-                                return startPrice * 1.45
+                            if numberOfBuildings > 0 {
+                                let factor = PriceList.propertyValueDistanceFromResidentialBuildingGain/buildingDistance.double
+                                startPrice = startPrice * (1 + numberOfBuildings.double * factor)
                             }
                         }
                     }
                     return startPrice
                 }
             }
-            startPrice = startPrice * 0.6
+            startPrice = startPrice * PriceList.propertyValueDistanceFromRoadLoss
         }
         return startPrice
     }
     
     func recalculateFeesInTheBuilding(_ building: ResidentialBuilding) {
         
-        let baseBuildingMonthlyCosts: Double = 1300 + 1100 * Double(building.storeyAmount)
-        let numberOfFlats = Double(building.storeyAmount * 3)
+        let baseBuildingMonthlyCosts: Double = PriceList.montlyResidentialBuildingCost + PriceList.montlyResidentialBuildingCostPerStorey * Double(building.storeyAmount)
+        let numberOfFlats = Double(building.storeyAmount * building.numberOfFlatsPerStorey)
         
-        let buildingCostPerFlat = (baseBuildingMonthlyCosts/numberOfFlats + PriceList.baseBuildingDeveloperIncomeOnFlatOwner).rounded(toPlaces: 0)
+        let buildingCostPerFlat = (baseBuildingMonthlyCosts/numberOfFlats + PriceList.monthlyResidentialBuildingOwnerIncomePerFlat).rounded(toPlaces: 0)
         
         var income: Double = 0
         var spendings = baseBuildingMonthlyCosts
@@ -324,11 +330,11 @@ class RealEstateAgent {
             
             switch apartment.isRented {
                 case true:
-                    apartment.monthlyRentalFee = self.estimateRentFee(apartment)
-                    apartment.monthlyBills = 622
+                apartment.monthlyRentalFee = self.estimateRentFee(apartment)
+                apartment.monthlyBills = PriceList.monthlyBillsForRentedApartment
                 case false:
-                    apartment.monthlyRentalFee = 0
-                    apartment.monthlyBills = 280
+                apartment.monthlyRentalFee = 0
+                apartment.monthlyBills = PriceList.monthlyBillsForUnrentedApartment
             }
             
             if apartment.ownerID == building.ownerID {

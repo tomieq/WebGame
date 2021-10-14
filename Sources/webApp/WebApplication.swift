@@ -36,8 +36,8 @@ class WebApplication {
             let now = GameDate(monthIteration: Storage.shared.monthIteration)
             
             var data = [String:String]()
-            data["openBankTransactions"] = JSCode.openWindow(name: "Bank operations", path: "js/openBankTransactions.js", width: 500, height: 0.8).js
-            data["openWalletBalance"] = JSCode.openWindow(name: "Montly wallet balance", path: "js/openWalletBalance.js", width: 800, height: 400).js
+            data["openBankTransactions"] = JSCode.openWindow(name: "Bank operations", path: "js/openBankTransactions.js", width: 500, height: 0.8, singletonID: "bankTransactions").js
+            data["openWalletBalance"] = JSCode.openWindow(name: "Montly wallet balance", path: "js/openWalletBalance.js", width: 800, height: 400, singletonID: "walletBalance").js
             data["body"] = html
             data["money"] = player.wallet.money
             data["gameDate"] = now.text

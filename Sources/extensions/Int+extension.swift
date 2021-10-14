@@ -11,4 +11,8 @@ extension Int {
     var string: String {
         return "\(self)"
     }
+    
+    var double: Double {
+        return Double(self)
+    }
 }

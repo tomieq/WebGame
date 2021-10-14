@@ -44,14 +44,14 @@ class PropertyManagerRestAPI {
             }
             let property = self.gameEngine.realEstateAgent.getProperty(address: address) ?? Land(address: address)
             
-            let value = self.gameEngine.realEstateAgent.estimatePrice(property)
-            let transactionCosts = Invoice(title: "Offer", netValue: value, taxRate: TaxRates.propertyPurchaseTax, feeRate: 0.01)
+            let value = self.gameEngine.realEstateAgent.estimateValue(property)
+            let transactionCosts = Invoice(title: "Offer", netValue: value, taxRate: TaxRates.propertyPurchaseTax, feeRate: PriceList.realEstateSellPropertyCommisionFee)
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/saleOffer.html"))
             var data = [String:String]()
             data["value"] = transactionCosts.netValue.money
             data["tax"] = transactionCosts.tax.money
             data["taxRate"] = transactionCosts.taxPercent.string
-            data["transactionCosts"] = transactionCosts.fee.money
+            data["transactionFee"] = transactionCosts.fee.money
             data["total"] = transactionCosts.total.money
             data["buyScript"] = JSCode.runScripts(windowIndex, paths: ["/buyLandProperty.js?\(address.asQueryParams)"]).js
             template.assign(variables: data)
@@ -175,12 +175,12 @@ class PropertyManagerRestAPI {
             data["balance"] = (property.monthlyIncome - property.monthlyMaintenanceCost - incomeTax).money
             data["purchasePrice"] = property.purchaseNetValue?.money ?? ""
             data["investmentsValue"] = property.investmentsNetValue.money
-            let estimatedValue = self.gameEngine.realEstateAgent.estimatePrice(property)
+            let estimatedValue = self.gameEngine.realEstateAgent.estimateValue(property)
             data["estimatedValue"] = estimatedValue.money
             if !property.isUnderConstruction {
                 var data = [String:String]()
                 data["instantSellJS"] = JSCode.runScripts(windowIndex, paths: ["/instantSell.js?\(address.asQueryParams)&propertyID=\(property.id)"]).js
-                data["instantSellPrice"] = (estimatedValue * PriceList.instantSellFraction).money
+                data["instantSellPrice"] = (estimatedValue * PriceList.instantSellValue).money
                 template.assign(variables: data, inNest: "sellOptions")
             }
 
@@ -361,7 +361,7 @@ class PropertyManagerRestAPI {
         if self.gameEngine.realEstateAgent.hasDirectAccessToRoad(address: land.address) {
 
             var buildRoadData = [String:String]()
-            let investTransaction = Invoice(title: "Build road offer", netValue: InvestmentPrice.buildingRoad(), taxRate: TaxRates.investmentTax)
+            let investTransaction = Invoice(title: "Build road offer", netValue: InvestmentCost.makeRoadCost(), taxRate: TaxRates.investmentTax)
             buildRoadData["name"] = "Road"
             buildRoadData["investmentCost"] = investTransaction.netValue.money
             buildRoadData["investmentTax"] = investTransaction.tax.money
@@ -373,7 +373,7 @@ class PropertyManagerRestAPI {
             
             for storey in [4, 6, 8, 10] {
                 var buildHouseData = [String:String]()
-                let invoice = Invoice(title: "Invest offer", netValue: InvestmentPrice.buildingApartment(storey: storey), taxRate: TaxRates.investmentTax)
+                let invoice = Invoice(title: "Invest offer", netValue: InvestmentCost.makeResidentialBuildingCost(storey: storey), taxRate: TaxRates.investmentTax)
                 buildHouseData["name"] = "\(storey) storey Apartment"
                 buildHouseData["investmentCost"] = invoice.netValue.money
                 buildHouseData["investmentCost"] = invoice.netValue.money
@@ -453,7 +453,7 @@ class PropertyManagerRestAPI {
             } else {
                 data["monthlyRentalFee"] = self.gameEngine.realEstateAgent.estimateRentFee(apartment).money
                 data["estimatedValue"] = estimatedPrice.money
-                data["instantSellPrice"] = (estimatedPrice * PriceList.instantSellFraction).money
+                data["instantSellPrice"] = (estimatedPrice * PriceList.instantSellValue).money
                 data["instantSellJS"] = JSCode.runScripts(windowIndex, paths: ["/instantApartmentSell.js?\(apartment.address.asQueryParams)&propertyID=\(apartment.id)"]).js
                 let estimatedRent = self.gameEngine.realEstateAgent.estimateRentFee(apartment).money
                 data["actionTitle"] = "Rent for \(estimatedRent)"
