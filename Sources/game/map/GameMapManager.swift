@@ -12,9 +12,17 @@ class GameMapManager {
     private var streetCache: [StreetCache] = []
     let map: GameMap
     
-    init(_ map: GameMap, path: String) {
+    init(_ map: GameMap) {
         self.map = map
-        let matrix = self.loadFileIntoMatrix(path)
+    }
+    
+    func loadMapFrom(path: String) {
+        let content = self.loadFileIntoString(path: path)
+        self.loadMapFrom(content: content)
+    }
+    
+    func loadMapFrom(content: String) {
+        let matrix = self.parseStringIntoMatrix(content)
         self.initCache(matrix: matrix)
         self.map.setTiles(self.initTiles(matrix: matrix))
     }
@@ -44,17 +52,20 @@ class GameMapManager {
         }
     }
     
-    private func loadFileIntoMatrix(_ path: String) -> MapMatrix {
+    private func loadFileIntoString(path: String) -> String {
+        return (try? String(contentsOfFile: Resource.absolutePath(forAppResource: path))) ?? ""
+    }
+    
+    private func parseStringIntoMatrix(_ content: String) -> MapMatrix {
         var matrix: MapMatrix = [:] // matrix[x][y] = "s"
-        if let content = try? String(contentsOfFile: Resource.absolutePath(forAppResource: path)) {
-            let lines = content.components(separatedBy: "\n")
-            
-            for (y, line) in lines.enumerated() {
-                let elements = line.components(separatedBy: ",")
-                for (x, chr) in elements.enumerated() {
-                    if matrix[x] == nil { matrix[x] = [:] }
-                    matrix[x]?[y] = GameMapFileEntry(rawValue: chr)
-                }
+        let lines = content.components(separatedBy: "\n")
+        for (y, line) in lines.enumerated() {
+            if y >= self.map.height { break }
+            let elements = line.components(separatedBy: ",")
+            for (x, chr) in elements.enumerated() {
+                if x >= self.map.width { break }
+                if matrix[x] == nil { matrix[x] = [:] }
+                matrix[x]?[y] = GameMapFileEntry(rawValue: chr)
             }
         }
         return matrix
