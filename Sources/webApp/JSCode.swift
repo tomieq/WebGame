@@ -47,10 +47,10 @@ extension JSCode {
     var js: String {
         switch self {
         case .openWindow(let name, let path, let width, let height, let mapX, let mapY, let singletonID):
-            let singleton = singletonID ?? "false"
+            let singleton = singletonID != nil ? "'\(singletonID!)'" : "false"
             let mapXValue = mapX ?? -1
             let mapYValue = mapY ?? -1
-            return "openWindow('\(name.escaped)', '\(path)', \(width), \(height), \(mapXValue), \(mapYValue), '\(singleton)')"
+            return "openWindow('\(name.escaped)', '\(path)', \(width), \(height), \(mapXValue), \(mapYValue), \(singleton))"
         case .setWindowContent(let windowIndex, let content):
             return "setWindowContent(\(windowIndex), '\(content.escaped)');";
         case .setWindowTitle(let windowIndex, let title):

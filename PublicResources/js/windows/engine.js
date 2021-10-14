@@ -15,7 +15,7 @@ var amountOfOpenedWindows = 0;
 
 function osOpenWindow(name, path, width, height, mapX, mapY, singletonID = false) {
     
-    amountOfOpenedWindows++;
+    
     if(singletonID) {
         var openedWindowIndex = getWindowIndexByData("singletonID", singletonID);
         if(openedWindowIndex != false) {
@@ -27,7 +27,7 @@ function osOpenWindow(name, path, width, height, mapX, mapY, singletonID = false
             return
         }
     }
-    
+    amountOfOpenedWindows++;
     osWindowCounter++;
     var windowIndex = osWindowCounter;
     // open main window
