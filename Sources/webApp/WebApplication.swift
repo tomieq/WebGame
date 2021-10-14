@@ -37,6 +37,7 @@ class WebApplication {
             
             var data = [String:String]()
             data["openBankTransactions"] = JSCode.openWindow(name: "Bank operations", path: "js/openBankTransactions.js", width: 500, height: 0.8).js
+            data["openWalletBalance"] = JSCode.openWindow(name: "Montly wallet balance", path: "js/openWalletBalance.js", width: 800, height: 400).js
             data["body"] = html
             data["money"] = player.wallet.money
             data["gameDate"] = now.text
@@ -125,7 +126,51 @@ class WebApplication {
             }
             return .ok(.text(html))
         }
-
+        
+        server.GET["js/openWalletBalance.js"] = { request, _ in
+            request.disableKeepAlive = true
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
+            }
+            let code = JSResponse()
+            code.add(.centerWindow(windowIndex))
+            code.add(.loadHtml(windowIndex, htmlPath: "walletBalance.html"))
+            return code.response
+        }
+        
+        server.GET["walletBalance.html"] = { request, _ in
+            guard let playerSessionID = request.queryParam("playerSessionID"),
+                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                    return .ok(.text("Invalid request! Missing session ID."))
+            }
+            let template = Template.init(from: "/templates/walletBalance.html")
+            for land in (Storage.shared.landProperties.filter{ $0.ownerID == session.player.id }) {
+                
+                var data: [String:String] = [:]
+                data["name"] = land.name
+                data["balance"] = (land.monthlyIncome - land.monthlyMaintenanceCost).money
+                data["onclick"] = "mapClicked(\(land.address.x), \(land.address.y))"
+                template.assign(variables: data, inNest: "investment")
+            }
+            
+            for road in (Storage.shared.roadProperties.filter{ $0.ownerID == session.player.id }) {
+                var data: [String:String] = [:]
+                data["name"] = road.name
+                data["balance"] = (road.monthlyIncome - road.monthlyMaintenanceCost).money
+                data["onclick"] = "mapClicked(\(road.address.x), \(road.address.y))"
+                template.assign(variables:data, inNest: "investment")
+            }
+            
+            for building in (Storage.shared.residentialBuildings.filter{ $0.ownerID == session.player.id }) {
+                var data: [String:String] = [:]
+                data["name"] = building.name
+                data["balance"] = (building.monthlyIncome - building.monthlyMaintenanceCost).money
+                data["onclick"] = "mapClicked(\(building.address.x), \(building.address.y))"
+                template.assign(variables: data, inNest: "investment")
+            }
+            return .ok(.text(template.output()))
+        }
+        
         server["/websocket"] = websocket(text: { (session, text) in
             Logger.info("WebApplication", "Incoming message \(text)")
             self.gameEngine.websocketHandler.handleMessage(websocketSession: session, text: text)

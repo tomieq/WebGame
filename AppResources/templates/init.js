@@ -37,7 +37,7 @@ $( document ).ready(function() {
         if (amountOfOpenedWindows != 0) { return; }
         var point = e2MapPoint(e);
         if(point.x >= 0 && point.x < calculator.mapWidth && point.y >= 0 && point.y < calculator.mapHeight) {
-             syncData("tileClicked", point);
+            mapClicked(point.x, point.y)
         }
     });
     $("#mainMenu").mouseenter(function(){
