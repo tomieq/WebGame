@@ -106,7 +106,7 @@ class WebApplication {
         server.GET["bankTransactions.html"] = { request, _ in
             guard let playerSessionID = request.queryParam("playerSessionID"),
                 let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                    return .ok(.text("Invalid request! Missing session ID."))
+                    return .badRequest(.text("Invalid request! Missing session ID."))
             }
             var html = ""
             let template = Template.init(from: "/templates/bankTransaction.html")
@@ -141,7 +141,7 @@ class WebApplication {
         server.GET["walletBalance.html"] = { request, _ in
             guard let playerSessionID = request.queryParam("playerSessionID"),
                 let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                    return .ok(.text("Invalid request! Missing session ID."))
+                    return .badRequest(.text("Invalid request! Missing session ID."))
             }
             let template = Template.init(from: "/templates/walletBalance.html")
             for land in (Storage.shared.landProperties.filter{ $0.ownerID == session.player.id }) {

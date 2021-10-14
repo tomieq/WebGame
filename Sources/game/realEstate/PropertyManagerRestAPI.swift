@@ -404,7 +404,7 @@ class PropertyManagerRestAPI {
             }
             
             guard let playerSessionID = request.queryParam("playerSessionID"),
-                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                  let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                     return .badRequest(.html("Invalid request! Missing session ID."))
             }
         
@@ -425,6 +425,14 @@ class PropertyManagerRestAPI {
                 data["actionTitle"] = "Kick out tenants"
                 data["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/rentApartment.js?unrent=true&\(apartment.address.asQueryParams)&propertyID=\(apartment.id)"]).js
                 apartmentView.assign(variables: data, inNest: "rented")
+            } else if apartment.ownerID != session.player.id {
+                let buildingFee = apartment.monthlyBuildingFee
+                let incomeTax = apartment.monthlyBuildingFee * TaxRates.incomeTax
+                data["monthlyIncome"] = buildingFee.money
+                data["monthlyIncomeTax"] = incomeTax.money
+                data["taxRate"] = (TaxRates.incomeTax*100).string
+                data["monthlyBalance"] = (apartment.monthlyBuildingFee - incomeTax).money
+                apartmentView.assign(variables: data, inNest: "sold")
             } else {
                 data["monthlyRentalFee"] = self.gameEngine.realEstateAgent.estimateRentFee(apartment).money
                 data["estimatedValue"] = estimatedPrice.money
@@ -523,6 +531,7 @@ class PropertyManagerRestAPI {
                 }
                 let floated = Template.htmlNode(type: "div", attributes: ["class":"float-right"], content: incomeBalance)
                 tdAttributes["style"] = "width: \(Int(100/building.numberOfFlatsPerStorey))%; padding: 5px; \(css)"
+                tdAttributes["class"] = "hand"
                 tdAttributes["onclick"] = JSCode.runScripts(windowIndex, paths: [editUrl]).js
                 html.append(Template.htmlNode(type: "td", attributes: tdAttributes, content: "\(storey).\(flatNumber) \(floated)"))
             }

@@ -8,6 +8,9 @@
     <td style="text-align: right;">{condition}</td>
 </tr>
 <tr>
+    <td colspan=2><hr class="blue"/></td>
+</tr>
+<tr>
     <td>Monthly bills</td>
     <td style="text-align: right;">{monthlyBills}</td>
 </tr>
@@ -42,34 +45,59 @@
 </tr>
 </tbody></table>
 [END unrented]
-[START rented]
-<table class="detailsTable"><tbody style="width: 100%">
-<tr>
-    <td colspan=2><strong>{name}</strong></td>
-</tr>
-<tr>
-    <td>Current condition</td>
-    <td style="text-align: right;">{condition}</td>
-</tr>
-<tr>
-    <td>Monthly rental income</td>
-    <td style="text-align: right;">{monthlyRentalFee}</td>
-</tr>
-<tr>
-    <td>Income tax ({taxRate}%)</td>
-    <td style="text-align: right;">{monthlyIncomeTax}</td>
-</tr>
+ [START rented]
+ <table class="detailsTable"><tbody style="width: 100%">
+ <tr>
+     <td colspan=2><strong>{name}</strong></td>
+ </tr>
+ <tr>
+     <td>Current condition</td>
+     <td style="text-align: right;">{condition}</td>
+ </tr>
+ <tr>
+     <td colspan=2><hr class="blue"/></td>
+ </tr>
+ <tr>
+     <td>Monthly rental income</td>
+     <td style="text-align: right;">{monthlyRentalFee}</td>
+ </tr>
+ <tr>
+     <td>Income tax ({taxRate}%)</td>
+     <td style="text-align: right;">{monthlyIncomeTax}</td>
+ </tr>
 
-<tr>
-    <td>Monthly bills</td>
-    <td style="text-align: right;">{monthlyBills}</td>
-</tr>
-<tr>
-    <td>Monthly balance</td>
-    <td style="text-align: right;">{monthlyBalance}</td>
-</tr>
-<tr>
-    <td colspan=2 style="text-align: right;"><button class="btn btn-sm btn-danger" onclick="{actionJS}">{actionTitle}</button></td>
-</tr>
-</tbody></table>
-[END rented]
+ <tr>
+     <td>Monthly bills</td>
+     <td style="text-align: right;">{monthlyBills}</td>
+ </tr>
+ <tr>
+     <td>Monthly balance</td>
+     <td style="text-align: right;">{monthlyBalance}</td>
+ </tr>
+ <tr>
+     <td colspan=2 style="text-align: right;"><hr class="blue"/><button class="btn btn-sm btn-danger" onclick="{actionJS}">{actionTitle}</button></td>
+ </tr>
+ </tbody></table>
+ [END rented]
+ [START sold]
+ <table class="detailsTable"><tbody style="width: 100%">
+ <tr>
+     <td colspan=2><strong>{name}</strong></td>
+ </tr>
+ <tr>
+     <td colspan=2>You <strong>SOLD</strong> this apartment<hr class="blue"/></td>
+ </tr>
+ <tr>
+     <td>Monthly income</td>
+     <td style="text-align: right;">{monthlyIncome}</td>
+ </tr>
+ <tr>
+     <td>Income tax ({taxRate}%)</td>
+     <td style="text-align: right;">{monthlyIncomeTax}</td>
+ </tr>
+ <tr>
+     <td>Monthly balance</td>
+     <td style="text-align: right;">{monthlyBalance}</td>
+ </tr>
+ </tbody></table>
+ [END sold]
