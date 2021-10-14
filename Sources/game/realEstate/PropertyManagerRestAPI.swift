@@ -409,7 +409,7 @@ class PropertyManagerRestAPI {
         if building.isUnderConstruction, let constructionFinishMonth = building.constructionFinishMonth {
             return "Building is under construction. Your investment will finish on \(GameDate(monthIteration: constructionFinishMonth).text)"
         }
-        let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManagerApartment.html"))
+        let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManagerBuilding.html"))
         let apartments = Storage.shared.getApartments(address: building.address)
         for i in (1...building.storeyAmount) {
             let storey = building.storeyAmount - i + 1

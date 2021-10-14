@@ -1,8 +1,8 @@
 <div style="margin: 20px;">
 
-<div class="grass" style="width: 100px; text-align: center; float: right;">
+<div class="blue-border" style="width: 100px; text-align: center; float: right;">
     <img src="{tileUrl}" style="width: 70px; height: auto;"/>
-    <br><span style="color: #222222; font-size: 0.8em;">{type}</span>
+    <br><span class="text-orange" style="font-size: 0.8em;">{type}</span>
 </div>
 <p>
 <table class="detailsTable" style="width: 400px; margin: 5px; float: left">
@@ -17,12 +17,7 @@
     <td style="text-align: right;">{type}</td>
 </tr>
 <tr>
-    <td>Monthly income</td>
-    <td style="text-align: right;">{monthlyIncome}</td>
-</tr>
-<tr>
-    <td>Income tax ({taxRate}%)</td>
-    <td style="text-align: right;">{monthlyIncomeTax}</td>
+    <td colspan=2><hr class="orange" /></td>
 </tr>
 [START montlyPartialCost]
 <tr>
@@ -33,6 +28,14 @@
 <tr>
     <td>Monthly total costs</td>
     <td style="text-align: right;">{monthlyCosts}</td>
+</tr>
+<tr>
+    <td>Monthly total income</td>
+    <td style="text-align: right;">{monthlyIncome}</td>
+</tr>
+<tr>
+    <td>Monthly income tax ({taxRate}%)</td>
+    <td style="text-align: right;">{monthlyIncomeTax}</td>
 </tr>
 <tr>
     <td>Monthly balance</td>
@@ -63,9 +66,22 @@
 </tr>
 <tr>
     <td>Real Estate Market</td>
-    <td style="text-align: right;"><button class="btn btn-sm">Sell on market</button></td>
+    <td style="text-align: right;"><button class="btn btn-sm">Put sell offer on the market</button></td>
 </tr>
 [END sellOptions]
+</tbody>
+</table>
+<table class="detailsTable" style="width: 400px; margin: 5px; float: left">
+<tbody>
+<tr>
+    <td>Hire accountant to get more detailed reports on investment <button class="btn btn-sm float-right">Hire</button></td>
+</tr>
+<tr>
+    <td>Hire building supervisor to fix malfunctions instantly <button class="btn btn-sm float-right">Hire</button></td>
+</tr>
+<tr>
+    <td>Hire security guard to prevent hooligan attacks <button class="btn btn-sm float-right">Hire</button></td>
+</tr>
 </tbody>
 </table>
 <div style="clear: both;"></div>
