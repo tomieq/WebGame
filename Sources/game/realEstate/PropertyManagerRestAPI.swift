@@ -37,7 +37,7 @@ class PropertyManagerRestAPI {
         server.GET["/saleOffer.html"] = { request, _ in
             request.disableKeepAlive = true
             guard let windowIndex = request.queryParam("windowIndex") else {
-                return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
+                return .badRequest(.html("Invalid request! Missing window context."))
             }
             guard let address = request.mapPoint else {
                 return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
@@ -106,16 +106,16 @@ class PropertyManagerRestAPI {
         server.GET["/propertyInfo.html"] = { request, _ in
             request.disableKeepAlive = true
             guard let _ = request.queryParam("windowIndex") else {
-                return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
+                return .badRequest(.html("Invalid request! Missing window context."))
             }
             guard let address = request.mapPoint else {
-                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
+                return .badRequest(.html("Invalid request! Missing address."))
             }
             guard let property = self.gameEngine.realEstateAgent.getProperty(address: address) else {
-                return .ok(.text("Property at \(address.description) not found!"))
+                return .badRequest(.html("Property at \(address.description) not found!"))
             }
             guard let ownerID = property.ownerID else {
-                return .ok(.text("Property at \(address.description) has no owner!"))
+                return .badRequest(.html("Property at \(address.description) has no owner!"))
             }
             let owner = Storage.shared.getPlayer(id: ownerID)
             
@@ -323,6 +323,26 @@ class PropertyManagerRestAPI {
             return code.response
         }
         
+        server.GET["/loadApartmentDetails.js"] = { request, _ in
+            request.disableKeepAlive = true
+
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
+            }
+            
+            guard let propertyID = request.queryParam("propertyID") else {
+                return JSCode.showError(txt: "Invalid request! Missing propertyID.", duration: 10).response
+            }
+            guard let playerSessionID = request.queryParam("playerSessionID"),
+                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                    return JSCode.showError(txt: "Invalid request! Missing session ID.", duration: 10).response
+            }
+            let code = JSResponse()
+            let editUrl = "manageApartment.html?playerSessionID=\(session.id)&propertyID=\(propertyID)"
+            code.add(.loadHtmlInline(windowIndex, htmlPath: editUrl, targetID: "buildingDetails\(windowIndex)"))
+            return code.response
+        }
+        
         server.GET["/rentApartment.js"] = { request, _ in
             request.disableKeepAlive = true
             let code = JSResponse()
@@ -360,8 +380,63 @@ class PropertyManagerRestAPI {
                 self.gameEngine.realEstateAgent.rentApartment(apartment)
             }
             code.add(.showSuccess(txt: "Action successed", duration: 5))
-            code.add(.loadHtml(windowIndex, htmlPath: "/propertyManager.html?\(apartment.address.asQueryParams)"))
+            
+            let htmlUrl = "/propertyManager.html?\(apartment.address.asQueryParams)"
+            let scriptUrl = "/loadApartmentDetails.js?propertyID=\(apartment.id)"
+            code.add(.loadHtmlThenRunScripts(windowIndex, htmlPath: htmlUrl, scriptPaths: [scriptUrl]))
             return code.response
+        }
+        
+        
+        server.GET["/manageApartment.html"] = { request, _ in
+            request.disableKeepAlive = true
+
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return .badRequest(.html("Invalid request! Missing window context."))
+            }
+            
+            guard let propertyID = request.queryParam("propertyID") else {
+                return .badRequest(.html("Invalid request! Missing propertyID."))
+            }
+            
+            guard let apartment = Storage.shared.getApartment(id: propertyID) else {
+                return .badRequest(.html("Apartment \(propertyID) not found!"))
+            }
+            
+            guard let playerSessionID = request.queryParam("playerSessionID"),
+                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                    return .badRequest(.html("Invalid request! Missing session ID."))
+            }
+        
+            let apartmentView = Template(raw: ResourceCache.shared.getAppResource("templates/apartmentView.html"))
+
+            var data = [String:String]()
+            data["name"] = apartment.name
+            let incomeTax = apartment.monthlyRentalFee * TaxRates.incomeTax
+            data["condition"] = "\(String(format: "%0.2f", apartment.condition))%"
+            data["monthlyBills"] = apartment.monthlyBills.money
+            data["monthlyBalance"] = (apartment.monthlyRentalFee - apartment.monthlyBills - incomeTax).money
+            let estimatedPrice = self.gameEngine.realEstateAgent.estimateApartmentValue(apartment)
+            
+            if apartment.isRented {
+                data["monthlyRentalFee"] = apartment.monthlyRentalFee.money
+                data["taxRate"] = (TaxRates.incomeTax*100).string
+                data["monthlyIncomeTax"] = incomeTax.money
+                data["actionTitle"] = "Kick out tenants"
+                data["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/rentApartment.js?unrent=true&\(apartment.address.asQueryParams)&propertyID=\(apartment.id)"]).js
+                apartmentView.assign(variables: data, inNest: "rented")
+            } else {
+                data["monthlyRentalFee"] = self.gameEngine.realEstateAgent.estimateRentFee(apartment).money
+                data["estimatedValue"] = estimatedPrice.money
+                data["instantSellPrice"] = (estimatedPrice * PriceList.instantSellValue).money
+                data["instantSellJS"] = JSCode.runScripts(windowIndex, paths: ["/instantApartmentSell.js?\(apartment.address.asQueryParams)&propertyID=\(apartment.id)"]).js
+                let estimatedRent = self.gameEngine.realEstateAgent.estimateRentFee(apartment).money
+                data["actionTitle"] = "Rent for \(estimatedRent)"
+                data["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/rentApartment.js?\(apartment.address.asQueryParams)&propertyID=\(apartment.id)"]).js
+                apartmentView.assign(variables: data, inNest: "unrented")
+            }
+            
+            return apartmentView.asResponse()
         }
     }
     
@@ -409,71 +484,52 @@ class PropertyManagerRestAPI {
         if building.isUnderConstruction, let constructionFinishMonth = building.constructionFinishMonth {
             return "Building is under construction. Your investment will finish on \(GameDate(monthIteration: constructionFinishMonth).text)"
         }
+        
+        let detailsDivID = "buildingDetails\(windowIndex)"
+        
         let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManagerBuilding.html"))
+        var templateVars: [String:String] = [:]
+        templateVars["previewWidth"] = "\(120 * building.numberOfFlatsPerStorey)"
+        templateVars["detailsID"] = detailsDivID
+        
+        
         let apartments = Storage.shared.getApartments(address: building.address)
         for i in (1...building.storeyAmount) {
             let storey = building.storeyAmount - i + 1
             
             var html = ""
             for flatNumber in (1...building.numberOfFlatsPerStorey) {
-                var attributes = [String:String]()
-                
-                let apartment = apartments.first { $0.storey == storey && $0.flatNumber == flatNumber }
+                var tdAttributes = [String:String]()
                 
                 var css = "";
-                var text = ""
-                if apartment?.isRented ?? true {
-                    // is rented
-                    css = "background-color: #1F5E71;"
-                    text = ((apartment?.monthlyRentalFee ?? 0) - (apartment?.monthlyBills ?? 0)).money
-                } else if apartment?.ownerID != session.player.id {
-                    // is sold
-                    css = "border: 1px solid #1F5E71;"
-                    text = "Sold"
-                } else {
-                    // is unrented
-                    css = "background-color: #70311E;"
-                    text = (-1 * (apartment?.monthlyBills ?? 0)).money
-                }
+                var incomeBalance = ""
+                var editUrl = "loadApartmentDetails.js"
                 
-                attributes["style"] = "width: \(Int(100/building.numberOfFlatsPerStorey))%; padding: 5px; \(css)"
-                let floated = Template.htmlNode(type: "div", attributes: ["style":"float: right;"], content: text)
-                html.append(Template.htmlNode(type: "td", attributes: attributes, content: "\(storey).\(flatNumber) \(floated)"))
+                if let apartment = (apartments.first { $0.storey == storey && $0.flatNumber == flatNumber }) {
+                    if apartment.isRented {
+                        // is rented
+                        css = "background-color: #1F5E71;"
+                        incomeBalance = (apartment.monthlyRentalFee - apartment.monthlyBills).money
+                    } else if apartment.ownerID != session.player.id {
+                        // is sold
+                        css = "border: 1px solid #1F5E71;"
+                        incomeBalance = "Sold"
+                    } else {
+                        // is unrented
+                        css = "background-color: #70311E;"
+                        incomeBalance = (-1 * apartment.monthlyBills).money
+                    }
+                    editUrl.append("?propertyID=\(apartment.id)")
+                }
+                let floated = Template.htmlNode(type: "div", attributes: ["class":"float-right"], content: incomeBalance)
+                tdAttributes["style"] = "width: \(Int(100/building.numberOfFlatsPerStorey))%; padding: 5px; \(css)"
+                tdAttributes["onclick"] = JSCode.runScripts(windowIndex, paths: [editUrl]).js
+                html.append(Template.htmlNode(type: "td", attributes: tdAttributes, content: "\(storey).\(flatNumber) \(floated)"))
             }
             template.assign(variables: ["tds": html], inNest: "storey")
         }
-        template.assign(variables: ["previewWidth":"\(120 * building.numberOfFlatsPerStorey)"])
+        template.assign(variables: templateVars)
         
-        let apartmentView = Template(raw: ResourceCache.shared.getAppResource("templates/apartmentView.html"))
-        for apartment in (apartments.filter{ $0.ownerID == session.player.id }) {
-            var data = [String:String]()
-            data["name"] = apartment.name
-            let incomeTax = apartment.monthlyRentalFee * TaxRates.incomeTax
-            data["condition"] = "\(String(format: "%0.2f", apartment.condition))%"
-            data["monthlyBills"] = apartment.monthlyBills.money
-            data["monthlyBalance"] = (apartment.monthlyRentalFee - apartment.monthlyBills - incomeTax).money
-            let estimatedPrice = self.gameEngine.realEstateAgent.estimateApartmentValue(apartment)
-            
-            if apartment.isRented {
-                data["monthlyRentalFee"] = apartment.monthlyRentalFee.money
-                data["taxRate"] = TaxRates.incomeTax.string
-                data["monthlyIncomeTax"] = incomeTax.money
-                data["actionTitle"] = "Evict the tenants"
-                data["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/rentApartment.js?unrent=true&\(apartment.address.asQueryParams)&propertyID=\(apartment.id)"]).js
-                apartmentView.assign(variables: data, inNest: "rented")
-            } else {
-                data["monthlyRentalFee"] = self.gameEngine.realEstateAgent.estimateRentFee(apartment).money
-                data["estimatedValue"] = estimatedPrice.money
-                data["instantSellPrice"] = (estimatedPrice * PriceList.instantSellValue).money
-                data["instantSellJS"] = JSCode.runScripts(windowIndex, paths: ["/instantApartmentSell.js?\(apartment.address.asQueryParams)&propertyID=\(apartment.id)"]).js
-                let estimatedRent = self.gameEngine.realEstateAgent.estimateRentFee(apartment).money
-                data["actionTitle"] = "Rent for \(estimatedRent)"
-                data["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/rentApartment.js?\(apartment.address.asQueryParams)&propertyID=\(apartment.id)"]).js
-                apartmentView.assign(variables: data, inNest: "unrented")
-            }
-            template.assign(variables: ["apartmentView": apartmentView.output()], inNest: "apartment")
-            apartmentView.reset()
-        }
         return template.output()
     }
 }

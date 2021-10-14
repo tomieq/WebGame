@@ -34,6 +34,7 @@ enum JSCode {
     case closeWindow(String)
     case runScripts(String, paths: [String])
     case loadHtml(String, htmlPath: String)
+    case loadHtmlInline(String, htmlPath: String, targetID: String)
     case loadHtmlThenRunScripts(String, htmlPath: String, scriptPaths: [String])
     case loadJsAndHtmlThenRunScripts(String, jsFilePaths: [String], htmlPath: String, scriptPaths: [String])
     case showError(txt: String, duration: Int)
@@ -71,6 +72,8 @@ extension JSCode {
              return "closeWindow(\(windowIndex));";
         case .loadHtml(let windowIndex, let htmlPath):
             return "loadHtmlThenRunScripts(\(windowIndex), '\(htmlPath)', [], '');";
+        case .loadHtmlInline(let windowIndex, let htmlPath, let targetID):
+            return "loadHtmlThenRunScripts(\(windowIndex), '\(htmlPath)', [], '#\(targetID)');";
         case .loadHtmlThenRunScripts(let windowIndex, let htmlPath, let scriptPaths):
             return "loadHtmlThenRunScripts(\(windowIndex), '\(htmlPath)', ['\(scriptPaths.joined(separator: "', '"))'], '');";
         case .loadJsAndHtmlThenRunScripts(let windowIndex, let jsFilePaths, let htmlPath, let scriptPaths):

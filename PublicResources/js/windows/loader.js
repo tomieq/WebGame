@@ -99,7 +99,7 @@ function loadHtmlThenRunScripts(windowIndex, htmlPath, scriptPaths, htmlSelector
         $(selector).load( htmlPathWithIndex, function(response, status, xhr) {
             setWindowLoaded(windowIndex);
             if ( status == "error" ) {
-                uiShowError( windowIndex + ': Error while loading HTML: ' +  + xhr.status );
+                uiShowError( windowIndex + ': Error while loading HTML: ' +  + xhr.status + " " + response );
             } else {
                 runScripts(windowIndex, scriptPaths);
             }
