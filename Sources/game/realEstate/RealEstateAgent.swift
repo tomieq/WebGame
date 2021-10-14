@@ -298,7 +298,7 @@ class RealEstateAgent {
                         
                         for buildingDistance in (1...3) {
                             var numberOfBuildings = 0
-                            for buildingAddress in self.mapManager.map.getNeighbourAddresses(to: land.address, radius: 1) {
+                            for buildingAddress in self.mapManager.map.getNeighbourAddresses(to: land.address, radius: buildingDistance) {
                                 if let tile = self.mapManager.map.getTile(address: buildingAddress), tile.isBuilding() {
                                     numberOfBuildings += 1
                                 }
