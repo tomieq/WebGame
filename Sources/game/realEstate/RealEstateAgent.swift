@@ -138,7 +138,7 @@ class RealEstateAgent {
         let invoice = Invoice(title: "Selling property \(property.name)", netValue: sellPrice, taxRate: TaxRates.instantSellTax)
         let transaction = FinancialTransaction(payerID: government.id, recipientID: session.player.id, invoice: invoice)
         CentralBank.shared.process(transaction)
-        CentralBank.shared.taxRefund(receiverID: session.player.id, transaction: transaction, costs: (property.investmentsNetValue + (property.purchaseNetValue ?? 0.0)))
+        CentralBank.shared.refundIncomeTax(receiverID: session.player.id, transaction: transaction, costs: (property.investmentsNetValue + (property.purchaseNetValue ?? 0.0)))
         
         let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(session.player.wallet.money))
         GameEventBus.gameEvents.onNext(updateWalletEvent)
@@ -163,7 +163,7 @@ class RealEstateAgent {
         // if user had built this building, he had costs, so this costs' taxes can be refunded
         if building.ownerID == session.player.id {
             let costs = (((building.purchaseNetValue ?? 0.0) + building.investmentsNetValue)/(Double(building.numberOfFlats))).rounded(toPlaces: 0)
-            CentralBank.shared.taxRefund(receiverID: session.player.id, transaction: transaction, costs: costs)
+            CentralBank.shared.refundIncomeTax(receiverID: session.player.id, transaction: transaction, costs: costs)
         }
         apartment.ownerID = government.id
         self.recalculateFeesInTheBuilding(building)

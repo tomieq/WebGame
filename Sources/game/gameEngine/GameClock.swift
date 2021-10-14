@@ -82,7 +82,7 @@ class GameClock {
                 CentralBank.shared.process(costsTransaction)
             }
             if property.monthlyIncome > 0 {
-                CentralBank.shared.taxRefund(receiverID: ownerID, transaction: incomeTransaction, costs: property.monthlyMaintenanceCost)
+                CentralBank.shared.refundIncomeTax(receiverID: ownerID, transaction: incomeTransaction, costs: property.monthlyMaintenanceCost)
             }
         }
     }

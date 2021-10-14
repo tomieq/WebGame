@@ -83,6 +83,9 @@ extension GameMapTile {
         if case .building = self.type {
             return true
         }
+        if case .buildingUnderConstruction = self.type {
+            return true
+        }
         return false
     }
 }

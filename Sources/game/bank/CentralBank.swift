@@ -47,19 +47,25 @@ class CentralBank {
         return .success
     }
     
-    func taxRefund(receiverID: String, transaction: FinancialTransaction, costs: Double) {
+    func refundIncomeTax(receiverID: String, transaction: FinancialTransaction, costs: Double) {
         
         if let payer = Storage.shared.getPlayer(id: receiverID) {
+            
+            var refund = 0.0
             let paidIncomeTax = transaction.incomeTax
-            let incomeWithCosts = transaction.invoice.netValue - costs
-            let taxAfterCosts = incomeWithCosts * TaxRates.incomeTax
-            let taxDifference = (paidIncomeTax - taxAfterCosts).rounded(toPlaces: 0)
 
-            if taxDifference > 10 {
+            if costs >= transaction.invoice.netValue {
+                refund = paidIncomeTax
+            } else {
+                let incomeWithoutCosts = transaction.invoice.netValue - costs
+                let taxAfterCosts = incomeWithoutCosts * TaxRates.incomeTax
+                refund = (paidIncomeTax - taxAfterCosts).rounded(toPlaces: 0)
+            }
+            if refund > 10 {
                 let government = Storage.shared.getPlayer(id: SystemPlayerID.government.rawValue)
-                payer.receiveMoney(taxDifference)
-                government?.pay(taxDifference)
-                self.archive(playerID: payer.id, title: "Tax refund based on costs for \(transaction.invoice.title)", amount: taxDifference)
+                payer.receiveMoney(refund)
+                government?.pay(refund)
+                self.archive(playerID: payer.id, title: "Tax refund based on costs for \(transaction.invoice.title)", amount: refund)
             }
             
         }
