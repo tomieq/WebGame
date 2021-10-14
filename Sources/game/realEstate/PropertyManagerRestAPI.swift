@@ -45,15 +45,17 @@ class PropertyManagerRestAPI {
             let property = self.gameEngine.realEstateAgent.getProperty(address: address) ?? Land(address: address)
             
             let value = self.gameEngine.realEstateAgent.estimateValue(property)
-            let transactionCosts = Invoice(title: "Offer", netValue: value, taxRate: TaxRates.propertyPurchaseTax, feeRate: PriceList.realEstateSellPropertyCommisionFee)
+            let offer = Invoice(title: "Offer", netValue: value, taxRate: TaxRates.propertyPurchaseTax)
+            let transactionFee = offer.netValue * PriceList.realEstateSellPropertyCommisionFee
+
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/saleOffer.html"))
             var data = [String:String]()
-            data["value"] = transactionCosts.netValue.money
-            data["tax"] = transactionCosts.tax.money
-            data["taxRate"] = (transactionCosts.taxRate*100).rounded(toPlaces: 1).string
-            data["feeRate"] = (transactionCosts.feeRate*100).rounded(toPlaces: 1).string
-            data["transactionFee"] = transactionCosts.fee.money
-            data["total"] = transactionCosts.total.money
+            data["value"] = offer.netValue.money
+            data["tax"] = offer.tax.money
+            data["taxRate"] = (offer.taxRate * 100).rounded(toPlaces: 1).string
+            data["feeRate"] = (PriceList.realEstateSellPropertyCommisionFee * 100).rounded(toPlaces: 1).string
+            data["transactionFee"] = transactionFee.money
+            data["total"] = (offer.total + transactionFee).money
             data["buyScript"] = JSCode.runScripts(windowIndex, paths: ["/buyLandProperty.js?\(address.asQueryParams)"]).js
             template.assign(variables: data)
             return .ok(.html(template.output()))
@@ -200,16 +202,17 @@ class PropertyManagerRestAPI {
                     data["tileUrl"] = TileType.building(size: building.storeyAmount).image.path
                 }
                 
-                var costs: [String:String] = [:]
-                costs["title"] = "Montly building maintenance cost"
-                let buildingMaintenanceCost = PriceList.montlyResidentialBuildingCost + PriceList.montlyResidentialBuildingCostPerStorey * building.storeyAmount.double
-                costs["money"] = buildingMaintenanceCost.money
-                template.assign(variables: costs, inNest: "montlyPartialCost")
-                costs = [:]
-                costs["title"] = "Montly flats maintenance cost"
-                costs["money"] = (building.monthlyMaintenanceCost - buildingMaintenanceCost).money
-                template.assign(variables: costs, inNest: "montlyPartialCost")
-                
+                if !building.isUnderConstruction {
+                    var costs: [String:String] = [:]
+                    costs["title"] = "Montly building maintenance cost"
+                    let buildingMaintenanceCost = PriceList.montlyResidentialBuildingCost + PriceList.montlyResidentialBuildingCostPerStorey * building.storeyAmount.double
+                    costs["money"] = buildingMaintenanceCost.money
+                    template.assign(variables: costs, inNest: "montlyPartialCost")
+                    costs = [:]
+                    costs["title"] = "Montly flats maintenance cost"
+                    costs["money"] = (building.monthlyMaintenanceCost - buildingMaintenanceCost).money
+                    template.assign(variables: costs, inNest: "montlyPartialCost")
+                }
                 template.assign(variables: ["actions": self.buildingActions(building: building, windowIndex: windowIndex, session: session)])
            }
             

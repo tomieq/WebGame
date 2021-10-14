@@ -72,10 +72,15 @@ class RealEstateAgent {
         }
         let land = (Storage.shared.landProperties.first{ $0.address == address }) ?? Land(address: address)
         let price = self.estimateValue(land)
-        let invoice = Invoice(title: "Purchase land \(land.name)", netValue: price, taxRate: TaxRates.propertyPurchaseTax, feeRate: PriceList.realEstateSellPropertyCommisionFee)
+        let invoice = Invoice(title: "Purchase land \(land.name)", netValue: price, taxRate: TaxRates.propertyPurchaseTax)
+        let commissionInvoice = Invoice(title: "Commission for purchase land \(land.name)", grossValue: price*PriceList.realEstateSellPropertyCommisionFee, taxRate: TaxRates.propertyPurchaseTax)
         
         // process the transaction
-        let transaction = FinancialTransaction(payerID: session.player.id, recipientID: SystemPlayerID.government.rawValue, feeRecipientID: SystemPlayerID.realEstateAgency.rawValue, invoice: invoice)
+        var transaction = FinancialTransaction(payerID: session.player.id, recipientID: SystemPlayerID.government.rawValue, invoice: invoice)
+        if case .failure(let reason) = CentralBank.shared.process(transaction) {
+            throw BuyPropertyError.financialTransactionProblem(reason: reason)
+        }
+        transaction = FinancialTransaction(payerID: session.player.id, recipientID: SystemPlayerID.realEstateAgency.rawValue, invoice: commissionInvoice)
         if case .failure(let reason) = CentralBank.shared.process(transaction) {
             throw BuyPropertyError.financialTransactionProblem(reason: reason)
         }

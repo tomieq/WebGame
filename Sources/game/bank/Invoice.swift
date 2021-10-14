@@ -13,17 +13,21 @@ class Invoice: Codable {
     let netValue: Double
     let tax: Double
     let total: Double
-    let fee: Double
     let taxRate: Double
-    let feeRate: Double
     
-    init(title: String, netValue: Double, taxRate: Double, feeRate: Double = 0) {
+    init(title: String, netValue: Double, taxRate: Double) {
         self.title = title
         self.netValue = netValue.rounded(toPlaces: 0)
         self.taxRate = taxRate
-        self.feeRate = feeRate
         self.tax = (self.netValue * self.taxRate).rounded(toPlaces: 0)
-        self.fee = (self.netValue * self.feeRate).rounded(toPlaces: 0)
-        self.total = (self.netValue + self.tax + self.fee).rounded(toPlaces: 0)
+        self.total = (self.netValue + self.tax).rounded(toPlaces: 0)
+    }
+    
+    init(title: String, grossValue: Double, taxRate: Double) {
+        self.title = title
+        self.netValue = (grossValue/(1.0+taxRate)).rounded(toPlaces: 0)
+        self.taxRate = taxRate
+        self.tax = (self.netValue * self.taxRate).rounded(toPlaces: 0)
+        self.total = (self.netValue + self.tax).rounded(toPlaces: 0)
     }
 }

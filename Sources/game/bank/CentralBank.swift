@@ -16,55 +16,52 @@ class CentralBank {
     
     @discardableResult
     func process(_ transaction: FinancialTransaction) -> FinancialTransactionResult {
+        Logger.info("CentralBank", "New transaction \(transaction.toJSONString() ?? "")")
+        
         let payer = Storage.shared.getPlayer(id: transaction.payerID)
+        let recipient = Storage.shared.getPlayer(id: transaction.recipientID)
+        let government = Storage.shared.getPlayer(id: SystemPlayerID.government.rawValue)
         
         guard payer?.wallet ?? 0.0 > transaction.invoice.total else {
             return .failure(reason: "Not enough amount of money to finish the financial transaction")
         }
         
-        Logger.info("CentralBank", "New transaction \(transaction.toJSONString() ?? "")")
-        
-        let recipient = Storage.shared.getPlayer(id: transaction.recipientID)
-        let feeRecipient = Storage.shared.getPlayer(id: transaction.feeRecipientID ?? SystemPlayerID.government.rawValue)
-        let government = Storage.shared.getPlayer(id: SystemPlayerID.government.rawValue)
-        
+        // update payer's wallet
         payer?.pay(transaction.invoice.total)
         if let payer = payer, payer.type == .user {
             self.archive(playerID: payer.id, title: transaction.invoice.title, amount: -1 * transaction.invoice.total)
         }
-        government?.receiveMoney(transaction.invoice.tax)
         
-        if transaction.addIncomeTax {
-            recipient?.receiveMoney((transaction.invoice.netValue - transaction.incomeTax).rounded(toPlaces: 0))
-            government?.receiveMoney(transaction.incomeTax)
-            if let recipient = recipient, recipient.type == .user {
-                self.archive(playerID: recipient.id, title: transaction.invoice.title, amount: transaction.invoice.netValue)
-                self.archive(playerID: recipient.id, title: "Income tax (\((TaxRates.incomeTax*100).rounded(toPlaces: 0))%) for \(transaction.invoice.title)", amount: -1 * transaction.incomeTax)
-            }
+        if recipient?.id == government?.id {
+            government?.receiveMoney(transaction.invoice.total)
         } else {
-            recipient?.receiveMoney(transaction.invoice.netValue)
+            // government takes income tax and VAT
+            government?.receiveMoney(transaction.incomeTax + transaction.invoice.tax)
+            recipient?.receiveMoney((transaction.invoice.netValue - transaction.incomeTax).rounded(toPlaces: 0))
             if let recipient = recipient, recipient.type == .user {
                 self.archive(playerID: recipient.id, title: transaction.invoice.title, amount: transaction.invoice.netValue)
+                self.archive(playerID: recipient.id, title: "Income tax (\((TaxRates.incomeTax*100).rounded(toPlaces: 1))%) for \(transaction.invoice.title)", amount: -1 * transaction.incomeTax)
             }
         }
         
-        feeRecipient?.receiveMoney(transaction.invoice.fee)
         return .success
     }
     
     func taxRefund(receiverID: String, transaction: FinancialTransaction, costs: Double) {
         
-        if transaction.addIncomeTax, let payer = Storage.shared.getPlayer(id: receiverID) {
-            let paidTax = transaction.incomeTax
-            let optimizedTax = ((transaction.invoice.netValue - costs)*Double(TaxRates.incomeTax)/100).rounded(toPlaces: 0)
-            var refund: Double = 0
-            if optimizedTax < 0 {
-                refund = paidTax
-            } else {
-                refund = (paidTax - optimizedTax).rounded(toPlaces: 0)
+        if let payer = Storage.shared.getPlayer(id: receiverID) {
+            let paidIncomeTax = transaction.incomeTax
+            let incomeWithCosts = transaction.invoice.netValue - costs
+            let taxAfterCosts = incomeWithCosts * TaxRates.incomeTax
+            let taxDifference = (paidIncomeTax - taxAfterCosts).rounded(toPlaces: 0)
+
+            if taxDifference > 10 {
+                let government = Storage.shared.getPlayer(id: SystemPlayerID.government.rawValue)
+                payer.receiveMoney(taxDifference)
+                government?.pay(taxDifference)
+                self.archive(playerID: payer.id, title: "Tax refund based on costs for \(transaction.invoice.title)", amount: taxDifference)
             }
-            payer.receiveMoney(refund)
-            self.archive(playerID: payer.id, title: "Tax refund based on costs for \(transaction.invoice.title)", amount: refund)
+            
         }
         
     }
