@@ -319,7 +319,7 @@ class RealEstateAgent {
     
     func recalculateFeesInTheBuilding(_ building: ResidentialBuilding) {
         
-        let baseBuildingMonthlyCosts: Double = PriceList.montlyResidentialBuildingCost + PriceList.montlyResidentialBuildingCostPerStorey * Double(building.storeyAmount)
+        let baseBuildingMonthlyCosts: Double = PriceList.montlyResidentialBuildingCost + PriceList.montlyResidentialBuildingCostPerStorey * building.storeyAmount.double
         let numberOfFlats = Double(building.storeyAmount * building.numberOfFlatsPerStorey)
         
         let buildingCostPerFlat = (baseBuildingMonthlyCosts/numberOfFlats + PriceList.monthlyResidentialBuildingOwnerIncomePerFlat).rounded(toPlaces: 0)

@@ -5,7 +5,7 @@
     <br><span style="color: #222222; font-size: 0.8em;">{type}</span>
 </div>
 <p>
-<table class="detailsTable" style="width: 300px; margin: 5px; float: left">
+<table class="detailsTable" style="width: 400px; margin: 5px; float: left">
 <tbody>
 <tr>
     <td>Property name</td>
@@ -24,8 +24,14 @@
     <td>Income tax ({taxRate}%)</td>
     <td style="text-align: right;">{monthlyIncomeTax}</td>
 </tr>
+[START montlyPartialCost]
 <tr>
-    <td>Monthly costs</td>
+    <td>{title}</td>
+    <td style="text-align: right;">{money}</td>
+</tr>
+[END montlyPartialCost]
+<tr>
+    <td>Monthly total costs</td>
     <td style="text-align: right;">{monthlyCosts}</td>
 </tr>
 <tr>

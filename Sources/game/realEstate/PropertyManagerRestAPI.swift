@@ -50,7 +50,8 @@ class PropertyManagerRestAPI {
             var data = [String:String]()
             data["value"] = transactionCosts.netValue.money
             data["tax"] = transactionCosts.tax.money
-            data["taxRate"] = transactionCosts.taxPercent.string
+            data["taxRate"] = (transactionCosts.taxRate*100).rounded(toPlaces: 1).string
+            data["feeRate"] = (transactionCosts.feeRate*100).rounded(toPlaces: 1).string
             data["transactionFee"] = transactionCosts.fee.money
             data["total"] = transactionCosts.total.money
             data["buyScript"] = JSCode.runScripts(windowIndex, paths: ["/buyLandProperty.js?\(address.asQueryParams)"]).js
@@ -192,14 +193,24 @@ class PropertyManagerRestAPI {
 
                 let info = "Roads do not make any income, but they increase market value of surrounding area. Notice that there are the maintenance costs there, so the best approach is to sell the road. Road cannot be destroyed by government or any other players."
                 template.assign(variables: ["text":info], inNest: "info")
-            } else if let apartment = property as? ResidentialBuilding {
-                if apartment.isUnderConstruction {
-                    data["tileUrl"] = TileType.buildingUnderConstruction(size: apartment.storeyAmount).image.path
+            } else if let building = property as? ResidentialBuilding {
+                if building.isUnderConstruction {
+                    data["tileUrl"] = TileType.buildingUnderConstruction(size: building.storeyAmount).image.path
                 } else {
-                    data["tileUrl"] = TileType.building(size: apartment.storeyAmount).image.path
+                    data["tileUrl"] = TileType.building(size: building.storeyAmount).image.path
                 }
                 
-                template.assign(variables: ["actions": self.buildingActions(building: apartment, windowIndex: windowIndex, session: session)])
+                var costs: [String:String] = [:]
+                costs["title"] = "Montly building maintenance cost"
+                let buildingMaintenanceCost = PriceList.montlyResidentialBuildingCost + PriceList.montlyResidentialBuildingCostPerStorey * building.storeyAmount.double
+                costs["money"] = buildingMaintenanceCost.money
+                template.assign(variables: costs, inNest: "montlyPartialCost")
+                costs = [:]
+                costs["title"] = "Montly flats maintenance cost"
+                costs["money"] = (building.monthlyMaintenanceCost - buildingMaintenanceCost).money
+                template.assign(variables: costs, inNest: "montlyPartialCost")
+                
+                template.assign(variables: ["actions": self.buildingActions(building: building, windowIndex: windowIndex, session: session)])
            }
             
             template.assign(variables: data)
