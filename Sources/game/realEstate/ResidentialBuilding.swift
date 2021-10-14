@@ -23,6 +23,7 @@ class ResidentialBuilding: Property, Codable {
     let storeyAmount: Int
     var isUnderConstruction: Bool
     var constructionFinishMonth: Int?
+    var accountantID: String?
     
     var numberOfFlats: Int {
         return self.numberOfFlatsPerStorey * self.storeyAmount
@@ -40,6 +41,7 @@ class ResidentialBuilding: Property, Codable {
         self.investmentsNetValue = (land.investmentsNetValue + InvestmentCost.makeResidentialBuildingCost(storey: self.storeyAmount)).rounded(toPlaces: 0)
         self.condition = 100.0
         self.isUnderConstruction = false
+        self.accountantID = land.accountantID
     }
     
 }

@@ -168,7 +168,14 @@ class PropertyManagerRestAPI {
             
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManager.html"))
             var data = [String:String]()
-            let incomeTax = property.monthlyIncome * TaxRates.incomeTax
+            
+            let propertyHasAccountant = property.accountantID != nil
+            let incomeForTaxCalculation = propertyHasAccountant ? max(0, property.monthlyIncome - property.monthlyMaintenanceCost) : property.monthlyIncome
+
+            if propertyHasAccountant {
+                template.assign(variables: ["monthlyIncomeAmortizated":incomeForTaxCalculation.money], inNest: "amortization")
+            }
+            let incomeTax = incomeForTaxCalculation * TaxRates.incomeTax
             data["name"] = property.name
             data["type"] = property.type
             data["monthlyIncome"] = property.monthlyIncome.money

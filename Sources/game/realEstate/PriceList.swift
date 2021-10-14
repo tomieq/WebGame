@@ -22,8 +22,8 @@ class PriceList {
     public static let montlyResidentialBuildingCost = 1300.0
     public static let montlyResidentialBuildingCostPerStorey = 1100.0
     public static let monthlyResidentialBuildingOwnerIncomePerFlat: Double = 300.0
-    public static let monthlyBillsForRentedApartment: Double = 622.0
-    public static let monthlyBillsForUnrentedApartment: Double = 280.0
+    public static let monthlyBillsForRentedApartment: Double = 452.0
+    public static let monthlyBillsForUnrentedApartment: Double = 180.0
     public static let monthlyApartmentRentalFee: Double = 2330
     public static let monthlyApartmentBuildingOwnerFee: Double = 930
 }

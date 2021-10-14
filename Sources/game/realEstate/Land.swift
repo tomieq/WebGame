@@ -20,6 +20,7 @@ class Land: Property, Codable {
     var monthlyIncome: Double
     var isUnderConstruction: Bool
     var constructionFinishMonth: Int?
+    var accountantID: String?
     var mapTile: GameMapTile {
         return GameMapTile(address: address, type: .soldLand)
     }
@@ -33,5 +34,6 @@ class Land: Property, Codable {
         self.investmentsNetValue = 0
         self.isUnderConstruction = false
         self.constructionFinishMonth = nil
+        self.accountantID = nil
     }
 }

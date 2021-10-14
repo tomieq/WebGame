@@ -81,7 +81,7 @@ class GameClock {
             if property.monthlyMaintenanceCost > 0 {
                 CentralBank.shared.process(costsTransaction)
             }
-            if property.monthlyIncome > 0 {
+            if property.monthlyIncome > 0, property.accountantID != nil {
                 CentralBank.shared.refundIncomeTax(receiverID: ownerID, transaction: incomeTransaction, costs: property.monthlyMaintenanceCost)
             }
         }

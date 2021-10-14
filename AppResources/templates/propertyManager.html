@@ -29,16 +29,24 @@
     <td>Monthly total costs</td>
     <td style="text-align: right;">{monthlyCosts}</td>
 </tr>
+<tr><td colspan=2><hr/></td></tr>
 <tr>
-    <td>Monthly total income</td>
+    <td>Monthly gross income</td>
     <td style="text-align: right;">{monthlyIncome}</td>
 </tr>
+[START amortization]
+<tr>
+    <td>Monthly net income</td>
+    <td style="text-align: right;">{monthlyIncomeAmortizated}</td>
+</tr>
+[END amortization]
 <tr>
     <td>Monthly income tax ({taxRate}%)</td>
     <td style="text-align: right;">{monthlyIncomeTax}</td>
 </tr>
+<tr><td colspan=2><hr/></td></tr>
 <tr>
-    <td>Monthly balance</td>
+    <td>Monthly net balance</td>
     <td style="text-align: right;"><strong>{balance}</strong></td>
 </tr>
 </tbody>
@@ -74,7 +82,7 @@
 <table class="detailsTable" style="width: 400px; margin: 5px; float: left">
 <tbody>
 <tr>
-    <td>Hire accountant to get more detailed reports on investment <button class="btn btn-sm float-right">Hire</button></td>
+    <td>Hire accountant to get tax amortization <button class="btn btn-sm float-right">Hire</button></td>
 </tr>
 <tr>
     <td>Hire building supervisor to fix malfunctions instantly <button class="btn btn-sm float-right">Hire</button></td>
