@@ -1,6 +1,7 @@
 import Dispatch
 import Foundation
 import Swifter
+import WebGameLib
 
 let server = HttpServer()
 let application = WebApplication(server)
