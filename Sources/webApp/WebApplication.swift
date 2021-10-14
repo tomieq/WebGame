@@ -8,12 +8,12 @@
 import Foundation
 import Swifter
 
-class WebApplication {
+public class WebApplication {
 
     let gameEngine = GameEngine()
     let propertyManagerAPI: PropertyManagerRestAPI
     
-    init(_ server: HttpServer) {
+    public init(_ server: HttpServer) {
         
         self.propertyManagerAPI = PropertyManagerRestAPI(server, gameEngine: self.gameEngine)
 
