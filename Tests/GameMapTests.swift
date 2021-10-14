@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Swifter
 import XCTest
 @testable import WebGameLib
 
