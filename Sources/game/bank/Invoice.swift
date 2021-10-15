@@ -7,7 +7,7 @@
 
 import Foundation
 
-class Invoice: Codable {
+struct Invoice: Codable {
     
     let title: String
     let netValue: Double
