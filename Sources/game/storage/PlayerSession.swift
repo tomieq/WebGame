@@ -10,11 +10,11 @@ import Foundation
 class PlayerSession {
     
     let id: String
-    let player: Player
+    let playerUUID: String
     
     init(player: Player) {
         self.id = UUID().uuidString
-        self.player = player
+        self.playerUUID = player.uuid
     }
 }
 

@@ -59,8 +59,10 @@ class GameClock {
         }
         
         for session in PlayerSessionManager.shared.getActiveSessions() {
-            let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(session.player.wallet.money))
-            GameEventBus.gameEvents.onNext(updateWalletEvent)
+            if let player = DataStore.provider.getPlayer(id: session.playerUUID) {
+                let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(player.wallet.money))
+                GameEventBus.gameEvents.onNext(updateWalletEvent)
+            }
         }
         
     }

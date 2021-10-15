@@ -40,8 +40,8 @@ class GameEngine {
         GameEventBus.gameEvents.asObservable().bind { [weak self] gameEvent in
             switch gameEvent.action {
             case .userConnected:
-                if let session = gameEvent.playerSession {
-                    self?.websocketHandler.sendTo(playerSessionID: session.id, commandType: .updateWallet, payload: session.player.wallet.money)
+                if let session = gameEvent.playerSession, let player = DataStore.provider.getPlayer(id: session.playerUUID) {
+                    self?.websocketHandler.sendTo(playerSessionID: session.id, commandType: .updateWallet, payload: player.wallet.money)
                 }
             case .userDisconnected:
                 if let session = gameEvent.playerSession {
@@ -49,7 +49,7 @@ class GameEngine {
                 }
             case .reloadMap:
                 self?.streetNavi.reload()
-                self?.websocketHandler.sendToAll(commandType: .reloadMap, payload: "\(gameEvent.playerSession?.player.uuid ?? "nil")")
+                self?.websocketHandler.sendToAll(commandType: .reloadMap, payload: "\(gameEvent.playerSession?.playerUUID ?? "nil")")
             case .updateWallet(let wallet):
                 self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .updateWallet, payload: wallet)
             case .updateGameDate(let date):
@@ -62,7 +62,7 @@ class GameEngine {
                         self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .openWindow, payload: payload)
                     case false:
                         
-                        if self?.realEstateAgent.getProperty(address: point)?.ownerID == gameEvent.playerSession?.player.uuid {
+                        if self?.realEstateAgent.getProperty(address: point)?.ownerID == gameEvent.playerSession?.playerUUID {
                             
                             let payload = OpenWindow(title: "Loading", width: 0.7, height: 100, initUrl: "/openPropertyManager.js?x=\(point.x)&y=\(point.y)", address: nil)
                             self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .openWindow, payload: payload)

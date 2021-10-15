@@ -99,7 +99,7 @@ public class WebApplication {
             }
             var html = ""
             let template = Template.init(from: "/templates/bankTransaction.html")
-            for transaction in DataStore.provider.getFinancialTransactions(userID: session.player.uuid) {
+            for transaction in DataStore.provider.getFinancialTransactions(userID: session.playerUUID) {
                 var data = [String:String]()
                 data["number"] = transaction.uuid
                 data["date"] = GameDate(monthIteration: transaction.month).text
@@ -133,7 +133,7 @@ public class WebApplication {
                     return .badRequest(.text("Invalid request! Missing session ID."))
             }
             let template = Template.init(from: "/templates/walletBalance.html")
-            for land in (Storage.shared.landProperties.filter{ $0.ownerID == session.player.uuid }) {
+            for land in (Storage.shared.landProperties.filter{ $0.ownerID == session.playerUUID }) {
                 
                 var data: [String:String] = [:]
                 data["name"] = land.name
@@ -142,7 +142,7 @@ public class WebApplication {
                 template.assign(variables: data, inNest: "investment")
             }
             
-            for road in (Storage.shared.roadProperties.filter{ $0.ownerID == session.player.uuid }) {
+            for road in (Storage.shared.roadProperties.filter{ $0.ownerID == session.playerUUID }) {
                 var data: [String:String] = [:]
                 data["name"] = road.name
                 data["balance"] = (road.monthlyIncome - road.monthlyMaintenanceCost).money
@@ -150,7 +150,7 @@ public class WebApplication {
                 template.assign(variables:data, inNest: "investment")
             }
             
-            for building in (Storage.shared.residentialBuildings.filter{ $0.ownerID == session.player.uuid }) {
+            for building in (Storage.shared.residentialBuildings.filter{ $0.ownerID == session.playerUUID }) {
                 var data: [String:String] = [:]
                 data["name"] = building.name
                 data["balance"] = (building.monthlyIncome - building.monthlyMaintenanceCost).money
