@@ -11,6 +11,9 @@ class DataStoreMemoryProvider: DataStoreProvider {
     private var players: [PlayerManagedObject]
     init() {
         self.players = []
+        
+        let government = PlayerCreateRequest(login: "Government", type: .government, wallet: 0)
+        let realEstateAgent = PlayerCreateRequest(login: "Real Estate Agency", type: .realEstateAgency, wallet: 0)
         /*for id in SystemPlayerID.allCases {
             self.players.append(Player(id: id.rawValue, login: id.login, type: .system, wallet: 0))
         }
@@ -27,5 +30,9 @@ class DataStoreMemoryProvider: DataStoreProvider {
     
     func getPlayer(id: String) -> Player? {
         return self.players.first { $0.id == id }.map{ Player($0) }
+    }
+    
+    func getPlayer(type: PlayerType) -> Player? {
+        return self.players.first { $0.type == type }.map{ Player($0) }
     }
 }

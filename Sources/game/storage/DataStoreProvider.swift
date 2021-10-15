@@ -8,6 +8,7 @@
 import Foundation
 
 protocol DataStoreProvider {
-    func createPlayer(_ player: PlayerCreateRequest) -> String
+    @discardableResult func createPlayer(_ player: PlayerCreateRequest) -> String
     func getPlayer(id: String) -> Player?
+    func getPlayer(type: PlayerType) -> Player?
 }

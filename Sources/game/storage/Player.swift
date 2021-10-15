@@ -7,26 +7,11 @@
 
 import Foundation
 
-enum SystemPlayerID: String, CaseIterable {
+enum PlayerType: String, Codable {
+    case user
     case government
     case bank
     case realEstateAgency
-    
-    var login: String {
-        switch self {
-        case .government:
-            return "Government"
-        case .bank:
-            return "Central Bank"
-        case .realEstateAgency:
-            return "Real Estate Agency"
-        }
-    }
-}
-
-enum PlayerType: String, Codable {
-    case user
-    case system
 }
 
 struct Player: Codable {

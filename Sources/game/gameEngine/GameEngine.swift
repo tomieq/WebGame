@@ -20,6 +20,13 @@ class GameEngine {
     let disposeBag = DisposeBag()
     
     init() {
+        let government = PlayerCreateRequest(login: "Government", type: .government, wallet: 0)
+        let realEstateAgent = PlayerCreateRequest(login: "Real Estate Agency", type: .realEstateAgency, wallet: 0)
+        let user1 = PlayerCreateRequest(login: "Mike Wachlewsky", type: .user, wallet: 2000000)
+        DataStore.provider.createPlayer(government)
+        DataStore.provider.createPlayer(realEstateAgent)
+        DataStore.provider.createPlayer(user1)
+        
         self.gameMap = GameMap(width: 25, height: 25, scale: 0.30)
         let gameManager = GameMapManager(self.gameMap)
         gameManager.loadMapFrom(path: "maps/roadMap1")

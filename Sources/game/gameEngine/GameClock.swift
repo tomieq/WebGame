@@ -67,7 +67,7 @@ class GameClock {
     
     private func applyWalletChanges(property: Property) {
         if let ownerID = property.ownerID, let owner = DataStore.provider.getPlayer(id: ownerID), owner.type == .user,
-            let government = DataStore.provider.getPlayer(id: SystemPlayerID.government.rawValue) {
+            let government = DataStore.provider.getPlayer(type: .government) {
             
             let incomeInvoice = Invoice(title: "Monthly income from \(property.name)", netValue: property.monthlyIncome, taxRate: TaxRates.incomeTax)
             let incomeTransaction = FinancialTransaction(payerID: government.id, recipientID: owner.id, invoice: incomeInvoice)

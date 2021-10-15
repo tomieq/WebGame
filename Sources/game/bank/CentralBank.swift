@@ -20,7 +20,7 @@ class CentralBank {
         
         let payer = DataStore.provider.getPlayer(id: transaction.payerID)
         let recipient = DataStore.provider.getPlayer(id: transaction.recipientID)
-        let government = DataStore.provider.getPlayer(id: SystemPlayerID.government.rawValue)
+        let government = DataStore.provider.getPlayer(type: .government)
         
         guard payer?.wallet ?? 0.0 > transaction.invoice.total else {
             return .failure(reason: "Not enough amount of money to finish the financial transaction")
@@ -62,7 +62,7 @@ class CentralBank {
                 refund = (paidIncomeTax - taxAfterCosts).rounded(toPlaces: 0)
             }
             if refund > 10 {
-                let government = DataStore.provider.getPlayer(id: SystemPlayerID.government.rawValue)
+                let government = DataStore.provider.getPlayer(type: .government)
                 payer.receiveMoney(refund)
                 government?.pay(refund)
                 self.archive(playerID: payer.id, title: "Tax refund based on costs for \(transaction.invoice.title)", amount: refund)
