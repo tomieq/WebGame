@@ -29,26 +29,35 @@ enum PlayerType: String, Codable {
     case system
 }
 
-class Player: Codable {
+struct Player: Codable {
     let id: String
     let login: String
     let type: PlayerType
     var wallet: Double
     
-    init(id: String, login: String, type: PlayerType = .user, wallet: Double = 10000000) {
-        self.id = id
-        self.login = login
-        self.type = type
-        self.wallet = wallet
+    init(_ managedObject: PlayerManagedObject) {
+        self.id = managedObject.id
+        self.login = managedObject.login
+        self.type = managedObject.type
+        self.wallet = managedObject.wallet
     }
     
     func pay(_ amount: Double) {
-        self.wallet -= amount.rounded(toPlaces: 0)
+        //self.wallet -= amount.rounded(toPlaces: 0)
     }
     
     func receiveMoney(_ amount: Double) {
-        self.wallet += amount.rounded(toPlaces: 0)
+        //self.wallet += amount.rounded(toPlaces: 0)
     }
+    
+    enum Attribute {
+        case wallet(Double)
+    }
+}
+
+struct PlayerMutation {
+    let id: String
+    let attributes: [Player.Attribute]
 }
 
 class PlayerSession {
