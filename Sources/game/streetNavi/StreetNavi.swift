@@ -9,8 +9,8 @@ import Foundation
 import RxSwift
 
 class StreetNavi {
-    let adjacencyList = AdjacencyList<MapPoint>()
-    private let gameMap: GameMap
+    let gameMap: GameMap
+    private let adjacencyList = AdjacencyList<MapPoint>()
     private let disposeBag = DisposeBag()
     
     init(gameMap: GameMap) {

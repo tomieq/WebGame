@@ -26,7 +26,7 @@ class GameEngine {
         self.gameMapManager = gameManager
         self.realEstateAgent = RealEstateAgent(mapManager: self.gameMapManager)
         self.streetNavi = StreetNavi(gameMap: self.gameMap)
-        self.gameTraffic = GameTraffic(gameMap: self.gameMap, streetNavi: self.streetNavi)
+        self.gameTraffic = GameTraffic(streetNavi: self.streetNavi)
         self.websocketHandler = WebsocketHandler()
         self.gameClock = GameClock(realEstateAgent: self.realEstateAgent)
 

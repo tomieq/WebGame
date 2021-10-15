@@ -11,18 +11,16 @@ import RxCocoa
 
 
 class GameTraffic {
-    let gameMap: GameMap
     let streetNavi: StreetNavi
     private let disposeBag = DisposeBag()
     private var runningCars: [PlayerSession:[VehicleTravelStarted]]
     private var buildingPoints: [MapPoint]
     
     
-    init(gameMap: GameMap, streetNavi: StreetNavi) {
-        self.gameMap = gameMap
+    init(streetNavi: StreetNavi) {
         self.runningCars = [:]
         self.streetNavi = streetNavi
-        self.buildingPoints = self.gameMap.tiles.filter{ $0.isBuilding() }.map{ $0.address }
+        self.buildingPoints = self.streetNavi.gameMap.tiles.filter{ $0.isBuilding() }.map{ $0.address }
         self.startRandomTraffic()
         
         GameEventBus.gameEvents.asObservable().bind { [weak self] event in
@@ -39,7 +37,7 @@ class GameTraffic {
                 guard let session = event.playerSession else { return }
                 self?.runningCars[session] = self?.runningCars[session]?.filter { $0.id != payload.id } ?? []
             case .reloadMap:
-                self?.buildingPoints = self?.gameMap.tiles.filter{ $0.isBuilding() }.map{ $0.address } ?? []
+                self?.buildingPoints = self?.streetNavi.gameMap.tiles.filter{ $0.isBuilding() }.map{ $0.address } ?? []
             default:
                 break
             }
