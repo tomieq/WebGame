@@ -18,7 +18,7 @@ struct Player: Codable {
     let id: String
     let login: String
     let type: PlayerType
-    var wallet: Double
+    let wallet: Double
     
     init(_ managedObject: PlayerManagedObject) {
         self.id = managedObject.id
@@ -28,11 +28,13 @@ struct Player: Codable {
     }
     
     func pay(_ amount: Double) {
-        //self.wallet -= amount.rounded(toPlaces: 0)
+        let value = (self.wallet - amount).rounded(toPlaces: 0)
+        DataStore.provider.update(PlayerMutation(id: self.id, attributes: [.wallet(value)]))
     }
     
     func receiveMoney(_ amount: Double) {
-        //self.wallet += amount.rounded(toPlaces: 0)
+        let value = (self.wallet + amount).rounded(toPlaces: 0)
+        DataStore.provider.update(PlayerMutation(id: self.id, attributes: [.wallet(value)]))
     }
     
     enum Attribute {

@@ -29,4 +29,28 @@ final class PlayerDataStoreTests: XCTestCase {
         DataStore.provider.removePlayer(id: id)
         XCTAssertNil(DataStore.provider.getPlayer(id: id))
     }
+    
+    func test_payMoney() {
+        let playerCreateRequest = PlayerCreateRequest(login: "tester", type: .user, wallet: 80)
+        let id = DataStore.provider.createPlayer(playerCreateRequest)
+        let player = DataStore.provider.getPlayer(id: id)
+        player?.pay(70)
+        XCTAssertNotEqual(player?.wallet, 10)
+        let playerUpdated = DataStore.provider.getPlayer(id: id)
+        XCTAssertEqual(playerUpdated?.wallet, 10)
+        DataStore.provider.removePlayer(id: id)
+        XCTAssertNil(DataStore.provider.getPlayer(id: id))
+    }
+    
+    func test_receiveMoney() {
+        let playerCreateRequest = PlayerCreateRequest(login: "tester", type: .user, wallet: 80)
+        let id = DataStore.provider.createPlayer(playerCreateRequest)
+        let player = DataStore.provider.getPlayer(id: id)
+        player?.receiveMoney(100)
+        XCTAssertNotEqual(player?.wallet, 180)
+        let playerUpdated = DataStore.provider.getPlayer(id: id)
+        XCTAssertEqual(playerUpdated?.wallet, 180)
+        DataStore.provider.removePlayer(id: id)
+        XCTAssertNil(DataStore.provider.getPlayer(id: id))
+    }
 }
