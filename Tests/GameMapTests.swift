@@ -101,12 +101,17 @@ final class GameMapTests: XCTestCase {
         let gameMap = GameMap(width: 10, height: 10, scale: 1)
         let mapPints = gameMap.getNeighbourAddresses(to: MapPoint(x: 2, y: 2), radius: 1)
         XCTAssertEqual(mapPints.count, 8)
-        /*
-         (3,1) | (3,2) | (3,3)
-         ------|-------|------
-         (2,1) |   P   | (2,3)
-         ------|-------|------
-         (1,1) | (1,2) | (1,3)
+        /* Test point is @(2,2), radius = 1
+         --------
+        ⎹ •  x → ⎸
+        ⎹ y      ⎸
+        ⎹ ↓      ⎸
+         --------
+         (1,1) |  (2,1) | (3,1)
+         ------|--------|------
+         (1,2) | P[2,2] | (3,2)
+         ------|--------|------
+         (1,3) | (2,3)  | (3,3)
          */
         XCTAssertTrue(mapPints.contains(MapPoint(x: 1, y: 1)), "1,1")
         XCTAssertTrue(mapPints.contains(MapPoint(x: 1, y: 2)), "1,2")
@@ -122,12 +127,17 @@ final class GameMapTests: XCTestCase {
         let gameMap = GameMap(width: 10, height: 10, scale: 1)
         let mapPints = gameMap.getNeighbourAddresses(to: MapPoint(x: 0, y: 2), radius: 1)
         XCTAssertEqual(mapPints.count, 5)
-        /*
-         (1,1) | (1,2) | (1,3)
-         ------|-------|------
-         (0,1) |   P   | (0,3)
-         ------|-------|------
-           -   |   -   |   -
+        /* Test point is @(0,2), radius = 1
+         --------
+        ⎹ •  x → ⎸
+        ⎹ y      ⎸
+        ⎹ ↓      ⎸
+         --------
+         |  (0,1) | (1,1)
+         |--------|------
+         | P[0,2] | (1,2)
+         |--------|------
+         | (0,3)  | (1,3)
          */
         XCTAssertTrue(mapPints.contains(MapPoint(x: 1, y: 1)), "1,1")
         XCTAssertTrue(mapPints.contains(MapPoint(x: 1, y: 2)), "1,2")
@@ -140,18 +150,69 @@ final class GameMapTests: XCTestCase {
         let gameMap = GameMap(width: 10, height: 10, scale: 1)
         let mapPints = gameMap.getNeighbourAddresses(to: MapPoint(x: 9, y: 2), radius: 1)
         XCTAssertEqual(mapPints.count, 5)
-        /*
-           -   |   -   |   -
-         ------|-------|------
-         (9,1) |   P   | (9,3)
-         ------|-------|------
-         (8,1) | (8,2) | (8,3)
+        /* Test point is @(9,2), radius = 1
+         --------
+        ⎹ •  x → ⎸
+        ⎹ y      ⎸
+        ⎹ ↓      ⎸
+         --------
+         (8,1) |  (9,1) |
+         ------|--------|
+         (8,2) | P[9,2] |
+         ------|--------|
+         (8,3) | (9,3)  |
          */
         XCTAssertTrue(mapPints.contains(MapPoint(x: 9, y: 1)), "9,1")
         XCTAssertTrue(mapPints.contains(MapPoint(x: 9, y: 3)), "9,3")
         XCTAssertTrue(mapPints.contains(MapPoint(x: 8, y: 1)), "8,1")
         XCTAssertTrue(mapPints.contains(MapPoint(x: 8, y: 2)), "8,2")
         XCTAssertTrue(mapPints.contains(MapPoint(x: 8, y: 3)), "8,3")
+    }
+    
+    func test_getNeighbourAddresses_atTopEdge_radius1() {
+        let gameMap = GameMap(width: 10, height: 10, scale: 1)
+        let mapPints = gameMap.getNeighbourAddresses(to: MapPoint(x: 5, y: 0), radius: 1)
+        XCTAssertEqual(mapPints.count, 5)
+        /* Test point is @(5,0), radius = 1
+         --------
+        ⎹ •  x → ⎸
+        ⎹ y      ⎸
+        ⎹ ↓      ⎸
+         --------
+         
+         ------|--------|------
+         (4,0) | P[5,0] | (6,0)
+         ------|--------|------
+         (4,1) | (5,1)  | (6,1)
+         */
+        XCTAssertTrue(mapPints.contains(MapPoint(x: 4, y: 0)), "4,0")
+        XCTAssertTrue(mapPints.contains(MapPoint(x: 6, y: 0)), "6,0")
+        XCTAssertTrue(mapPints.contains(MapPoint(x: 4, y: 1)), "4,1")
+        XCTAssertTrue(mapPints.contains(MapPoint(x: 5, y: 1)), "5,1")
+        XCTAssertTrue(mapPints.contains(MapPoint(x: 6, y: 1)), "6,1")
+    }
+    
+    func test_getNeighbourAddresses_atBottomEdge_radius1() {
+        let gameMap = GameMap(width: 10, height: 10, scale: 1)
+        let mapPints = gameMap.getNeighbourAddresses(to: MapPoint(x: 3, y: 9), radius: 1)
+        XCTAssertEqual(mapPints.count, 5)
+        /* Test point is @(3,9), radius = 1
+         --------
+        ⎹ •  x → ⎸
+        ⎹ y      ⎸
+        ⎹ ↓      ⎸
+         --------
+         (2,8) |  (3,8) | (4,8)
+         ------|--------|------
+         (2,9) | P[3,9] | (4,9)
+         ------|--------|------
+
+         */
+        XCTAssertTrue(mapPints.contains(MapPoint(x: 2, y: 8)), "2,8")
+        XCTAssertTrue(mapPints.contains(MapPoint(x: 3, y: 8)), "3,8")
+        XCTAssertTrue(mapPints.contains(MapPoint(x: 4, y: 8)), "4,8")
+        XCTAssertTrue(mapPints.contains(MapPoint(x: 2, y: 9)), "2,9")
+        XCTAssertTrue(mapPints.contains(MapPoint(x: 4, y: 9)), "4,9")
     }
     
     func test_getNeighbourAddresses_fromMapCentre_radius2() {
