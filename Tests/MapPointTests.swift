@@ -24,6 +24,13 @@ final class MapPointTests: XCTestCase {
     }
     
     func test_MapPointMoveUp() {
+        /*
+          --------
+         ⎹ •  x → ⎸
+         ⎹ y      ⎸
+         ⎹ ↓      ⎸up = y - 1
+          --------
+         */
         let point = MapPoint(x: 3, y: 1)
         let newAddress = point.move(.up)
         let expectedAddress = MapPoint(x: 3, y: 0)
@@ -31,6 +38,13 @@ final class MapPointTests: XCTestCase {
     }
     
     func test_MapPointMoveDown() {
+        /*
+          --------
+         ⎹ •  x → ⎸
+         ⎹ y      ⎸
+         ⎹ ↓      ⎸down = y + 1
+          --------
+         */
         let point = MapPoint(x: 3, y: 1)
         let newAddress = point.move(.down)
         let expectedAddress = MapPoint(x: 3, y: 2)
@@ -38,6 +52,13 @@ final class MapPointTests: XCTestCase {
     }
     
     func test_MapPointMoveRight() {
+        /*
+          --------
+         ⎹ •  x → ⎸
+         ⎹ y      ⎸
+         ⎹ ↓      ⎸right = x + 1
+          --------
+         */
         let point = MapPoint(x: 3, y: 1)
         let newAddress = point.move(.right)
         let expectedAddress = MapPoint(x: 4, y: 1)
@@ -45,6 +66,13 @@ final class MapPointTests: XCTestCase {
     }
     
     func test_MapPointMoveLeft() {
+        /*
+          --------
+         ⎹ •  x → ⎸
+         ⎹ y      ⎸
+         ⎹ ↓      ⎸left = x - 1
+          --------
+         */
         let point = MapPoint(x: 3, y: 1)
         let newAddress = point.move(.left)
         let expectedAddress = MapPoint(x: 2, y: 1)
