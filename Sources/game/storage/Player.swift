@@ -15,13 +15,13 @@ enum PlayerType: String, Codable {
 }
 
 struct Player: Codable {
-    let id: String
+    let uuid: String
     let login: String
     let type: PlayerType
     let wallet: Double
     
     init(_ managedObject: PlayerManagedObject) {
-        self.id = managedObject.id
+        self.uuid = managedObject.uuid
         self.login = managedObject.login
         self.type = managedObject.type
         self.wallet = managedObject.wallet
@@ -29,20 +29,13 @@ struct Player: Codable {
     
     func pay(_ amount: Double) {
         let value = (self.wallet - amount).rounded(toPlaces: 0)
-        DataStore.provider.update(PlayerMutation(id: self.id, attributes: [.wallet(value)]))
+        DataStore.provider.update(PlayerMutationRequest(id: self.uuid, attributes: [.wallet(value)]))
     }
     
     func receiveMoney(_ amount: Double) {
         let value = (self.wallet + amount).rounded(toPlaces: 0)
-        DataStore.provider.update(PlayerMutation(id: self.id, attributes: [.wallet(value)]))
+        DataStore.provider.update(PlayerMutationRequest(id: self.uuid, attributes: [.wallet(value)]))
     }
     
-    enum Attribute {
-        case wallet(Double)
-    }
-}
 
-struct PlayerMutation {
-    let id: String
-    let attributes: [Player.Attribute]
 }

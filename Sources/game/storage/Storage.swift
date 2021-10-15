@@ -12,7 +12,6 @@ class Storage: Codable {
     
     public static let shared = Storage.restore() ?? Storage()
     var bankTransactionCounter: Int
-    var transactionArchive: [FinancialTransactionArchive]
     var landProperties: [Land]
     var roadProperties: [Road]
     var residentialBuildings: [ResidentialBuilding]
@@ -22,7 +21,6 @@ class Storage: Codable {
     private init() {
         
         self.bankTransactionCounter = 1
-        self.transactionArchive = []
         self.monthIteration = 0
         self.landProperties = []
         self.roadProperties = []

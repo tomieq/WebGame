@@ -162,7 +162,7 @@ class PropertyManagerRestAPI {
             guard let property = self.gameEngine.realEstateAgent.getProperty(address: address) else {
                 return .ok(.text("Property at \(address.description) not found!"))
             }
-            guard let ownerID = property.ownerID, session.player.id == ownerID else {
+            guard let ownerID = property.ownerID, session.player.uuid == ownerID else {
                 return .ok(.text("Property at \(address.description) is not yours!"))
             }
             
@@ -288,7 +288,7 @@ class PropertyManagerRestAPI {
                     code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
                     return code.response
             }
-            guard property.ownerID == session.player.id else {
+            guard property.ownerID == session.player.uuid else {
                 code.add(.showError(txt: "You can sell only your properties.", duration: 10))
                 return code.response
             }
@@ -323,7 +323,7 @@ class PropertyManagerRestAPI {
                     code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
                     return code.response
             }
-            guard apartment.ownerID == session.player.id else {
+            guard apartment.ownerID == session.player.uuid else {
                 code.add(.showError(txt: "You can sell only your apartment.", duration: 10))
                 return code.response
             }
@@ -380,7 +380,7 @@ class PropertyManagerRestAPI {
                     code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
                     return code.response
             }
-            guard apartment.ownerID == session.player.id else {
+            guard apartment.ownerID == session.player.uuid else {
                 code.add(.showError(txt: "You can rent only your properties.", duration: 10))
                 return code.response
             }
@@ -435,7 +435,7 @@ class PropertyManagerRestAPI {
                 data["actionTitle"] = "Kick out tenants"
                 data["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/rentApartment.js?unrent=true&\(apartment.address.asQueryParams)&propertyID=\(apartment.id)"]).js
                 apartmentView.assign(variables: data, inNest: "rented")
-            } else if apartment.ownerID != session.player.id {
+            } else if apartment.ownerID != session.player.uuid {
                 let buildingFee = apartment.monthlyBuildingFee
                 let incomeTax = apartment.monthlyBuildingFee * TaxRates.incomeTax
                 data["monthlyIncome"] = buildingFee.money
@@ -528,7 +528,7 @@ class PropertyManagerRestAPI {
                         // is rented
                         css = "background-color: #1F5E71;"
                         incomeBalance = (apartment.monthlyRentalFee - apartment.monthlyBills).money
-                    } else if apartment.ownerID != session.player.id {
+                    } else if apartment.ownerID != session.player.uuid {
                         // is sold
                         css = "border: 1px solid #1F5E71;"
                         incomeBalance = "Sold"

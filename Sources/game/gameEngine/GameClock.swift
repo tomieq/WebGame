@@ -70,13 +70,13 @@ class GameClock {
             let government = DataStore.provider.getPlayer(type: .government) {
             
             let incomeInvoice = Invoice(title: "Monthly income from \(property.name)", netValue: property.monthlyIncome, taxRate: TaxRates.incomeTax)
-            let incomeTransaction = FinancialTransaction(payerID: government.id, recipientID: owner.id, invoice: incomeInvoice)
+            let incomeTransaction = FinancialTransaction(payerID: government.uuid, recipientID: owner.uuid, invoice: incomeInvoice)
             if property.monthlyIncome > 0 {
                 CentralBank.shared.process(incomeTransaction)
             }
             
             let costsInvoice = Invoice(title: "Monthly costs in \(property.name)", netValue: property.monthlyMaintenanceCost, taxRate: TaxRates.monthlyBuildingCostsTax)
-            let costsTransaction = FinancialTransaction(payerID: owner.id, recipientID: government.id, invoice: costsInvoice)
+            let costsTransaction = FinancialTransaction(payerID: owner.uuid, recipientID: government.uuid, invoice: costsInvoice)
             
             if property.monthlyMaintenanceCost > 0 {
                 CentralBank.shared.process(costsTransaction)
@@ -88,9 +88,9 @@ class GameClock {
     }
     
     private func pruneBankTransactionArchive() {
-        let currentMonth = Storage.shared.monthIteration
-        let borderMonth = currentMonth - 12
-        Storage.shared.transactionArchive = Storage.shared.transactionArchive.filter { $0.month > borderMonth }
+        //let currentMonth = Storage.shared.monthIteration
+        //let borderMonth = currentMonth - 12
+        //Storage.shared.transactionArchive = Storage.shared.transactionArchive.filter { $0.month > borderMonth }
     }
     
     private func finishConstructions() {

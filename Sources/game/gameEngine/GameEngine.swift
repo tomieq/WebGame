@@ -49,7 +49,7 @@ class GameEngine {
                 }
             case .reloadMap:
                 self?.streetNavi.reload()
-                self?.websocketHandler.sendToAll(commandType: .reloadMap, payload: "\(gameEvent.playerSession?.player.id ?? "nil")")
+                self?.websocketHandler.sendToAll(commandType: .reloadMap, payload: "\(gameEvent.playerSession?.player.uuid ?? "nil")")
             case .updateWallet(let wallet):
                 self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .updateWallet, payload: wallet)
             case .updateGameDate(let date):
@@ -62,7 +62,7 @@ class GameEngine {
                         self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .openWindow, payload: payload)
                     case false:
                         
-                        if self?.realEstateAgent.getProperty(address: point)?.ownerID == gameEvent.playerSession?.player.id {
+                        if self?.realEstateAgent.getProperty(address: point)?.ownerID == gameEvent.playerSession?.player.uuid {
                             
                             let payload = OpenWindow(title: "Loading", width: 0.7, height: 100, initUrl: "/openPropertyManager.js?x=\(point.x)&y=\(point.y)", address: nil)
                             self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .openWindow, payload: payload)

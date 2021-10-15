@@ -8,13 +8,13 @@
 import Foundation
 
 class PlayerManagedObject {
-    let id: String
+    let uuid: String
     let login: String
     let type: PlayerType
     var wallet: Double
     
     init(_ player: PlayerCreateRequest) {
-        self.id = UUID().uuidString
+        self.uuid = UUID().uuidString
         self.login = player.login
         self.type = player.type
         self.wallet = player.wallet
@@ -30,5 +30,14 @@ struct PlayerCreateRequest {
         self.login = login
         self.type = type
         self.wallet = wallet
+    }
+}
+
+struct PlayerMutationRequest {
+    let id: String
+    let attributes: [PlayerMutationRequest.Attribute]
+    
+    enum Attribute {
+        case wallet(Double)
     }
 }

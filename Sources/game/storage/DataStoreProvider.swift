@@ -11,6 +11,8 @@ protocol DataStoreProvider {
     @discardableResult func createPlayer(_ player: PlayerCreateRequest) -> String
     func getPlayer(id: String) -> Player?
     func getPlayer(type: PlayerType) -> Player?
-    func update(_ playerMutation: PlayerMutation)
+    func update(_ playerMutation: PlayerMutationRequest)
     func removePlayer(id: String)
+    @discardableResult func createTransactionArchive(_ transaction: FinancialTransactionArchiveCreateRequest) -> String
+    func getFinancialTransactions(userID: String) -> [CashFlow]
 }

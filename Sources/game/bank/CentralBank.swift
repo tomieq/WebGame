@@ -29,18 +29,18 @@ class CentralBank {
         // update payer's wallet
         payer?.pay(transaction.invoice.total)
         if let payer = payer, payer.type == .user {
-            self.archive(playerID: payer.id, title: transaction.invoice.title, amount: -1 * transaction.invoice.total)
+            self.archive(playerID: payer.uuid, title: transaction.invoice.title, amount: -1 * transaction.invoice.total)
         }
         
-        if recipient?.id == government?.id {
+        if recipient?.uuid == government?.uuid {
             government?.receiveMoney(transaction.invoice.total)
         } else {
             // government takes income tax and VAT
             government?.receiveMoney(transaction.incomeTax + transaction.invoice.tax)
             recipient?.receiveMoney((transaction.invoice.netValue - transaction.incomeTax).rounded(toPlaces: 0))
             if let recipient = recipient, recipient.type == .user {
-                self.archive(playerID: recipient.id, title: transaction.invoice.title, amount: transaction.invoice.netValue)
-                self.archive(playerID: recipient.id, title: "Income tax (\((TaxRates.incomeTax*100).rounded(toPlaces: 1))%) for \(transaction.invoice.title)", amount: -1 * transaction.incomeTax)
+                self.archive(playerID: recipient.uuid, title: transaction.invoice.title, amount: transaction.invoice.netValue)
+                self.archive(playerID: recipient.uuid, title: "Income tax (\((TaxRates.incomeTax*100).rounded(toPlaces: 1))%) for \(transaction.invoice.title)", amount: -1 * transaction.incomeTax)
             }
         }
         
@@ -65,7 +65,7 @@ class CentralBank {
                 let government = DataStore.provider.getPlayer(type: .government)
                 payer.receiveMoney(refund)
                 government?.pay(refund)
-                self.archive(playerID: payer.id, title: "Tax refund based on costs for \(transaction.invoice.title)", amount: refund)
+                self.archive(playerID: payer.uuid, title: "Tax refund based on costs for \(transaction.invoice.title)", amount: refund)
             }
             
         }
@@ -73,12 +73,11 @@ class CentralBank {
     }
     
     private func archive(playerID: String, title: String, amount: Double) {
-        let transactionID = Storage.shared.bankTransactionCounter
-        Storage.shared.bankTransactionCounter += 1
+
         let monthIteration = Storage.shared.monthIteration
         
-        let archive = FinancialTransactionArchive(id: transactionID, month: monthIteration, title: title, playerID: playerID, amount: amount)
-        Storage.shared.transactionArchive.append(archive)
+        let archive = FinancialTransactionArchiveCreateRequest(month: monthIteration, title: title, playerID: playerID, amount: amount)
+        DataStore.provider.createTransactionArchive(archive)
     }
 }
 

@@ -24,7 +24,7 @@ public class WebApplication {
             }
             let playerSession = PlayerSessionManager.shared.createPlayerSession(for: player)
             responseHeaders.setCookie(name: "sessionID", value: playerSession.id)
-            Logger.info("WebApplication", "User \(player.login)(\(player.id)) started new session \(playerSession.id)")
+            Logger.info("WebApplication", "User \(player.login)(\(player.uuid)) started new session \(playerSession.id)")
             
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/pageResponse.html"))
             
@@ -99,9 +99,9 @@ public class WebApplication {
             }
             var html = ""
             let template = Template.init(from: "/templates/bankTransaction.html")
-            for transaction in (Storage.shared.transactionArchive.filter{ $0.playerID == session.player.id }.sorted { $0.id > $1.id }) {
+            for transaction in DataStore.provider.getFinancialTransactions(userID: session.player.uuid) {
                 var data = [String:String]()
-                data["number"] = transaction.id.string
+                data["number"] = transaction.uuid
                 data["date"] = GameDate(monthIteration: transaction.month).text
                 data["title"] = transaction.title
                 template.assign(variables: data)
@@ -133,7 +133,7 @@ public class WebApplication {
                     return .badRequest(.text("Invalid request! Missing session ID."))
             }
             let template = Template.init(from: "/templates/walletBalance.html")
-            for land in (Storage.shared.landProperties.filter{ $0.ownerID == session.player.id }) {
+            for land in (Storage.shared.landProperties.filter{ $0.ownerID == session.player.uuid }) {
                 
                 var data: [String:String] = [:]
                 data["name"] = land.name
@@ -142,7 +142,7 @@ public class WebApplication {
                 template.assign(variables: data, inNest: "investment")
             }
             
-            for road in (Storage.shared.roadProperties.filter{ $0.ownerID == session.player.id }) {
+            for road in (Storage.shared.roadProperties.filter{ $0.ownerID == session.player.uuid }) {
                 var data: [String:String] = [:]
                 data["name"] = road.name
                 data["balance"] = (road.monthlyIncome - road.monthlyMaintenanceCost).money
@@ -150,7 +150,7 @@ public class WebApplication {
                 template.assign(variables:data, inNest: "investment")
             }
             
-            for building in (Storage.shared.residentialBuildings.filter{ $0.ownerID == session.player.id }) {
+            for building in (Storage.shared.residentialBuildings.filter{ $0.ownerID == session.player.uuid }) {
                 var data: [String:String] = [:]
                 data["name"] = building.name
                 data["balance"] = (building.monthlyIncome - building.monthlyMaintenanceCost).money

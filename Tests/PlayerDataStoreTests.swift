@@ -23,7 +23,7 @@ final class PlayerDataStoreTests: XCTestCase {
     func test_updateWallet() {
         let playerCreateRequest = PlayerCreateRequest(login: "tester", type: .user, wallet: 50)
         let id = DataStore.provider.createPlayer(playerCreateRequest)
-        DataStore.provider.update(PlayerMutation(id: id, attributes: [.wallet(110)]))
+        DataStore.provider.update(PlayerMutationRequest(id: id, attributes: [.wallet(110)]))
         let player = DataStore.provider.getPlayer(id: id)
         XCTAssertEqual(player?.wallet, 110)
         DataStore.provider.removePlayer(id: id)
