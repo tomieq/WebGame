@@ -100,6 +100,12 @@ extension TileType {
     }
 }
 
+extension TileType: Equatable {
+    static func == (lhs: TileType, rhs: TileType) -> Bool {
+        return lhs.image.path == rhs.image.path
+    }
+}
+
 
 struct TileImage {
     let path: String
