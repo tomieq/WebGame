@@ -18,10 +18,10 @@ class GameTraffic {
     private var buildingPoints: [MapPoint]
     
     
-    init(gameMap: GameMap) {
+    init(gameMap: GameMap, streetNavi: StreetNavi) {
         self.gameMap = gameMap
         self.runningCars = [:]
-        self.streetNavi = StreetNavi(gameMap: self.gameMap)
+        self.streetNavi = streetNavi
         self.buildingPoints = self.gameMap.tiles.filter{ $0.isBuilding() }.map{ $0.address }
         self.startRandomTraffic()
         

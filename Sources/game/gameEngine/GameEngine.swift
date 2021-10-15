@@ -12,6 +12,7 @@ import RxCocoa
 class GameEngine {
     let gameMap: GameMap
     let gameMapManager: GameMapManager
+    let streetNavi: StreetNavi
     let gameTraffic: GameTraffic
     let websocketHandler: WebsocketHandler
     let realEstateAgent: RealEstateAgent
@@ -24,7 +25,8 @@ class GameEngine {
         gameManager.loadMapFrom(path: "maps/roadMap1")
         self.gameMapManager = gameManager
         self.realEstateAgent = RealEstateAgent(mapManager: self.gameMapManager)
-        self.gameTraffic = GameTraffic(gameMap: self.gameMap)
+        self.streetNavi = StreetNavi(gameMap: self.gameMap)
+        self.gameTraffic = GameTraffic(gameMap: self.gameMap, streetNavi: self.streetNavi)
         self.websocketHandler = WebsocketHandler()
         self.gameClock = GameClock(realEstateAgent: self.realEstateAgent)
 
