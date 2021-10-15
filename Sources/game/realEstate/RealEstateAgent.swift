@@ -96,8 +96,10 @@ class RealEstateAgent {
 
         self.mapManager.map.replaceTile(tile: land.mapTile)
         
-        let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(session.player.wallet.money))
-        GameEventBus.gameEvents.onNext(updateWalletEvent)
+        if let player = DataStore.provider.getPlayer(id: session.player.id) {
+            let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(player.wallet.money))
+            GameEventBus.gameEvents.onNext(updateWalletEvent)
+        }
         
         let reloadMapEvent = GameEvent(playerSession: nil, action: .reloadMap)
         GameEventBus.gameEvents.onNext(reloadMapEvent)
@@ -143,8 +145,10 @@ class RealEstateAgent {
         if property.accountantID != nil {
             CentralBank.shared.refundIncomeTax(receiverID: session.player.id, transaction: transaction, costs: (property.investmentsNetValue + (property.purchaseNetValue ?? 0.0)))
         }
-        let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(session.player.wallet.money))
-        GameEventBus.gameEvents.onNext(updateWalletEvent)
+        if let player = DataStore.provider.getPlayer(id: session.player.id) {
+            let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(player.wallet.money))
+            GameEventBus.gameEvents.onNext(updateWalletEvent)
+        }
     }
     
     func instantApartmentSell(_ apartment: Apartment, session: PlayerSession) {
@@ -171,8 +175,10 @@ class RealEstateAgent {
         apartment.ownerID = government.id
         self.recalculateFeesInTheBuilding(building)
     
-        let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(session.player.wallet.money))
-        GameEventBus.gameEvents.onNext(updateWalletEvent)
+        if let player = DataStore.provider.getPlayer(id: session.player.id) {
+            let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(player.wallet.money))
+            GameEventBus.gameEvents.onNext(updateWalletEvent)
+        }
     }
     
     func rentApartment(_ apartment: Apartment) {
@@ -215,8 +221,10 @@ class RealEstateAgent {
         
         self.mapManager.addStreet(address: address)
         
-        let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(session.player.wallet.money))
-        GameEventBus.gameEvents.onNext(updateWalletEvent)
+        if let player = DataStore.provider.getPlayer(id: session.player.id) {
+            let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(player.wallet.money))
+            GameEventBus.gameEvents.onNext(updateWalletEvent)
+        }
 
         let reloadMapEvent = GameEvent(playerSession: nil, action: .reloadMap)
         GameEventBus.gameEvents.onNext(reloadMapEvent)
@@ -251,8 +259,10 @@ class RealEstateAgent {
         let tile = GameMapTile(address: address, type: .buildingUnderConstruction(size: storeyAmount))
         self.mapManager.map.replaceTile(tile: tile)
         
-        let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(session.player.wallet.money))
-        GameEventBus.gameEvents.onNext(updateWalletEvent)
+        if let player = DataStore.provider.getPlayer(id: session.player.id) {
+            let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(player.wallet.money))
+            GameEventBus.gameEvents.onNext(updateWalletEvent)
+        }
 
         let reloadMapEvent = GameEvent(playerSession: nil, action: .reloadMap)
         GameEventBus.gameEvents.onNext(reloadMapEvent)
