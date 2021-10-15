@@ -61,7 +61,7 @@ class GameMapManager {
         let lines = content.components(separatedBy: "\n")
         for (y, line) in lines.enumerated() {
             if y >= self.map.height { break }
-            let elements = line.components(separatedBy: ",")
+            let elements = line.trimmingCharacters(in: .whitespaces).components(separatedBy: ",")
             for (x, chr) in elements.enumerated() {
                 if x >= self.map.width { break }
                 if matrix[x] == nil { matrix[x] = [:] }
