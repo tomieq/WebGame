@@ -18,9 +18,9 @@ class CentralBank {
     func process(_ transaction: FinancialTransaction) -> FinancialTransactionResult {
         Logger.info("CentralBank", "New transaction \(transaction.toJSONString() ?? "")")
         
-        let payer = Storage.shared.getPlayer(id: transaction.payerID)
-        let recipient = Storage.shared.getPlayer(id: transaction.recipientID)
-        let government = Storage.shared.getPlayer(id: SystemPlayerID.government.rawValue)
+        let payer = DataStore.provider.getPlayer(id: transaction.payerID)
+        let recipient = DataStore.provider.getPlayer(id: transaction.recipientID)
+        let government = DataStore.provider.getPlayer(id: SystemPlayerID.government.rawValue)
         
         guard payer?.wallet ?? 0.0 > transaction.invoice.total else {
             return .failure(reason: "Not enough amount of money to finish the financial transaction")
@@ -49,7 +49,7 @@ class CentralBank {
     
     func refundIncomeTax(receiverID: String, transaction: FinancialTransaction, costs: Double) {
         
-        if let payer = Storage.shared.getPlayer(id: receiverID) {
+        if let payer = DataStore.provider.getPlayer(id: receiverID) {
             
             var refund = 0.0
             let paidIncomeTax = transaction.incomeTax
@@ -62,7 +62,7 @@ class CentralBank {
                 refund = (paidIncomeTax - taxAfterCosts).rounded(toPlaces: 0)
             }
             if refund > 10 {
-                let government = Storage.shared.getPlayer(id: SystemPlayerID.government.rawValue)
+                let government = DataStore.provider.getPlayer(id: SystemPlayerID.government.rawValue)
                 payer.receiveMoney(refund)
                 government?.pay(refund)
                 self.archive(playerID: payer.id, title: "Tax refund based on costs for \(transaction.invoice.title)", amount: refund)

@@ -119,7 +119,7 @@ class PropertyManagerRestAPI {
             guard let ownerID = property.ownerID else {
                 return .badRequest(.html("Property at \(address.description) has no owner!"))
             }
-            let owner = Storage.shared.getPlayer(id: ownerID)
+            let owner = DataStore.provider.getPlayer(id: ownerID)
             
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyInfo.html"))
             var data = [String:String]()

@@ -13,7 +13,6 @@ class Storage: Codable {
     public static let shared = Storage.restore() ?? Storage()
     var bankTransactionCounter: Int
     var transactionArchive: [TransactionArchive]
-    var players: [Player]
     var landProperties: [Land]
     var roadProperties: [Road]
     var residentialBuildings: [ResidentialBuilding]
@@ -25,22 +24,12 @@ class Storage: Codable {
         self.bankTransactionCounter = 1
         self.transactionArchive = []
         self.monthIteration = 0
-        self.players = []
-        for id in SystemPlayerID.allCases {
-            self.players.append(Player(id: id.rawValue, login: id.login, type: .system, wallet: 0))
-        }
-        self.players.append(Player(id: "p1", login: "John Cash"))
-        self.players.append(Player(id: "p2", login: "Steve Poor"))
         self.landProperties = []
         self.roadProperties = []
         self.residentialBuildings = []
         self.apartments = []
         self.save()
         _ = StorageCoordinator.shared
-    }
-    
-    func getPlayer(id: String) -> Player? {
-        return self.players.first { $0.id == id }
     }
     
     func getApartment(id: String) -> Apartment? {

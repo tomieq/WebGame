@@ -113,7 +113,7 @@ class RealEstateAgent {
             Logger.error("RealEstateAgent", "Player \(session.player.login) is not owner of property \(property.id)")
             return
         }
-        guard let government = Storage.shared.getPlayer(id: SystemPlayerID.government.rawValue) else {
+        guard let government = DataStore.provider.getPlayer(id: SystemPlayerID.government.rawValue) else {
             Logger.error("RealEstateAgent", "Could not find goverment player")
             return
         }
@@ -146,7 +146,7 @@ class RealEstateAgent {
     }
     
     func instantApartmentSell(_ apartment: Apartment, session: PlayerSession) {
-        guard let government = Storage.shared.getPlayer(id: SystemPlayerID.government.rawValue) else {
+        guard let government = DataStore.provider.getPlayer(id: SystemPlayerID.government.rawValue) else {
             Logger.error("RealEstateAgent", "Could not find goverment player")
             return
         }
