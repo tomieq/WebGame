@@ -82,17 +82,6 @@ public class WebApplication {
             return .ok(.javaScript(template.output()))
         }
         
-        
-        server.GET["js/websockets.js"] = { request, _ in
-            request.disableKeepAlive = true
-            guard let playerSessionID = request.queryParam("playerSessionID"), let _ = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                return .ok(.text("alert('Invalid playerSessionID');"))
-            }
-            let template = Template(raw: ResourceCache.shared.getAppResource("templates/websockets.js"))
-            template.assign(variables: ["url":"ws://192.168.88.50:5920/websocket", "playerSessionID": playerSessionID])
-            return .ok(.javaScript(template.output()))
-        }
-        
         server.GET["js/openBankTransactions.js"] = { request, _ in
             request.disableKeepAlive = true
             guard let windowIndex = request.queryParam("windowIndex") else {
@@ -171,6 +160,16 @@ public class WebApplication {
             return .ok(.text(template.output()))
         }
         
+        server.GET["js/websockets.js"] = { request, _ in
+            request.disableKeepAlive = true
+            guard let playerSessionID = request.queryParam("playerSessionID"), let _ = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                return .ok(.text("alert('Invalid playerSessionID');"))
+            }
+            let template = Template(raw: ResourceCache.shared.getAppResource("templates/websockets.js"))
+            template.assign(variables: ["url":"ws://127.0.0.1:\((try? server.port()) ?? 0)/websocket", "playerSessionID": playerSessionID])
+            return .ok(.javaScript(template.output()))
+        }
+
         server["/websocket"] = websocket(text: { (session, text) in
             Logger.info("WebApplication", "Incoming message \(text)")
             self.gameEngine.websocketHandler.handleMessage(websocketSession: session, text: text)
