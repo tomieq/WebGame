@@ -102,7 +102,7 @@ public class WebApplication {
             for transaction in (Storage.shared.transactionArchive.filter{ $0.playerID == session.player.id }.sorted { $0.id > $1.id }) {
                 var data = [String:String]()
                 data["number"] = transaction.id.string
-                data["date"] = GameDate(monthIteration: transaction.monthIteration).text
+                data["date"] = GameDate(monthIteration: transaction.month).text
                 data["title"] = transaction.title
                 template.assign(variables: data)
                 if transaction.amount > 0 {

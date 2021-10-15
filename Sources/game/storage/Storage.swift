@@ -12,7 +12,7 @@ class Storage: Codable {
     
     public static let shared = Storage.restore() ?? Storage()
     var bankTransactionCounter: Int
-    var transactionArchive: [TransactionArchive]
+    var transactionArchive: [FinancialTransactionArchive]
     var landProperties: [Land]
     var roadProperties: [Road]
     var residentialBuildings: [ResidentialBuilding]

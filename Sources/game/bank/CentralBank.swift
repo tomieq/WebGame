@@ -77,7 +77,7 @@ class CentralBank {
         Storage.shared.bankTransactionCounter += 1
         let monthIteration = Storage.shared.monthIteration
         
-        let archive = TransactionArchive(id: transactionID, monthIteration: monthIteration, title: title, playerID: playerID, amount: amount)
+        let archive = FinancialTransactionArchive(id: transactionID, month: monthIteration, title: title, playerID: playerID, amount: amount)
         Storage.shared.transactionArchive.append(archive)
     }
 }

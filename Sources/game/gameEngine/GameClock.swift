@@ -90,7 +90,7 @@ class GameClock {
     private func pruneBankTransactionArchive() {
         let currentMonth = Storage.shared.monthIteration
         let borderMonth = currentMonth - 12
-        Storage.shared.transactionArchive = Storage.shared.transactionArchive.filter { $0.monthIteration > borderMonth }
+        Storage.shared.transactionArchive = Storage.shared.transactionArchive.filter { $0.month > borderMonth }
     }
     
     private func finishConstructions() {

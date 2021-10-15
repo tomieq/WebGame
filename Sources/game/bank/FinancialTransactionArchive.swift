@@ -1,5 +1,5 @@
 //
-//  TransactionArchive.swift
+//  FinancialTransactionArchive.swift
 //  
 //
 //  Created by Tomasz Kucharski on 29/03/2021.
@@ -7,16 +7,16 @@
 
 import Foundation
 
-class TransactionArchive: Codable {
+class FinancialTransactionArchive: Codable {
     let id: Int
-    let monthIteration: Int
+    let month: Int
     let title: String
     let playerID: String
     let amount: Double
     
-    init(id: Int, monthIteration: Int, title: String, playerID: String, amount: Double) {
+    init(id: Int, month: Int, title: String, playerID: String, amount: Double) {
         self.id = id
-        self.monthIteration = monthIteration
+        self.month = month
         self.title = title
         self.playerID = playerID
         self.amount = amount

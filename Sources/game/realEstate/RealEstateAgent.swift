@@ -13,7 +13,6 @@ enum PropertyType {
     case residentialBuilding
 }
 
-
 class RealEstateAgent {
     let mapManager: GameMapManager
     private var mapping: [MapPoint:PropertyType]
