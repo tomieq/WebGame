@@ -41,6 +41,7 @@ class GameEngine {
                     PlayerSessionManager.shared.destroyPlayerSession(playerSessionID: session.id)
                 }
             case .reloadMap:
+                self?.streetNavi.reload()
                 self?.websocketHandler.sendToAll(commandType: .reloadMap, payload: "\(gameEvent.playerSession?.player.id ?? "nil")")
             case .updateWallet(let wallet):
                 self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .updateWallet, payload: wallet)

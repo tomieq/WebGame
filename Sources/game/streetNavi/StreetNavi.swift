@@ -16,16 +16,6 @@ class StreetNavi {
     init(gameMap: GameMap) {
         self.gameMap = gameMap
         self.reload()
-        
-        GameEventBus.gameEvents.asObservable()
-            .filter {
-                if case GameEventAction.reloadMap = $0.action {
-                    return true
-                }
-                return false
-        }.bind{ [weak self] _ in
-            self?.reload()
-        }.disposed(by: self.disposeBag)
     }
     
     func reload() {
