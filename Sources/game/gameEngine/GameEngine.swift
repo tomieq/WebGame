@@ -20,7 +20,9 @@ class GameEngine {
     
     init() {
         self.gameMap = GameMap(width: 25, height: 25, scale: 0.30)
-        self.gameMapManager = GameMapManager(self.gameMap, path: "maps/roadMap1")
+        let gameManager = GameMapManager(self.gameMap)
+        gameManager.loadMapFrom(path: "maps/roadMap1")
+        self.gameMapManager = gameManager
         self.realEstateAgent = RealEstateAgent(mapManager: self.gameMapManager)
         self.gameTraffic = GameTraffic(gameMap: self.gameMap)
         self.websocketHandler = WebsocketHandler()
