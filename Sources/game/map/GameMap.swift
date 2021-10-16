@@ -76,14 +76,19 @@ extension GameMapTile {
         }
         return false
     }
-}
 
-extension GameMapTile {
     func isBuilding() -> Bool {
         if case .building = self.type {
             return true
         }
         if case .buildingUnderConstruction = self.type {
+            return true
+        }
+        return false
+    }
+    
+    func isAntenna() -> Bool {
+        if case .btsAntenna = self.type {
             return true
         }
         return false

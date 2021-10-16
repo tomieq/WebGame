@@ -16,6 +16,7 @@ class PriceList {
     public var realEstateSellPropertyCommisionFee = 0.01
     // property value loss
     public var propertyValueDistanceFromRoadLoss: Double = 0.6
+    public var propertyValueAntennaSurroundingLoss: Double = 0.22
     // property value gain
     public var propertyValueDistanceFromResidentialBuildingGain = 0.4
     // montly costs

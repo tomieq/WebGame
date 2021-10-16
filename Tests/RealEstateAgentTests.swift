@@ -105,4 +105,68 @@ final class RealEstateAgentTests: XCTestCase {
         let price = agent.estimateValue(MapPoint(x: 0, y: 1))
         XCTAssertEqual(price, 125)
     }
+    
+    func test_estimateValueOneTileFromAntenna() {
+        let dataStore = DataStoreMemoryProvider()
+        let taxRates = TaxRates()
+        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
+        let map = GameMap(width: 200, height: 200, scale: 0.2)
+        let mapManager = GameMapManager(map)
+        let agent = RealEstateAgent(mapManager: mapManager, centralBank: centralBank, delegate: nil)
+        agent.priceList.baseLandValue = 100
+        agent.priceList.propertyValueAntennaSurroundingLoss = 0.2
+        let mapContent = "s,s,A"
+        mapManager.loadMapFrom(content: mapContent)
+        
+        let price = agent.estimateValue(MapPoint(x: 1, y: 1))
+        XCTAssertEqual(price, 20)
+    }
+    
+    func test_estimateValueTwoTilesFromAntenna() {
+        let dataStore = DataStoreMemoryProvider()
+        let taxRates = TaxRates()
+        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
+        let map = GameMap(width: 200, height: 200, scale: 0.2)
+        let mapManager = GameMapManager(map)
+        let agent = RealEstateAgent(mapManager: mapManager, centralBank: centralBank, delegate: nil)
+        agent.priceList.baseLandValue = 100
+        agent.priceList.propertyValueAntennaSurroundingLoss = 0.2
+        let mapContent = "s,s,A"
+        mapManager.loadMapFrom(content: mapContent)
+        
+        let price = agent.estimateValue(MapPoint(x: 0, y: 1))
+        XCTAssertEqual(price, 40)
+    }
+    
+    func test_estimateValueThreeTilesFromAntenna() {
+        let dataStore = DataStoreMemoryProvider()
+        let taxRates = TaxRates()
+        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
+        let map = GameMap(width: 200, height: 200, scale: 0.2)
+        let mapManager = GameMapManager(map)
+        let agent = RealEstateAgent(mapManager: mapManager, centralBank: centralBank, delegate: nil)
+        agent.priceList.baseLandValue = 100
+        agent.priceList.propertyValueAntennaSurroundingLoss = 0.2
+        let mapContent = "s,s,s,A"
+        mapManager.loadMapFrom(content: mapContent)
+        
+        let price = agent.estimateValue(MapPoint(x: 0, y: 1))
+        XCTAssertEqual(price, 60)
+    }
+    
+    func test_estimateValueFourTilesFromAntenna() {
+        let dataStore = DataStoreMemoryProvider()
+        let taxRates = TaxRates()
+        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
+        let map = GameMap(width: 200, height: 200, scale: 0.2)
+        let mapManager = GameMapManager(map)
+        let agent = RealEstateAgent(mapManager: mapManager, centralBank: centralBank, delegate: nil)
+        agent.priceList.baseLandValue = 100
+        agent.priceList.propertyValueAntennaSurroundingLoss = 0.2
+        let mapContent = "s,s,s,s,A"
+        mapManager.loadMapFrom(content: mapContent)
+        
+        let price = agent.estimateValue(MapPoint(x: 0, y: 1))
+        XCTAssertEqual(price, 100)
+    }
 }

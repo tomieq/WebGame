@@ -292,33 +292,48 @@ class RealEstateAgent {
     
     private func calculateLocationValueFactor(_ address: MapPoint) -> Double {
         // in future add price relation to bus stop
-        var startPrice = 1.0
-
-        for distance in (1...4) {
-            for streetAddress in self.mapManager.map.getNeighbourAddresses(to: address, radius: distance) {
-                if let tile = self.mapManager.map.getTile(address: streetAddress), tile.isStreet() {
-                    
-                    if distance == 1 {
+        
+        func getBuildingsFactor(_ address: MapPoint) -> Double {
+            var startPrice = 1.0
+            for distance in (1...4) {
+                for streetAddress in self.mapManager.map.getNeighbourAddresses(to: address, radius: distance) {
+                    if let tile = self.mapManager.map.getTile(address: streetAddress), tile.isStreet() {
                         
-                        for buildingDistance in (1...3) {
-                            var numberOfBuildings = 0
-                            for buildingAddress in self.mapManager.map.getNeighbourAddresses(to: address, radius: buildingDistance) {
-                                if let tile = self.mapManager.map.getTile(address: buildingAddress), tile.isBuilding() {
-                                    numberOfBuildings += 1
+                        if distance == 1 {
+                            
+                            for buildingDistance in (1...3) {
+                                var numberOfBuildings = 0
+                                for buildingAddress in self.mapManager.map.getNeighbourAddresses(to: address, radius: buildingDistance) {
+                                    if let tile = self.mapManager.map.getTile(address: buildingAddress), tile.isBuilding() {
+                                        numberOfBuildings += 1
+                                    }
+                                }
+                                if numberOfBuildings > 0 {
+                                    let factor = self.priceList.propertyValueDistanceFromResidentialBuildingGain/buildingDistance.double
+                                    startPrice = startPrice * (1 + numberOfBuildings.double * factor)
                                 }
                             }
-                            if numberOfBuildings > 0 {
-                                let factor = self.priceList.propertyValueDistanceFromResidentialBuildingGain/buildingDistance.double
-                                startPrice = startPrice * (1 + numberOfBuildings.double * factor)
-                            }
                         }
+                        return startPrice
                     }
-                    return startPrice * (1 + self.occupiedSpaceOnMapFactor())
+                }
+                startPrice = startPrice * self.priceList.propertyValueDistanceFromRoadLoss
+            }
+            return startPrice
+        }
+        
+        func getAntennaFactor(_ address: MapPoint) -> Double {
+            var startPrice = 1.0
+            for distance in (1...3) {
+                for streetAddress in self.mapManager.map.getNeighbourAddresses(to: address, radius: distance) {
+                    if let tile = self.mapManager.map.getTile(address: streetAddress), tile.isAntenna() {
+                        startPrice = startPrice * self.priceList.propertyValueAntennaSurroundingLoss * distance.double
+                    }
                 }
             }
-            startPrice = startPrice * self.priceList.propertyValueDistanceFromRoadLoss
+            return startPrice
         }
-        return startPrice * (1 + self.occupiedSpaceOnMapFactor())
+        return getBuildingsFactor(address) * getAntennaFactor(address) * (1 + self.occupiedSpaceOnMapFactor())
     }
     
     func recalculateFeesInTheBuilding(_ building: ResidentialBuilding) {
