@@ -20,6 +20,8 @@ class CentralBank {
     func process(_ transaction: FinancialTransaction) -> FinancialTransactionResult {
         Logger.info("CentralBank", "New transaction \(transaction.toJSONString() ?? "")")
         
+        guard transaction.invoice.total > 0 else { return .failure(reason: "Negative transaction value") }
+
         guard let payer = self.dataStore.find(uuid: transaction.payerID) else {
             return .failure(reason: "Payer not found!")
         }
@@ -43,14 +45,22 @@ class CentralBank {
             self.receive(government, transaction.invoice.total)
         } else {
             // government takes income tax and VAT
-            let incomeTax = (transaction.invoice.netValue * self.taxRates.incomeTax).rounded(toPlaces: 0)
-            if let government = government {
+            
+            var incomeTax = (transaction.invoice.netValue * self.taxRates.incomeTax).rounded(toPlaces: 0)
+            if incomeTax > transaction.invoice.netValue { incomeTax = transaction.invoice.netValue }
+            let taxes = incomeTax + transaction.invoice.tax
+            if taxes > 0, let government = government {
                 receive(government, incomeTax + transaction.invoice.tax)
             }
-            self.receive(recipient, (transaction.invoice.netValue - incomeTax).rounded(toPlaces: 0))
+            let moneyToReceive = (transaction.invoice.netValue - incomeTax).rounded(toPlaces: 0)
+            if moneyToReceive > 0 {
+                self.receive(recipient, moneyToReceive)
+            }
             if recipient.type == .user {
                 self.archive(playerID: recipient.uuid, title: transaction.invoice.title, amount: transaction.invoice.netValue)
-                self.archive(playerID: recipient.uuid, title: "Income tax (\((self.taxRates.incomeTax*100).rounded(toPlaces: 1))%) for \(transaction.invoice.title)", amount: -1 * incomeTax)
+                if incomeTax > 0 {
+                    self.archive(playerID: recipient.uuid, title: "Income tax (\((self.taxRates.incomeTax*100).rounded(toPlaces: 1))%) for \(transaction.invoice.title)", amount: -1 * incomeTax)
+                }
             }
         }
         
