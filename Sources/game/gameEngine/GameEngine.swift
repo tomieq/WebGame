@@ -11,6 +11,7 @@ import RxCocoa
 
 class GameEngine {
     let dataStore: DataStoreProvider
+    let centralbank: CentralBank
     let gameMap: GameMap
     let gameMapManager: GameMapManager
     let streetNavi: StreetNavi
@@ -20,20 +21,22 @@ class GameEngine {
     let gameClock: GameClock
     let disposeBag = DisposeBag()
     
-    init() {
-        self.dataStore = DataStore.provider
-        let government = Player(login: "Government", type: .government, wallet: 0)
+    init(dataStore: DataStoreProvider) {
+        self.dataStore = dataStore
+        self.centralbank = CentralBank(dataStore: self.dataStore)
+        
+        let government = Player(uuid: "p1", login: "Government", type: .government, wallet: 0)
         let realEstateAgent = Player(login: "Real Estate Agency", type: .realEstateAgency, wallet: 0)
         let user1 = Player(login: "Mike Wachlewsky", type: .user, wallet: 2000000)
-        DataStore.provider.create(government)
-        DataStore.provider.create(realEstateAgent)
-        DataStore.provider.create(user1)
+        self.dataStore.create(government)
+        self.dataStore.create(realEstateAgent)
+        self.dataStore.create(user1)
         
         self.gameMap = GameMap(width: 25, height: 25, scale: 0.30)
         let gameManager = GameMapManager(self.gameMap)
         gameManager.loadMapFrom(path: "maps/roadMap1")
         self.gameMapManager = gameManager
-        self.realEstateAgent = RealEstateAgent(mapManager: self.gameMapManager)
+        self.realEstateAgent = RealEstateAgent(mapManager: self.gameMapManager, dataStore: self.dataStore)
         self.streetNavi = StreetNavi(gameMap: self.gameMap)
         self.gameTraffic = GameTraffic(streetNavi: self.streetNavi)
         self.websocketHandler = WebsocketHandler()

@@ -9,37 +9,43 @@ import Foundation
 
 class CentralBank {
     let dataStore: DataStoreProvider
-    public static let shared = CentralBank()
     
-    private init() {
-        self.dataStore = DataStore.provider
+    init(dataStore: DataStoreProvider) {
+        self.dataStore = dataStore
     }
     
     @discardableResult
     func process(_ transaction: FinancialTransaction) -> FinancialTransactionResult {
         Logger.info("CentralBank", "New transaction \(transaction.toJSONString() ?? "")")
         
-        let payer = self.dataStore.find(uuid: transaction.payerID)
-        let recipient = self.dataStore.find(uuid: transaction.recipientID)
-        let government = DataStore.provider.getPlayer(type: .government)
+        guard let payer = self.dataStore.find(uuid: transaction.payerID) else {
+            return .failure(reason: "Payer not found!")
+        }
+        guard let recipient = self.dataStore.find(uuid: transaction.recipientID) else {
+            return .failure(reason: "Recipient not found!")
+        }
+        let government = self.dataStore.getPlayer(type: .government)
         
-        guard payer?.wallet ?? 0.0 > transaction.invoice.total else {
+        guard payer.wallet > transaction.invoice.total else {
             return .failure(reason: "Not enough amount of money to finish the financial transaction")
         }
         
         // update payer's wallet
-        payer?.pay(transaction.invoice.total)
-        if let payer = payer, payer.type == .user {
+        self.pay(payer, transaction.invoice.total)
+
+        if payer.type == .user {
             self.archive(playerID: payer.uuid, title: transaction.invoice.title, amount: -1 * transaction.invoice.total)
         }
         
-        if recipient?.uuid == government?.uuid {
-            government?.receiveMoney(transaction.invoice.total)
+        if recipient.uuid == government?.uuid, let government = government {
+            self.receive(government, transaction.invoice.total)
         } else {
             // government takes income tax and VAT
-            government?.receiveMoney(transaction.incomeTax + transaction.invoice.tax)
-            recipient?.receiveMoney((transaction.invoice.netValue - transaction.incomeTax).rounded(toPlaces: 0))
-            if let recipient = recipient, recipient.type == .user {
+            if let government = government {
+                receive(government, transaction.incomeTax + transaction.invoice.tax)
+            }
+            self.receive(recipient, (transaction.invoice.netValue - transaction.incomeTax).rounded(toPlaces: 0))
+            if recipient.type == .user {
                 self.archive(playerID: recipient.uuid, title: transaction.invoice.title, amount: transaction.invoice.netValue)
                 self.archive(playerID: recipient.uuid, title: "Income tax (\((TaxRates.incomeTax*100).rounded(toPlaces: 1))%) for \(transaction.invoice.title)", amount: -1 * transaction.incomeTax)
             }
@@ -63,9 +69,10 @@ class CentralBank {
                 refund = (paidIncomeTax - taxAfterCosts).rounded(toPlaces: 0)
             }
             if refund > 10 {
-                let government = DataStore.provider.getPlayer(type: .government)
-                payer.receiveMoney(refund)
-                government?.pay(refund)
+                self.receive(payer, refund)
+                if let government = self.dataStore.getPlayer(type: .government) {
+                    self.pay(government, refund)
+                }
                 self.archive(playerID: payer.uuid, title: "Tax refund based on costs for \(transaction.invoice.title)", amount: refund)
             }
             
@@ -73,12 +80,22 @@ class CentralBank {
         
     }
     
+    private func pay(_ payer: Player, _ amount: Double) {
+        let value = (payer.wallet - amount).rounded(toPlaces: 0)
+        self.dataStore.update(PlayerMutation(id: payer.uuid, attributes: [.wallet(value)]))
+    }
+    
+    private func receive(_ receiver: Player, _ amount: Double) {
+        let value = (receiver.wallet + amount).rounded(toPlaces: 0)
+        self.dataStore.update(PlayerMutation(id: receiver.uuid, attributes: [.wallet(value)]))
+    }
+    
     private func archive(playerID: String, title: String, amount: Double) {
 
         let monthIteration = Storage.shared.monthIteration
         
         let archive = CashFlow(month: monthIteration, title: title, playerID: playerID, amount: amount)
-        DataStore.provider.create(archive)
+        self.dataStore.create(archive)
     }
 }
 

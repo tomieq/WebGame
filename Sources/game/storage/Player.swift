@@ -33,18 +33,6 @@ struct Player: Codable {
         self.type = managedObject.type
         self.wallet = managedObject.wallet
     }
-    
-    func pay(_ amount: Double) {
-        let value = (self.wallet - amount).rounded(toPlaces: 0)
-        DataStore.provider.update(PlayerMutation(id: self.uuid, attributes: [.wallet(value)]))
-    }
-    
-    func receiveMoney(_ amount: Double) {
-        let value = (self.wallet + amount).rounded(toPlaces: 0)
-        DataStore.provider.update(PlayerMutation(id: self.uuid, attributes: [.wallet(value)]))
-    }
-    
-
 }
 
 struct PlayerMutation {

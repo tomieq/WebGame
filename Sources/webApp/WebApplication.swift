@@ -10,16 +10,18 @@ import Swifter
 
 public class WebApplication {
 
-    let gameEngine = GameEngine()
+    let dataStore: DataStoreProvider
+    let gameEngine: GameEngine
     let propertyManagerAPI: PropertyManagerRestAPI
     
     public init(_ server: HttpServer) {
-        
+        self.dataStore = DataStoreMemoryProvider()
+        self.gameEngine = GameEngine(dataStore: self.dataStore)
         self.propertyManagerAPI = PropertyManagerRestAPI(server, gameEngine: self.gameEngine)
 
         server.GET["/"] = { request, responseHeaders in
             request.disableKeepAlive = true
-            guard let userID = request.queryParam("userID"), let player = DataStore.provider.getPlayer(type: .user) else {
+            guard let userID = request.queryParam("userID"), let player = self.dataStore.find(uuid: userID) else {
                     return .ok(.htmlBody("Invalid userID"))
             }
             let playerSession = PlayerSessionManager.shared.createPlayerSession(for: player)
@@ -98,8 +100,8 @@ public class WebApplication {
                     return .badRequest(.text("Invalid request! Missing session ID."))
             }
             var html = ""
-            let template = Template.init(from: "/templates/bankTransaction.html")
-            for transaction in DataStore.provider.getFinancialTransactions(userID: session.playerUUID) {
+            let template = Template(from: "/templates/bankTransaction.html")
+            for transaction in self.dataStore.getFinancialTransactions(userID: session.playerUUID) {
                 var data = [String:String]()
                 data["number"] = transaction.uuid
                 data["date"] = GameDate(monthIteration: transaction.month).text

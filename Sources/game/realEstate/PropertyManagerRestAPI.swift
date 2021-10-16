@@ -11,11 +11,12 @@ import Swifter
 class PropertyManagerRestAPI {
     
     let gameEngine: GameEngine
-    private let dataStore = DataStore.provider
+    private let dataStore: DataStoreProvider
     
     init(_ server: HttpServer, gameEngine: GameEngine) {
         
         self.gameEngine = gameEngine
+        self.dataStore = gameEngine.dataStore
         
         server.GET["/openSaleOffer.js"] = { request, _ in
             request.disableKeepAlive = true

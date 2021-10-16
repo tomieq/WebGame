@@ -16,10 +16,11 @@ enum PropertyType {
 class RealEstateAgent {
     let mapManager: GameMapManager
     private var mapping: [MapPoint:PropertyType]
-    private let dataStore = DataStore.provider
+    let dataStore: DataStoreProvider
     
-    init(mapManager: GameMapManager) {
+    init(mapManager: GameMapManager, dataStore: DataStoreProvider) {
         self.mapManager = mapManager
+        self.dataStore = dataStore
         self.mapping = [:]
         
         for land in Storage.shared.landProperties {
@@ -45,7 +46,7 @@ class RealEstateAgent {
     }
     
     func isForSale(address: MapPoint) -> Bool {
-        if self.getProperty(address: address)?.ownerID == DataStore.provider.getPlayer(type: .government)?.uuid {
+        if self.getProperty(address: address)?.ownerID == self.dataStore.getPlayer(type: .government)?.uuid {
             return true
         }
         return self.mapManager.map.getTile(address: address) == nil
@@ -75,15 +76,15 @@ class RealEstateAgent {
         let invoice = Invoice(title: "Purchase land \(land.name)", netValue: price, taxRate: TaxRates.propertyPurchaseTax)
         let commissionInvoice = Invoice(title: "Commission for purchase land \(land.name)", grossValue: price*PriceList.realEstateSellPropertyCommisionFee, taxRate: TaxRates.propertyPurchaseTax)
         
-        let governmentID = DataStore.provider.getPlayer(type: .government)?.uuid ?? ""
-        let realEstateAgentID = DataStore.provider.getPlayer(type: .realEstateAgency)?.uuid ?? ""
+        let governmentID = self.dataStore.getPlayer(type: .government)?.uuid ?? ""
+        let realEstateAgentID = self.dataStore.getPlayer(type: .realEstateAgency)?.uuid ?? ""
         // process the transaction
         var transaction = FinancialTransaction(payerID: session.playerUUID, recipientID: governmentID , invoice: invoice)
-        if case .failure(let reason) = CentralBank.shared.process(transaction) {
+        if case .failure(let reason) = CentralBank(dataStore: self.dataStore).process(transaction) {
             throw BuyPropertyError.financialTransactionProblem(reason: reason)
         }
         transaction = FinancialTransaction(payerID: session.playerUUID, recipientID: realEstateAgentID, invoice: commissionInvoice)
-        if case .failure(let reason) = CentralBank.shared.process(transaction) {
+        if case .failure(let reason) = CentralBank(dataStore: self.dataStore).process(transaction) {
             throw BuyPropertyError.financialTransactionProblem(reason: reason)
         }
         
@@ -118,7 +119,7 @@ class RealEstateAgent {
             Logger.error("RealEstateAgent", "Player \(name) is not owner of property \(property.id)")
             return
         }
-        guard let government = DataStore.provider.getPlayer(type: .government) else {
+        guard let government = self.dataStore.getPlayer(type: .government) else {
             Logger.error("RealEstateAgent", "Could not find goverment player")
             return
         }
@@ -142,9 +143,10 @@ class RealEstateAgent {
         
         let invoice = Invoice(title: "Selling property \(property.name)", netValue: sellPrice, taxRate: TaxRates.instantSellTax)
         let transaction = FinancialTransaction(payerID: government.uuid, recipientID: session.playerUUID, invoice: invoice)
-        CentralBank.shared.process(transaction)
+        let centralBank = CentralBank(dataStore: self.dataStore)
+        centralBank.process(transaction)
         if property.accountantID != nil {
-            CentralBank.shared.refundIncomeTax(receiverID: session.playerUUID, transaction: transaction, costs: (property.investmentsNetValue + (property.purchaseNetValue ?? 0.0)))
+            centralBank.refundIncomeTax(receiverID: session.playerUUID, transaction: transaction, costs: (property.investmentsNetValue + (property.purchaseNetValue ?? 0.0)))
         }
         if let player = self.dataStore.find(uuid: session.playerUUID) {
             let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(player.wallet.money))
@@ -153,7 +155,7 @@ class RealEstateAgent {
     }
     
     func instantApartmentSell(_ apartment: Apartment, session: PlayerSession) {
-        guard let government = DataStore.provider.getPlayer(type: .government) else {
+        guard let government = self.dataStore.getPlayer(type: .government) else {
             Logger.error("RealEstateAgent", "Could not find goverment player")
             return
         }
@@ -166,12 +168,13 @@ class RealEstateAgent {
         
         let invoice = Invoice(title: "Selling apartment \(apartment.name)", netValue: sellPrice, taxRate: TaxRates.instantSellTax)
         let transaction = FinancialTransaction(payerID: government.uuid, recipientID: session.playerUUID, invoice: invoice)
-        CentralBank.shared.process(transaction)
+        let centralBank = CentralBank(dataStore: self.dataStore)
+        centralBank.process(transaction)
         
         // if user had built this building, he had costs, so this costs' taxes can be refunded, provided he has accountant
         if building.ownerID == session.playerUUID, building.accountantID != nil {
             let costs = (((building.purchaseNetValue ?? 0.0) + building.investmentsNetValue)/(Double(building.numberOfFlats))).rounded(toPlaces: 0)
-            CentralBank.shared.refundIncomeTax(receiverID: session.playerUUID, transaction: transaction, costs: costs)
+            centralBank.refundIncomeTax(receiverID: session.playerUUID, transaction: transaction, costs: costs)
         }
         apartment.ownerID = government.uuid
         self.recalculateFeesInTheBuilding(building)
@@ -207,11 +210,11 @@ class RealEstateAgent {
         guard self.hasDirectAccessToRoad(address: address) else {
             throw StartInvestmentError.formalProblem(reason: "You cannot build road here as this property has no direct access to the public road.")
         }
-        let governmentID = DataStore.provider.getPlayer(type: .government)?.uuid ?? ""
+        let governmentID = self.dataStore.getPlayer(type: .government)?.uuid ?? ""
         let invoice = Invoice(title: "Build road on property \(land.name)", netValue: InvestmentCost.makeRoadCost(), taxRate: TaxRates.investmentTax)
         // process the transaction
         let transaction = FinancialTransaction(payerID: session.playerUUID, recipientID: governmentID, invoice: invoice)
-        if case .failure(let reason) = CentralBank.shared.process(transaction) {
+        if case .failure(let reason) = CentralBank(dataStore: self.dataStore).process(transaction) {
             throw StartInvestmentError.financialTransactionProblem(reason: reason)
         }
         
@@ -248,9 +251,9 @@ class RealEstateAgent {
         building.constructionFinishMonth = Storage.shared.monthIteration + InvestmentDuration.buildingApartment(storey: storeyAmount)
         let invoice = Invoice(title: "Build \(storeyAmount)-storey \(building.name)", netValue: InvestmentCost.makeResidentialBuildingCost(storey: storeyAmount), taxRate: TaxRates.investmentTax)
         // process the transaction
-        let governmentID = DataStore.provider.getPlayer(type: .government)?.uuid ?? ""
+        let governmentID = self.dataStore.getPlayer(type: .government)?.uuid ?? ""
         let transaction = FinancialTransaction(payerID: session.playerUUID, recipientID: governmentID, invoice: invoice)
-        if case .failure(let reason) = CentralBank.shared.process(transaction) {
+        if case .failure(let reason) = CentralBank(dataStore: self.dataStore).process(transaction) {
             throw StartInvestmentError.financialTransactionProblem(reason: reason)
         }
         Storage.shared.landProperties = Storage.shared.landProperties.filter { $0.address != address }
