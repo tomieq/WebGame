@@ -15,6 +15,7 @@ class DataStoreMemoryProvider: DataStoreProvider {
         self.transactions = []
     }
     
+    @discardableResult
     func create(_ player: Player) -> String {
         let managedPlayer = PlayerManagedObject(player)
         self.players.append(managedPlayer)
