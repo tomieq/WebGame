@@ -107,7 +107,7 @@ class GameClock {
                 for storey in (1...building.storeyAmount) {
                     for flatNo in (1...building.numberOfFlatsPerStorey) {
                         let apartment = Apartment(building, storey: storey, flatNumber: flatNo)
-                        apartment.monthlyBuildingFee = PriceList.monthlyApartmentBuildingOwnerFee
+                        apartment.monthlyBuildingFee = self.realEstateAgent.priceList.monthlyApartmentBuildingOwnerFee
                         Storage.shared.apartments.append(apartment)
                     }
                 }
