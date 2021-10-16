@@ -33,7 +33,6 @@ class RealEstateAgent {
         self.centralBank = centralBank
         self.delegate = delegate
         self.priceList = PriceList()
-        self.mapping = [:]
     }
     
     func makeMapTilesFromDataStore() {
@@ -269,7 +268,7 @@ class RealEstateAgent {
             }
             return basePrice.rounded(toPlaces: 0)
         }
-        return self.priceList.baseLandValue * self.calculateLocationValueFactor(address)
+        return (self.priceList.baseLandValue * self.calculateLocationValueFactor(address)).rounded(toPlaces: 0)
     }
     
     func estimateApartmentValue(_ apartment: Apartment) -> Double {
