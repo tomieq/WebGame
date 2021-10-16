@@ -69,10 +69,13 @@ class CentralBank {
     
     func refundIncomeTax(receiverID: String, transaction: FinancialTransaction, costs: Double) {
         
+        guard costs > 0 else { return }
+        let paidIncomeTax = (transaction.invoice.netValue * self.taxRates.incomeTax).rounded(toPlaces: 0)
+        guard paidIncomeTax > 0 else { return }
+
         if let payer = self.dataStore.find(uuid: receiverID) {
             
             var refund = 0.0
-            let paidIncomeTax = (transaction.invoice.netValue * self.taxRates.incomeTax).rounded(toPlaces: 0)
 
             if costs >= transaction.invoice.netValue {
                 refund = paidIncomeTax
