@@ -27,22 +27,26 @@ class GameEngine {
         self.taxRates = TaxRates()
         self.centralbank = CentralBank(dataStore: self.dataStore, taxRates: self.taxRates)
         
-        let government = Player(uuid: "p1", login: "Government", type: .government, wallet: 0)
+        let government = Player(login: "Government", type: .government, wallet: 0)
         let realEstateAgent = Player(login: "Real Estate Agency", type: .realEstateAgency, wallet: 0)
-        let user1 = Player(login: "Mike Wachlewsky", type: .user, wallet: 2000000)
+        let user1 = Player(uuid: "p1", login: "Mike Wachlewsky", type: .user, wallet: 2000000)
         self.dataStore.create(government)
         self.dataStore.create(realEstateAgent)
         self.dataStore.create(user1)
         
         self.gameMap = GameMap(width: 25, height: 25, scale: 0.30)
-        let gameManager = GameMapManager(self.gameMap)
-        gameManager.loadMapFrom(path: "maps/roadMap1")
-        self.gameMapManager = gameManager
+        self.gameMapManager = GameMapManager(self.gameMap)
+        self.gameMapManager.loadMapFrom(path: "maps/roadMap1")
+        
         self.realEstateAgent = RealEstateAgent(mapManager: self.gameMapManager, centralBank: self.centralbank)
+        self.realEstateAgent.makeMapTilesFromDataStore()
+        
         self.streetNavi = StreetNavi(gameMap: self.gameMap)
         self.gameTraffic = GameTraffic(streetNavi: self.streetNavi)
         self.websocketHandler = WebsocketHandler()
         self.gameClock = GameClock(realEstateAgent: self.realEstateAgent)
+        
+        self.realEstateAgent.delegate = self
 
         GameEventBus.gameEvents.asObservable().bind { [weak self] gameEvent in
             switch gameEvent.action {
@@ -118,3 +122,13 @@ class GameEngine {
 }
 
 
+extension GameEngine: RealEstateAgentDelegate {
+    func notifyWalletChange(playerUUID: String) {
+        if let player = self.dataStore.find(uuid: playerUUID) {
+            for session in PlayerSessionManager.shared.getSessions(playerUUID: playerUUID){
+                let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(player.wallet.money))
+                GameEventBus.gameEvents.onNext(updateWalletEvent)
+            }
+        }
+    }
+}

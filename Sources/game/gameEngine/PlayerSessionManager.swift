@@ -33,4 +33,8 @@ class PlayerSessionManager {
     func getPlayerSession(playerSessionID: String) -> PlayerSession? {
         return self.playerSessions.first{ $0.id == playerSessionID }
     }
+    
+    func getSessions(playerUUID: String) -> [PlayerSession] {
+        return self.playerSessions.filter{ $0.playerUUID == playerUUID }
+    }
 }

@@ -13,18 +13,26 @@ enum PropertyType {
     case residentialBuilding
 }
 
+protocol RealEstateAgentDelegate {
+    func notifyWalletChange(playerUUID: String)
+}
+
 class RealEstateAgent {
     let mapManager: GameMapManager
     let centralBank: CentralBank
     private var mapping: [MapPoint:PropertyType]
+    var delegate: RealEstateAgentDelegate?
     let dataStore: DataStoreProvider
     
-    init(mapManager: GameMapManager, centralBank: CentralBank) {
+    init(mapManager: GameMapManager, centralBank: CentralBank, delegate: RealEstateAgentDelegate? = nil) {
         self.mapManager = mapManager
         self.dataStore = centralBank.dataStore
         self.centralBank = centralBank
+        self.delegate = delegate
         self.mapping = [:]
-        
+    }
+    
+    func makeMapTilesFromDataStore() {
         for land in Storage.shared.landProperties {
             self.mapping[land.address] = .land
             let tile = GameMapTile(address: land.address, type: .soldLand)
@@ -99,10 +107,7 @@ class RealEstateAgent {
 
         self.mapManager.map.replaceTile(tile: land.mapTile)
         
-        if let player = self.dataStore.find(uuid: session.playerUUID) {
-            let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(player.wallet.money))
-            GameEventBus.gameEvents.onNext(updateWalletEvent)
-        }
+        self.delegate?.notifyWalletChange(playerUUID: session.playerUUID)
         
         let reloadMapEvent = GameEvent(playerSession: nil, action: .reloadMap)
         GameEventBus.gameEvents.onNext(reloadMapEvent)
@@ -150,10 +155,7 @@ class RealEstateAgent {
         if property.accountantID != nil {
             self.centralBank.refundIncomeTax(receiverID: session.playerUUID, transaction: transaction, costs: (property.investmentsNetValue + (property.purchaseNetValue ?? 0.0)))
         }
-        if let player = self.dataStore.find(uuid: session.playerUUID) {
-            let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(player.wallet.money))
-            GameEventBus.gameEvents.onNext(updateWalletEvent)
-        }
+        self.delegate?.notifyWalletChange(playerUUID: session.playerUUID)
     }
     
     func instantApartmentSell(_ apartment: Apartment, session: PlayerSession) {
@@ -180,10 +182,7 @@ class RealEstateAgent {
         apartment.ownerID = government.uuid
         self.recalculateFeesInTheBuilding(building)
     
-        if let player = self.dataStore.find(uuid: session.playerUUID) {
-            let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(player.wallet.money))
-            GameEventBus.gameEvents.onNext(updateWalletEvent)
-        }
+        self.delegate?.notifyWalletChange(playerUUID: session.playerUUID)
     }
     
     func rentApartment(_ apartment: Apartment) {
@@ -226,10 +225,7 @@ class RealEstateAgent {
         
         self.mapManager.addStreet(address: address)
         
-        if let player = self.dataStore.find(uuid: session.playerUUID) {
-            let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(player.wallet.money))
-            GameEventBus.gameEvents.onNext(updateWalletEvent)
-        }
+        self.delegate?.notifyWalletChange(playerUUID: session.playerUUID)
 
         let reloadMapEvent = GameEvent(playerSession: nil, action: .reloadMap)
         GameEventBus.gameEvents.onNext(reloadMapEvent)
@@ -264,10 +260,7 @@ class RealEstateAgent {
         let tile = GameMapTile(address: address, type: .buildingUnderConstruction(size: storeyAmount))
         self.mapManager.map.replaceTile(tile: tile)
         
-        if let player = self.dataStore.find(uuid: session.playerUUID) {
-            let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(player.wallet.money))
-            GameEventBus.gameEvents.onNext(updateWalletEvent)
-        }
+        self.delegate?.notifyWalletChange(playerUUID: session.playerUUID)
 
         let reloadMapEvent = GameEvent(playerSession: nil, action: .reloadMap)
         GameEventBus.gameEvents.onNext(reloadMapEvent)
