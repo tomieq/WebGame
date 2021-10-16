@@ -79,7 +79,7 @@ class PropertyManagerRestAPI {
                     return code.response
             }
             do {
-                try self.gameEngine.realEstateAgent.buyLandProperty(address: address, session: session)
+                try self.gameEngine.realEstateAgent.buyLandProperty(address: address, playerUUID: session.playerUUID)
             } catch BuyPropertyError.propertyNotForSale {
                 code.add(.closeWindow(windowIndex))
                 code.add(.showError(txt: "This property is not for sale any more.", duration: 10))
@@ -294,7 +294,7 @@ class PropertyManagerRestAPI {
                 code.add(.showError(txt: "You can sell only your properties.", duration: 10))
                 return code.response
             }
-            self.gameEngine.realEstateAgent.instantSell(address: address, session: session)
+            self.gameEngine.realEstateAgent.instantSell(address: address, playerUUID: session.playerUUID)
             code.add(.showSuccess(txt: "Successful sell transaction", duration: 5))
             code.add(.closeWindow(windowIndex))
             return code.response
@@ -329,7 +329,7 @@ class PropertyManagerRestAPI {
                 code.add(.showError(txt: "You can sell only your apartment.", duration: 10))
                 return code.response
             }
-            self.gameEngine.realEstateAgent.instantApartmentSell(apartment, session: session)
+            self.gameEngine.realEstateAgent.instantApartmentSell(apartment, playerUUID: session.playerUUID)
             code.add(.showSuccess(txt: "You have sold \(apartment.name)", duration: 5))
             code.add(.loadHtml(windowIndex, htmlPath: "/propertyManager.html?\(apartment.address.asQueryParams)"))
             return code.response

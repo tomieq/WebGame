@@ -78,7 +78,7 @@ class RealEstateAgent {
         }
     }
 
-    func buyLandProperty(address: MapPoint, session: PlayerSession) throws {
+    func buyLandProperty(address: MapPoint, playerUUID: String) throws {
         
         guard self.isForSale(address: address) else {
             throw BuyPropertyError.propertyNotForSale
@@ -91,16 +91,16 @@ class RealEstateAgent {
         let governmentID = self.dataStore.getPlayer(type: .government)?.uuid ?? ""
         let realEstateAgentID = self.dataStore.getPlayer(type: .realEstateAgency)?.uuid ?? ""
         // process the transaction
-        var transaction = FinancialTransaction(payerID: session.playerUUID, recipientID: governmentID , invoice: invoice)
+        var transaction = FinancialTransaction(payerID: playerUUID, recipientID: governmentID , invoice: invoice)
         if case .failure(let reason) = self.centralBank.process(transaction) {
             throw BuyPropertyError.financialTransactionProblem(reason: reason)
         }
-        transaction = FinancialTransaction(payerID: session.playerUUID, recipientID: realEstateAgentID, invoice: commissionInvoice)
+        transaction = FinancialTransaction(payerID: playerUUID, recipientID: realEstateAgentID, invoice: commissionInvoice)
         if case .failure(let reason) = self.centralBank.process(transaction) {
             throw BuyPropertyError.financialTransactionProblem(reason: reason)
         }
         
-        land.ownerID = session.playerUUID
+        land.ownerID = playerUUID
         land.purchaseNetValue = invoice.netValue
         
         self.mapping[land.address] = .land
@@ -109,19 +109,19 @@ class RealEstateAgent {
 
         self.mapManager.map.replaceTile(tile: land.mapTile)
         
-        self.delegate?.notifyWalletChange(playerUUID: session.playerUUID)
+        self.delegate?.notifyWalletChange(playerUUID: playerUUID)
         self.delegate?.reloadMap()
-        let name = self.dataStore.find(uuid: session.playerUUID)?.login ?? ""
+        let name = self.dataStore.find(uuid: playerUUID)?.login ?? ""
         self.delegate?.notifyEveryone(UINotification(text: "New transaction on the market. Player \(name) has just bought property `\(land.name)`", level: .info, duration: 10))
     }
     
-    func instantSell(address: MapPoint, session: PlayerSession) {
+    func instantSell(address: MapPoint, playerUUID: String) {
         guard var property = self.getProperty(address: address) else {
             Logger.error("RealEstateAgent", "Could not find property at \(address.description)")
             return
         }
-        guard property.ownerID == session.playerUUID else {
-            let name = self.dataStore.find(uuid: session.playerUUID)?.login ?? ""
+        guard property.ownerID == playerUUID else {
+            let name = self.dataStore.find(uuid: playerUUID)?.login ?? ""
             Logger.error("RealEstateAgent", "Player \(name) is not owner of property \(property.id)")
             return
         }
@@ -148,16 +148,16 @@ class RealEstateAgent {
         let sellPrice = (value * PriceList.instantSellValue).rounded(toPlaces: 0)
         
         let invoice = Invoice(title: "Selling property \(property.name)", netValue: sellPrice, taxRate: self.centralBank.taxRates.instantSellTax)
-        let transaction = FinancialTransaction(payerID: government.uuid, recipientID: session.playerUUID, invoice: invoice)
+        let transaction = FinancialTransaction(payerID: government.uuid, recipientID: playerUUID, invoice: invoice)
     
         self.centralBank.process(transaction)
         if property.accountantID != nil {
-            self.centralBank.refundIncomeTax(receiverID: session.playerUUID, transaction: transaction, costs: (property.investmentsNetValue + (property.purchaseNetValue ?? 0.0)))
+            self.centralBank.refundIncomeTax(receiverID: playerUUID, transaction: transaction, costs: (property.investmentsNetValue + (property.purchaseNetValue ?? 0.0)))
         }
-        self.delegate?.notifyWalletChange(playerUUID: session.playerUUID)
+        self.delegate?.notifyWalletChange(playerUUID: playerUUID)
     }
     
-    func instantApartmentSell(_ apartment: Apartment, session: PlayerSession) {
+    func instantApartmentSell(_ apartment: Apartment, playerUUID: String) {
         guard let government = self.dataStore.getPlayer(type: .government) else {
             Logger.error("RealEstateAgent", "Could not find goverment player")
             return
@@ -170,18 +170,18 @@ class RealEstateAgent {
         let sellPrice = (value * PriceList.instantSellValue).rounded(toPlaces: 0)
         
         let invoice = Invoice(title: "Selling apartment \(apartment.name)", netValue: sellPrice, taxRate: self.centralBank.taxRates.instantSellTax)
-        let transaction = FinancialTransaction(payerID: government.uuid, recipientID: session.playerUUID, invoice: invoice)
+        let transaction = FinancialTransaction(payerID: government.uuid, recipientID: playerUUID, invoice: invoice)
         self.centralBank.process(transaction)
         
         // if user had built this building, he had costs, so this costs' taxes can be refunded, provided he has accountant
-        if building.ownerID == session.playerUUID, building.accountantID != nil {
+        if building.ownerID == playerUUID, building.accountantID != nil {
             let costs = (((building.purchaseNetValue ?? 0.0) + building.investmentsNetValue)/(Double(building.numberOfFlats))).rounded(toPlaces: 0)
-            self.centralBank.refundIncomeTax(receiverID: session.playerUUID, transaction: transaction, costs: costs)
+            self.centralBank.refundIncomeTax(receiverID: playerUUID, transaction: transaction, costs: costs)
         }
         apartment.ownerID = government.uuid
         self.recalculateFeesInTheBuilding(building)
     
-        self.delegate?.notifyWalletChange(playerUUID: session.playerUUID)
+        self.delegate?.notifyWalletChange(playerUUID: playerUUID)
     }
     
     func rentApartment(_ apartment: Apartment) {
