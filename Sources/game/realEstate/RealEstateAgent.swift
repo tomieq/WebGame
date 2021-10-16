@@ -24,7 +24,6 @@ class RealEstateAgent {
     let mapManager: GameMapManager
     let centralBank: CentralBank
     let priceList: PriceList
-    private var mapping: [MapPoint:PropertyType]
     var delegate: RealEstateAgentDelegate?
     let dataStore: DataStoreProvider
     
@@ -39,17 +38,14 @@ class RealEstateAgent {
     
     func makeMapTilesFromDataStore() {
         for land in Storage.shared.landProperties {
-            self.mapping[land.address] = .land
             let tile = GameMapTile(address: land.address, type: .soldLand)
             self.mapManager.map.replaceTile(tile: tile)
         }
         for road in Storage.shared.roadProperties {
-            self.mapping[road.address] = .road
             self.mapManager.addStreet(address: road.address)
         }
         
         for building in Storage.shared.residentialBuildings {
-            self.mapping[building.address] = .residentialBuilding
             if building.isUnderConstruction {
                 let tile = GameMapTile(address: building.address, type: .buildingUnderConstruction(size: building.storeyAmount))
                 self.mapManager.map.replaceTile(tile: tile)
@@ -68,19 +64,15 @@ class RealEstateAgent {
     }
     
     func getProperty(address: MapPoint) -> Property? {
-        guard let type = self.mapping[address] else {
-            return nil
-        }
-        switch type {
-        case .land:
-            return Storage.shared.landProperties.first { $0.address == address }
-        case .road:
+        let tile = self.mapManager.map.getTile(address: address)
+        if tile?.isStreet() ?? false {
             return Storage.shared.roadProperties.first { $0.address == address }
-        case .residentialBuilding:
-            return Storage.shared.residentialBuildings.first { $0.address == address }
-        case .flat:
-            return nil
         }
+        if tile?.isBuilding() ?? false {
+            return Storage.shared.residentialBuildings.first { $0.address == address }
+        }
+        
+        return Storage.shared.landProperties.first { $0.address == address }
     }
 
     func buyLandProperty(address: MapPoint, playerUUID: String) throws {
@@ -108,7 +100,6 @@ class RealEstateAgent {
         land.ownerID = playerUUID
         land.purchaseNetValue = invoice.netValue
         
-        self.mapping[land.address] = .land
         Storage.shared.landProperties = Storage.shared.landProperties.filter { $0.address != address }
         Storage.shared.landProperties.append(land)
 
@@ -137,7 +128,6 @@ class RealEstateAgent {
         // road will dissapear as roads are not for sale
         if property is Road {
             Storage.shared.roadProperties = Storage.shared.roadProperties.filter { $0.address != address }
-            self.mapping[property.address] = nil
         }
         if let building = property as? ResidentialBuilding {
             let apartments = Storage.shared.getApartments(address: building.address).filter { $0.ownerID == building.ownerID }
@@ -225,7 +215,6 @@ class RealEstateAgent {
         let road = Road(land: land)
         Storage.shared.landProperties = Storage.shared.landProperties.filter { $0.address != address }
         Storage.shared.roadProperties.append(road)
-        self.mapping[land.address] = .road
         
         self.mapManager.addStreet(address: address)
         
@@ -257,7 +246,6 @@ class RealEstateAgent {
         }
         Storage.shared.landProperties = Storage.shared.landProperties.filter { $0.address != address }
         Storage.shared.residentialBuildings.append(building)
-        self.mapping[land.address] = .residentialBuilding
         
         let tile = GameMapTile(address: address, type: .buildingUnderConstruction(size: storeyAmount))
         self.mapManager.map.replaceTile(tile: tile)
