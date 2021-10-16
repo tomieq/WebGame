@@ -38,7 +38,7 @@ class GameEngine {
         let gameManager = GameMapManager(self.gameMap)
         gameManager.loadMapFrom(path: "maps/roadMap1")
         self.gameMapManager = gameManager
-        self.realEstateAgent = RealEstateAgent(mapManager: self.gameMapManager, dataStore: self.dataStore, centralBank: self.centralbank)
+        self.realEstateAgent = RealEstateAgent(mapManager: self.gameMapManager, centralBank: self.centralbank)
         self.streetNavi = StreetNavi(gameMap: self.gameMap)
         self.gameTraffic = GameTraffic(streetNavi: self.streetNavi)
         self.websocketHandler = WebsocketHandler()

@@ -19,9 +19,9 @@ class RealEstateAgent {
     private var mapping: [MapPoint:PropertyType]
     let dataStore: DataStoreProvider
     
-    init(mapManager: GameMapManager, dataStore: DataStoreProvider, centralBank: CentralBank) {
+    init(mapManager: GameMapManager, centralBank: CentralBank) {
         self.mapManager = mapManager
-        self.dataStore = dataStore
+        self.dataStore = centralBank.dataStore
         self.centralBank = centralBank
         self.mapping = [:]
         
