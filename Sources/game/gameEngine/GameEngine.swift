@@ -131,4 +131,14 @@ extension GameEngine: RealEstateAgentDelegate {
             }
         }
     }
+    
+    func reloadMap() {
+        let reloadMapEvent = GameEvent(playerSession: nil, action: .reloadMap)
+        GameEventBus.gameEvents.onNext(reloadMapEvent)
+    }
+    
+    func notifyEveryone(_ notification: UINotification) {
+        let announcementEvent = GameEvent(playerSession: nil, action: .notification(notification))
+                GameEventBus.gameEvents.onNext(announcementEvent)
+    }
 }

@@ -15,6 +15,8 @@ enum PropertyType {
 
 protocol RealEstateAgentDelegate {
     func notifyWalletChange(playerUUID: String)
+    func notifyEveryone(_ notification: UINotification)
+    func reloadMap()
 }
 
 class RealEstateAgent {
@@ -108,12 +110,9 @@ class RealEstateAgent {
         self.mapManager.map.replaceTile(tile: land.mapTile)
         
         self.delegate?.notifyWalletChange(playerUUID: session.playerUUID)
-        
-        let reloadMapEvent = GameEvent(playerSession: nil, action: .reloadMap)
-        GameEventBus.gameEvents.onNext(reloadMapEvent)
+        self.delegate?.reloadMap()
         let name = self.dataStore.find(uuid: session.playerUUID)?.login ?? ""
-        let announcementEvent = GameEvent(playerSession: nil, action: .notification(UINotification(text: "New transaction on the market. Player \(name) has just bought property `\(land.name)`", level: .info, duration: 10)))
-        GameEventBus.gameEvents.onNext(announcementEvent)
+        self.delegate?.notifyEveryone(UINotification(text: "New transaction on the market. Player \(name) has just bought property `\(land.name)`", level: .info, duration: 10))
     }
     
     func instantSell(address: MapPoint, session: PlayerSession) {
@@ -226,9 +225,7 @@ class RealEstateAgent {
         self.mapManager.addStreet(address: address)
         
         self.delegate?.notifyWalletChange(playerUUID: session.playerUUID)
-
-        let reloadMapEvent = GameEvent(playerSession: nil, action: .reloadMap)
-        GameEventBus.gameEvents.onNext(reloadMapEvent)
+        self.delegate?.reloadMap()
     }
     
     
@@ -261,9 +258,7 @@ class RealEstateAgent {
         self.mapManager.map.replaceTile(tile: tile)
         
         self.delegate?.notifyWalletChange(playerUUID: session.playerUUID)
-
-        let reloadMapEvent = GameEvent(playerSession: nil, action: .reloadMap)
-        GameEventBus.gameEvents.onNext(reloadMapEvent)
+        self.delegate?.reloadMap()
     }
     
     func estimateValue(_ property: Property) -> Double {
