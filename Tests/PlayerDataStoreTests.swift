@@ -12,7 +12,7 @@ import XCTest
 final class PlayerDataStoreTests: XCTestCase {
 
     func test_createPlayer() {
-        let playerCreateRequest = PlayerCreateRequest(login: "tester", type: .user, wallet: 50)
+        let playerCreateRequest = Player(login: "tester", type: .user, wallet: 50)
         let id = DataStore.provider.createPlayer(playerCreateRequest)
         let player = DataStore.provider.getPlayer(id: id)
         XCTAssertEqual(playerCreateRequest.login, player?.login)
@@ -21,9 +21,9 @@ final class PlayerDataStoreTests: XCTestCase {
     }
     
     func test_updateWallet() {
-        let playerCreateRequest = PlayerCreateRequest(login: "tester", type: .user, wallet: 50)
+        let playerCreateRequest = Player(login: "tester", type: .user, wallet: 50)
         let id = DataStore.provider.createPlayer(playerCreateRequest)
-        DataStore.provider.update(PlayerMutationRequest(id: id, attributes: [.wallet(110)]))
+        DataStore.provider.update(PlayerMutation(id: id, attributes: [.wallet(110)]))
         let player = DataStore.provider.getPlayer(id: id)
         XCTAssertEqual(player?.wallet, 110)
         DataStore.provider.removePlayer(id: id)
@@ -31,7 +31,7 @@ final class PlayerDataStoreTests: XCTestCase {
     }
     
     func test_payMoney() {
-        let playerCreateRequest = PlayerCreateRequest(login: "tester", type: .user, wallet: 80)
+        let playerCreateRequest = Player(login: "tester", type: .user, wallet: 80)
         let id = DataStore.provider.createPlayer(playerCreateRequest)
         let player = DataStore.provider.getPlayer(id: id)
         player?.pay(70)
@@ -43,7 +43,7 @@ final class PlayerDataStoreTests: XCTestCase {
     }
     
     func test_receiveMoney() {
-        let playerCreateRequest = PlayerCreateRequest(login: "tester", type: .user, wallet: 80)
+        let playerCreateRequest = Player(login: "tester", type: .user, wallet: 80)
         let id = DataStore.provider.createPlayer(playerCreateRequest)
         let player = DataStore.provider.getPlayer(id: id)
         player?.receiveMoney(100)

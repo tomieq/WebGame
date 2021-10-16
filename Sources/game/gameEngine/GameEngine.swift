@@ -20,9 +20,9 @@ class GameEngine {
     let disposeBag = DisposeBag()
     
     init() {
-        let government = PlayerCreateRequest(login: "Government", type: .government, wallet: 0)
-        let realEstateAgent = PlayerCreateRequest(login: "Real Estate Agency", type: .realEstateAgency, wallet: 0)
-        let user1 = PlayerCreateRequest(login: "Mike Wachlewsky", type: .user, wallet: 2000000)
+        let government = Player(login: "Government", type: .government, wallet: 0)
+        let realEstateAgent = Player(login: "Real Estate Agency", type: .realEstateAgency, wallet: 0)
+        let user1 = Player(login: "Mike Wachlewsky", type: .user, wallet: 2000000)
         DataStore.provider.createPlayer(government)
         DataStore.provider.createPlayer(realEstateAgent)
         DataStore.provider.createPlayer(user1)

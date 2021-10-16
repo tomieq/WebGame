@@ -15,7 +15,7 @@ class DataStoreMemoryProvider: DataStoreProvider {
         self.transactions = []
     }
     
-    func createPlayer(_ player: PlayerCreateRequest) -> String {
+    func createPlayer(_ player: Player) -> String {
         let managedPlayer = PlayerManagedObject(player)
         self.players.append(managedPlayer)
         return managedPlayer.uuid
@@ -33,7 +33,7 @@ class DataStoreMemoryProvider: DataStoreProvider {
         self.players.removeAll{ $0.uuid == id}
     }
 
-    func update(_ playerMutation: PlayerMutationRequest) {
+    func update(_ playerMutation: PlayerMutation) {
         guard let managedPlayer = (self.players.first{ $0.uuid == playerMutation.id }) else { return }
         for attribute in playerMutation.attributes {
             switch attribute {
