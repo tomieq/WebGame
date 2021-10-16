@@ -13,6 +13,14 @@ struct CashFlow: Codable {
     let title: String
     let playerID: String
     let amount: Double
+
+    init(uuid: String? = nil, month: Int, title: String, playerID: String, amount: Double) {
+        self.uuid = uuid ?? ""
+        self.month = month
+        self.title = title
+        self.playerID = playerID
+        self.amount = amount
+    }
     
     init(_ managedObject: CashFlowManagedObject) {
         self.uuid = managedObject.uuid

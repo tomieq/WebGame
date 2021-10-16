@@ -76,7 +76,7 @@ class CentralBank {
 
         let monthIteration = Storage.shared.monthIteration
         
-        let archive = FinancialTransactionArchiveCreateRequest(month: monthIteration, title: title, playerID: playerID, amount: amount)
+        let archive = CashFlow(month: monthIteration, title: title, playerID: playerID, amount: amount)
         DataStore.provider.createTransactionArchive(archive)
     }
 }
