@@ -11,6 +11,7 @@ enum PropertyType {
     case land
     case road
     case residentialBuilding
+    case flat
 }
 
 protocol RealEstateAgentDelegate {
@@ -75,6 +76,8 @@ class RealEstateAgent {
             return Storage.shared.roadProperties.first { $0.address == address }
         case .residentialBuilding:
             return Storage.shared.residentialBuildings.first { $0.address == address }
+        case .flat:
+            return nil
         }
     }
 
@@ -262,14 +265,14 @@ class RealEstateAgent {
     }
     
     func estimateValue(_ property: Property) -> Double {
-        if let land = property as? Land, let value = self.estimateLandValue(land) {
-            return value * (1 + self.occupiedSpaceOnMapFactor())
+        if let land = property as? Land {
+            return PriceList.baseLandValue * self.calculateLocationValueFactor(land.address)
         }
         if let _ = property as? Road {
             return 0.0
         }
         if let building = property as? ResidentialBuilding {
-            var basePrice = self.estimateValue(Land(address: building.address))
+            var basePrice = PriceList.baseLandValue * self.calculateLocationValueFactor(building.address)
             let apartments = Storage.shared.getApartments(address: building.address).filter { $0.ownerID == building.ownerID }
             for apartment in apartments {
                 basePrice += self.estimateApartmentValue(apartment)
@@ -299,19 +302,19 @@ class RealEstateAgent {
         return 0.0
     }
     
-    private func estimateLandValue(_ land: Land) -> Double? {
+    private func calculateLocationValueFactor(_ address: MapPoint) -> Double {
         // in future add price relation to bus stop
-        var startPrice = PriceList.baseLandValue
+        var startPrice = 1.0
 
         for distance in (1...4) {
-            for streetAddress in self.mapManager.map.getNeighbourAddresses(to: land.address, radius: distance) {
+            for streetAddress in self.mapManager.map.getNeighbourAddresses(to: address, radius: distance) {
                 if let tile = self.mapManager.map.getTile(address: streetAddress), tile.isStreet() {
                     
                     if distance == 1 {
                         
                         for buildingDistance in (1...3) {
                             var numberOfBuildings = 0
-                            for buildingAddress in self.mapManager.map.getNeighbourAddresses(to: land.address, radius: buildingDistance) {
+                            for buildingAddress in self.mapManager.map.getNeighbourAddresses(to: address, radius: buildingDistance) {
                                 if let tile = self.mapManager.map.getTile(address: buildingAddress), tile.isBuilding() {
                                     numberOfBuildings += 1
                                 }
@@ -322,12 +325,12 @@ class RealEstateAgent {
                             }
                         }
                     }
-                    return startPrice
+                    return startPrice * (1 + self.occupiedSpaceOnMapFactor())
                 }
             }
             startPrice = startPrice * PriceList.propertyValueDistanceFromRoadLoss
         }
-        return startPrice
+        return startPrice * (1 + self.occupiedSpaceOnMapFactor())
     }
     
     func recalculateFeesInTheBuilding(_ building: ResidentialBuilding) {
