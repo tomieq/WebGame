@@ -23,9 +23,9 @@ class GameEngine {
         let government = Player(login: "Government", type: .government, wallet: 0)
         let realEstateAgent = Player(login: "Real Estate Agency", type: .realEstateAgency, wallet: 0)
         let user1 = Player(login: "Mike Wachlewsky", type: .user, wallet: 2000000)
-        DataStore.provider.createPlayer(government)
-        DataStore.provider.createPlayer(realEstateAgent)
-        DataStore.provider.createPlayer(user1)
+        DataStore.provider.create(government)
+        DataStore.provider.create(realEstateAgent)
+        DataStore.provider.create(user1)
         
         self.gameMap = GameMap(width: 25, height: 25, scale: 0.30)
         let gameManager = GameMapManager(self.gameMap)

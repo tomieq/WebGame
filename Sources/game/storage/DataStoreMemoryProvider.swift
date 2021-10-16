@@ -15,7 +15,7 @@ class DataStoreMemoryProvider: DataStoreProvider {
         self.transactions = []
     }
     
-    func createPlayer(_ player: Player) -> String {
+    func create(_ player: Player) -> String {
         let managedPlayer = PlayerManagedObject(player)
         self.players.append(managedPlayer)
         return managedPlayer.uuid
@@ -44,7 +44,7 @@ class DataStoreMemoryProvider: DataStoreProvider {
         }
     }
     
-    @discardableResult func createTransactionArchive(_ transaction: CashFlow) -> String {
+    @discardableResult func create(_ transaction: CashFlow) -> String {
         let managedObject = CashFlowManagedObject(transaction)
         self.transactions.append(managedObject)
         return managedObject.uuid
