@@ -44,9 +44,8 @@ class PropertyManagerRestAPI {
             guard let address = request.mapPoint else {
                 return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
             }
-            let property = self.gameEngine.realEstateAgent.getProperty(address: address) ?? Land(address: address)
             
-            let value = self.gameEngine.realEstateAgent.estimateValue(property)
+            let value = self.gameEngine.realEstateAgent.estimateValue(address)
             let offer = Invoice(title: "Offer", netValue: value, taxRate: self.gameEngine.taxRates.propertyPurchaseTax)
             let transactionFee = offer.netValue * self.gameEngine.realEstateAgent.priceList.realEstateSellPropertyCommisionFee
 
@@ -187,7 +186,7 @@ class PropertyManagerRestAPI {
             data["balance"] = (property.monthlyIncome - property.monthlyMaintenanceCost - incomeTax).money
             data["purchasePrice"] = property.purchaseNetValue?.money ?? ""
             data["investmentsValue"] = property.investmentsNetValue.money
-            let estimatedValue = self.gameEngine.realEstateAgent.estimateValue(property)
+            let estimatedValue = self.gameEngine.realEstateAgent.estimateValue(property.address)
             data["estimatedValue"] = estimatedValue.money
             if !property.isUnderConstruction {
                 var data = [String:String]()

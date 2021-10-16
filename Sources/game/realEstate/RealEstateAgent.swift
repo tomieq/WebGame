@@ -89,7 +89,7 @@ class RealEstateAgent {
             throw BuyPropertyError.propertyNotForSale
         }
         let land = (Storage.shared.landProperties.first{ $0.address == address }) ?? Land(address: address)
-        let price = self.estimateValue(land)
+        let price = self.estimateValue(land.address)
         let invoice = Invoice(title: "Purchase land \(land.name)", netValue: price, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
         let commissionInvoice = Invoice(title: "Commission for purchase land \(land.name)", grossValue: price*self.priceList.realEstateSellPropertyCommisionFee, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
         
@@ -149,7 +149,7 @@ class RealEstateAgent {
         }
         property.ownerID = government.uuid
         
-        let value = self.estimateValue(property)
+        let value = self.estimateValue(property.address)
         let sellPrice = (value * self.priceList.instantSellValue).rounded(toPlaces: 0)
         
         let invoice = Invoice(title: "Selling property \(property.name)", netValue: sellPrice, taxRate: self.centralBank.taxRates.instantSellTax)
@@ -266,23 +266,22 @@ class RealEstateAgent {
         self.delegate?.reloadMap()
     }
     
-    func estimateValue(_ property: Property) -> Double {
-        if let land = property as? Land {
-            return self.priceList.baseLandValue * self.calculateLocationValueFactor(land.address)
-        }
-        if let _ = property as? Road {
+    func estimateValue(_ address: MapPoint) -> Double {
+        
+        let tile = self.mapManager.map.getTile(address: address)
+
+        if tile?.isStreet() ?? false {
             return 0.0
         }
-        if let building = property as? ResidentialBuilding {
-            var basePrice = self.priceList.baseLandValue * self.calculateLocationValueFactor(building.address)
-            let apartments = Storage.shared.getApartments(address: building.address).filter { $0.ownerID == building.ownerID }
+        if tile?.isBuilding() ?? false {
+            var basePrice = self.priceList.baseLandValue * self.calculateLocationValueFactor(address)
+            let apartments = Storage.shared.getApartments(address: address)//.filter { $0.ownerID == building.ownerID }
             for apartment in apartments {
                 basePrice += self.estimateApartmentValue(apartment)
             }
             return basePrice.rounded(toPlaces: 0)
         }
-        Logger.error("RealEstateAgent", "Couldn't estimate value for \(type(of: property)) \(property.id)!")
-        return 900000000
+        return self.priceList.baseLandValue * self.calculateLocationValueFactor(address)
     }
     
     func estimateApartmentValue(_ apartment: Apartment) -> Double {
