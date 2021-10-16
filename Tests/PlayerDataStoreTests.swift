@@ -19,6 +19,14 @@ final class PlayerDataStoreTests: XCTestCase {
         XCTAssertEqual(playerCreateRequest.login, player?.login)
     }
     
+    func test_createWithForcedUUID() {
+        let dataStore = DataStoreMemoryProvider()
+        let playerCreateRequest = Player(uuid: "custom1", login: "tester", type: .user, wallet: 50)
+        let id = dataStore.create(playerCreateRequest)
+        XCTAssertEqual(id, "custom1")
+        XCTAssertNotNil(dataStore.find(uuid: "custom1"))
+    }
+    
     func test_delete() {
         let dataStore = DataStoreMemoryProvider()
         let playerCreateRequest = Player(login: "tester", type: .user, wallet: 50)

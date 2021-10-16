@@ -14,7 +14,7 @@ class PlayerManagedObject {
     var wallet: Double
     
     init(_ player: Player) {
-        self.uuid = UUID().uuidString
+        self.uuid = player.uuid.isEmpty ? UUID().uuidString : player.uuid
         self.login = player.login
         self.type = player.type
         self.wallet = player.wallet
