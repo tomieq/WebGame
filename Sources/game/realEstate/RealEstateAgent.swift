@@ -16,6 +16,7 @@ enum PropertyType {
 class RealEstateAgent {
     let mapManager: GameMapManager
     private var mapping: [MapPoint:PropertyType]
+    private let dataStore = DataStore.provider
     
     init(mapManager: GameMapManager) {
         self.mapManager = mapManager
@@ -95,14 +96,14 @@ class RealEstateAgent {
 
         self.mapManager.map.replaceTile(tile: land.mapTile)
         
-        if let player = DataStore.provider.getPlayer(id: session.playerUUID) {
+        if let player = self.dataStore.find(uuid: session.playerUUID) {
             let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(player.wallet.money))
             GameEventBus.gameEvents.onNext(updateWalletEvent)
         }
         
         let reloadMapEvent = GameEvent(playerSession: nil, action: .reloadMap)
         GameEventBus.gameEvents.onNext(reloadMapEvent)
-        let name = DataStore.provider.getPlayer(id: session.playerUUID)?.login ?? ""
+        let name = self.dataStore.find(uuid: session.playerUUID)?.login ?? ""
         let announcementEvent = GameEvent(playerSession: nil, action: .notification(UINotification(text: "New transaction on the market. Player \(name) has just bought property `\(land.name)`", level: .info, duration: 10)))
         GameEventBus.gameEvents.onNext(announcementEvent)
     }
@@ -113,7 +114,7 @@ class RealEstateAgent {
             return
         }
         guard property.ownerID == session.playerUUID else {
-            let name = DataStore.provider.getPlayer(id: session.playerUUID)?.login ?? ""
+            let name = self.dataStore.find(uuid: session.playerUUID)?.login ?? ""
             Logger.error("RealEstateAgent", "Player \(name) is not owner of property \(property.id)")
             return
         }
@@ -145,7 +146,7 @@ class RealEstateAgent {
         if property.accountantID != nil {
             CentralBank.shared.refundIncomeTax(receiverID: session.playerUUID, transaction: transaction, costs: (property.investmentsNetValue + (property.purchaseNetValue ?? 0.0)))
         }
-        if let player = DataStore.provider.getPlayer(id: session.playerUUID) {
+        if let player = self.dataStore.find(uuid: session.playerUUID) {
             let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(player.wallet.money))
             GameEventBus.gameEvents.onNext(updateWalletEvent)
         }
@@ -175,7 +176,7 @@ class RealEstateAgent {
         apartment.ownerID = government.uuid
         self.recalculateFeesInTheBuilding(building)
     
-        if let player = DataStore.provider.getPlayer(id: session.playerUUID) {
+        if let player = self.dataStore.find(uuid: session.playerUUID) {
             let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(player.wallet.money))
             GameEventBus.gameEvents.onNext(updateWalletEvent)
         }
@@ -221,7 +222,7 @@ class RealEstateAgent {
         
         self.mapManager.addStreet(address: address)
         
-        if let player = DataStore.provider.getPlayer(id: session.playerUUID) {
+        if let player = self.dataStore.find(uuid: session.playerUUID) {
             let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(player.wallet.money))
             GameEventBus.gameEvents.onNext(updateWalletEvent)
         }
@@ -259,7 +260,7 @@ class RealEstateAgent {
         let tile = GameMapTile(address: address, type: .buildingUnderConstruction(size: storeyAmount))
         self.mapManager.map.replaceTile(tile: tile)
         
-        if let player = DataStore.provider.getPlayer(id: session.playerUUID) {
+        if let player = self.dataStore.find(uuid: session.playerUUID) {
             let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(player.wallet.money))
             GameEventBus.gameEvents.onNext(updateWalletEvent)
         }

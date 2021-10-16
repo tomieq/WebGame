@@ -11,6 +11,7 @@ import Swifter
 class PropertyManagerRestAPI {
     
     let gameEngine: GameEngine
+    private let dataStore = DataStore.provider
     
     init(_ server: HttpServer, gameEngine: GameEngine) {
         
@@ -119,7 +120,7 @@ class PropertyManagerRestAPI {
             guard let ownerID = property.ownerID else {
                 return .badRequest(.html("Property at \(address.description) has no owner!"))
             }
-            let owner = DataStore.provider.getPlayer(id: ownerID)
+            let owner = self.dataStore.find(uuid: ownerID)
             
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyInfo.html"))
             var data = [String:String]()

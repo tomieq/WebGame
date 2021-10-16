@@ -8,18 +8,19 @@
 import Foundation
 
 class CentralBank {
+    let dataStore: DataStoreProvider
     public static let shared = CentralBank()
     
     private init() {
-        
+        self.dataStore = DataStore.provider
     }
     
     @discardableResult
     func process(_ transaction: FinancialTransaction) -> FinancialTransactionResult {
         Logger.info("CentralBank", "New transaction \(transaction.toJSONString() ?? "")")
         
-        let payer = DataStore.provider.getPlayer(id: transaction.payerID)
-        let recipient = DataStore.provider.getPlayer(id: transaction.recipientID)
+        let payer = self.dataStore.find(uuid: transaction.payerID)
+        let recipient = self.dataStore.find(uuid: transaction.recipientID)
         let government = DataStore.provider.getPlayer(type: .government)
         
         guard payer?.wallet ?? 0.0 > transaction.invoice.total else {
@@ -49,7 +50,7 @@ class CentralBank {
     
     func refundIncomeTax(receiverID: String, transaction: FinancialTransaction, costs: Double) {
         
-        if let payer = DataStore.provider.getPlayer(id: receiverID) {
+        if let payer = self.dataStore.find(uuid: receiverID) {
             
             var refund = 0.0
             let paidIncomeTax = transaction.incomeTax

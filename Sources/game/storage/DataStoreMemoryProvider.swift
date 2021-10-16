@@ -21,8 +21,8 @@ class DataStoreMemoryProvider: DataStoreProvider {
         return managedPlayer.uuid
     }
     
-    func getPlayer(id: String) -> Player? {
-        return self.players.first { $0.uuid == id }.map{ Player($0) }
+    func find(uuid: String) -> Player? {
+        return self.players.first { $0.uuid == uuid }.map{ Player($0) }
     }
     
     func getPlayer(type: PlayerType) -> Player? {

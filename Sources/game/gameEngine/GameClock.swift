@@ -11,6 +11,7 @@ import RxCocoa
 
 class GameClock {
     let realEstateAgent: RealEstateAgent
+    private let dataStore = DataStore.provider
     private let disposeBag = DisposeBag()
     
     init(realEstateAgent: RealEstateAgent) {
@@ -59,7 +60,7 @@ class GameClock {
         }
         
         for session in PlayerSessionManager.shared.getActiveSessions() {
-            if let player = DataStore.provider.getPlayer(id: session.playerUUID) {
+            if let player = self.dataStore.find(uuid: session.playerUUID) {
                 let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(player.wallet.money))
                 GameEventBus.gameEvents.onNext(updateWalletEvent)
             }
@@ -68,7 +69,7 @@ class GameClock {
     }
     
     private func applyWalletChanges(property: Property) {
-        if let ownerID = property.ownerID, let owner = DataStore.provider.getPlayer(id: ownerID), owner.type == .user,
+        if let ownerID = property.ownerID, let owner = self.dataStore.find(uuid: ownerID), owner.type == .user,
             let government = DataStore.provider.getPlayer(type: .government) {
             
             let incomeInvoice = Invoice(title: "Monthly income from \(property.name)", netValue: property.monthlyIncome, taxRate: TaxRates.incomeTax)

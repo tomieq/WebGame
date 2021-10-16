@@ -10,6 +10,7 @@ import RxSwift
 import RxCocoa
 
 class GameEngine {
+    let dataStore: DataStoreProvider
     let gameMap: GameMap
     let gameMapManager: GameMapManager
     let streetNavi: StreetNavi
@@ -20,6 +21,7 @@ class GameEngine {
     let disposeBag = DisposeBag()
     
     init() {
+        self.dataStore = DataStore.provider
         let government = Player(login: "Government", type: .government, wallet: 0)
         let realEstateAgent = Player(login: "Real Estate Agency", type: .realEstateAgency, wallet: 0)
         let user1 = Player(login: "Mike Wachlewsky", type: .user, wallet: 2000000)
@@ -40,7 +42,7 @@ class GameEngine {
         GameEventBus.gameEvents.asObservable().bind { [weak self] gameEvent in
             switch gameEvent.action {
             case .userConnected:
-                if let session = gameEvent.playerSession, let player = DataStore.provider.getPlayer(id: session.playerUUID) {
+                if let session = gameEvent.playerSession, let player = self?.dataStore.find(uuid: session.playerUUID) {
                     self?.websocketHandler.sendTo(playerSessionID: session.id, commandType: .updateWallet, payload: player.wallet.money)
                 }
             case .userDisconnected:
