@@ -47,7 +47,7 @@ class PropertyManagerRestAPI {
             let property = self.gameEngine.realEstateAgent.getProperty(address: address) ?? Land(address: address)
             
             let value = self.gameEngine.realEstateAgent.estimateValue(property)
-            let offer = Invoice(title: "Offer", netValue: value, taxRate: TaxRates.propertyPurchaseTax)
+            let offer = Invoice(title: "Offer", netValue: value, taxRate: self.gameEngine.taxRates.propertyPurchaseTax)
             let transactionFee = offer.netValue * PriceList.realEstateSellPropertyCommisionFee
 
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/saleOffer.html"))
@@ -177,11 +177,11 @@ class PropertyManagerRestAPI {
             if propertyHasAccountant {
                 template.assign(variables: ["monthlyIncomeAmortizated":incomeForTaxCalculation.money], inNest: "amortization")
             }
-            let incomeTax = incomeForTaxCalculation * TaxRates.incomeTax
+            let incomeTax = incomeForTaxCalculation * self.gameEngine.taxRates.incomeTax
             data["name"] = property.name
             data["type"] = property.type
             data["monthlyIncome"] = property.monthlyIncome.money
-            data["taxRate"] = (TaxRates.incomeTax*100).string
+            data["taxRate"] = (self.gameEngine.taxRates.incomeTax*100).string
             data["monthlyIncomeTax"] = incomeTax.money
             data["monthlyCosts"] = property.monthlyMaintenanceCost.money
             data["balance"] = (property.monthlyIncome - property.monthlyMaintenanceCost - incomeTax).money
@@ -424,7 +424,7 @@ class PropertyManagerRestAPI {
 
             var data = [String:String]()
             data["name"] = apartment.name
-            let incomeTax = apartment.monthlyRentalFee * TaxRates.incomeTax
+            let incomeTax = apartment.monthlyRentalFee * self.gameEngine.taxRates.incomeTax
             data["condition"] = "\(String(format: "%0.2f", apartment.condition))%"
             data["monthlyBills"] = apartment.monthlyBills.money
             data["monthlyBalance"] = (apartment.monthlyRentalFee - apartment.monthlyBills - incomeTax).money
@@ -432,17 +432,17 @@ class PropertyManagerRestAPI {
             
             if apartment.isRented {
                 data["monthlyRentalFee"] = apartment.monthlyRentalFee.money
-                data["taxRate"] = (TaxRates.incomeTax*100).string
+                data["taxRate"] = (self.gameEngine.taxRates.incomeTax*100).string
                 data["monthlyIncomeTax"] = incomeTax.money
                 data["actionTitle"] = "Kick out tenants"
                 data["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/rentApartment.js?unrent=true&\(apartment.address.asQueryParams)&propertyID=\(apartment.id)"]).js
                 apartmentView.assign(variables: data, inNest: "rented")
             } else if apartment.ownerID != session.playerUUID {
                 let buildingFee = apartment.monthlyBuildingFee
-                let incomeTax = apartment.monthlyBuildingFee * TaxRates.incomeTax
+                let incomeTax = apartment.monthlyBuildingFee * self.gameEngine.taxRates.incomeTax
                 data["monthlyIncome"] = buildingFee.money
                 data["monthlyIncomeTax"] = incomeTax.money
-                data["taxRate"] = (TaxRates.incomeTax*100).string
+                data["taxRate"] = (self.gameEngine.taxRates.incomeTax*100).string
                 data["monthlyBalance"] = (apartment.monthlyBuildingFee - incomeTax).money
                 apartmentView.assign(variables: data, inNest: "sold")
             } else {
@@ -467,7 +467,7 @@ class PropertyManagerRestAPI {
         if self.gameEngine.realEstateAgent.hasDirectAccessToRoad(address: land.address) {
 
             var buildRoadData = [String:String]()
-            let investTransaction = Invoice(title: "Build road offer", netValue: InvestmentCost.makeRoadCost(), taxRate: TaxRates.investmentTax)
+            let investTransaction = Invoice(title: "Build road offer", netValue: InvestmentCost.makeRoadCost(), taxRate: self.gameEngine.taxRates.investmentTax)
             buildRoadData["name"] = "Road"
             buildRoadData["investmentCost"] = investTransaction.netValue.money
             buildRoadData["investmentTax"] = investTransaction.tax.money
@@ -479,7 +479,7 @@ class PropertyManagerRestAPI {
             
             for storey in [4, 6, 8, 10] {
                 var buildHouseData = [String:String]()
-                let invoice = Invoice(title: "Invest offer", netValue: InvestmentCost.makeResidentialBuildingCost(storey: storey), taxRate: TaxRates.investmentTax)
+                let invoice = Invoice(title: "Invest offer", netValue: InvestmentCost.makeResidentialBuildingCost(storey: storey), taxRate: self.gameEngine.taxRates.investmentTax)
                 buildHouseData["name"] = "\(storey) storey Apartment"
                 buildHouseData["investmentCost"] = invoice.netValue.money
                 buildHouseData["investmentCost"] = invoice.netValue.money

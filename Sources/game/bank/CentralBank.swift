@@ -9,9 +9,11 @@ import Foundation
 
 class CentralBank {
     let dataStore: DataStoreProvider
+    let taxRates: TaxRates
     
-    init(dataStore: DataStoreProvider) {
+    init(dataStore: DataStoreProvider, taxRates: TaxRates) {
         self.dataStore = dataStore
+        self.taxRates = taxRates
     }
     
     @discardableResult
@@ -41,13 +43,14 @@ class CentralBank {
             self.receive(government, transaction.invoice.total)
         } else {
             // government takes income tax and VAT
+            let incomeTax = (transaction.invoice.netValue * self.taxRates.incomeTax).rounded(toPlaces: 0)
             if let government = government {
-                receive(government, transaction.incomeTax + transaction.invoice.tax)
+                receive(government, incomeTax + transaction.invoice.tax)
             }
-            self.receive(recipient, (transaction.invoice.netValue - transaction.incomeTax).rounded(toPlaces: 0))
+            self.receive(recipient, (transaction.invoice.netValue - incomeTax).rounded(toPlaces: 0))
             if recipient.type == .user {
                 self.archive(playerID: recipient.uuid, title: transaction.invoice.title, amount: transaction.invoice.netValue)
-                self.archive(playerID: recipient.uuid, title: "Income tax (\((TaxRates.incomeTax*100).rounded(toPlaces: 1))%) for \(transaction.invoice.title)", amount: -1 * transaction.incomeTax)
+                self.archive(playerID: recipient.uuid, title: "Income tax (\((self.taxRates.incomeTax*100).rounded(toPlaces: 1))%) for \(transaction.invoice.title)", amount: -1 * incomeTax)
             }
         }
         
@@ -59,13 +62,13 @@ class CentralBank {
         if let payer = self.dataStore.find(uuid: receiverID) {
             
             var refund = 0.0
-            let paidIncomeTax = transaction.incomeTax
+            let paidIncomeTax = (transaction.invoice.netValue * self.taxRates.incomeTax).rounded(toPlaces: 0)
 
             if costs >= transaction.invoice.netValue {
                 refund = paidIncomeTax
             } else {
                 let incomeWithoutCosts = transaction.invoice.netValue - costs
-                let taxAfterCosts = incomeWithoutCosts * TaxRates.incomeTax
+                let taxAfterCosts = incomeWithoutCosts * self.taxRates.incomeTax
                 refund = (paidIncomeTax - taxAfterCosts).rounded(toPlaces: 0)
             }
             if refund > 10 {

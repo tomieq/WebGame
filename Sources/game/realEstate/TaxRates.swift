@@ -8,9 +8,9 @@
 import Foundation
 
 class TaxRates {
-    public static let propertyPurchaseTax: Double = 0.08
-    public static let investmentTax: Double = 0.23
-    public static let incomeTax: Double = 0.18
-    public static let instantSellTax: Double = 0
-    public static let monthlyBuildingCostsTax: Double = 0
+    public var propertyPurchaseTax: Double = 0.08
+    public var investmentTax: Double = 0.23
+    public var incomeTax: Double = 0.18
+    public var instantSellTax: Double = 0
+    public var monthlyBuildingCostsTax: Double = 0
 }

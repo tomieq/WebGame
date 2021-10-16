@@ -73,21 +73,20 @@ class GameClock {
         if let ownerID = property.ownerID, let owner = self.dataStore.find(uuid: ownerID), owner.type == .user,
             let government = self.dataStore.getPlayer(type: .government) {
             
-            let centralbank = CentralBank(dataStore: self.dataStore)
-            let incomeInvoice = Invoice(title: "Monthly income from \(property.name)", netValue: property.monthlyIncome, taxRate: TaxRates.incomeTax)
+            let incomeInvoice = Invoice(title: "Monthly income from \(property.name)", netValue: property.monthlyIncome, taxRate: self.realEstateAgent.centralBank.taxRates.incomeTax)
             let incomeTransaction = FinancialTransaction(payerID: government.uuid, recipientID: owner.uuid, invoice: incomeInvoice)
             if property.monthlyIncome > 0 {
-                centralbank.process(incomeTransaction)
+                self.realEstateAgent.centralBank.process(incomeTransaction)
             }
             
-            let costsInvoice = Invoice(title: "Monthly costs in \(property.name)", netValue: property.monthlyMaintenanceCost, taxRate: TaxRates.monthlyBuildingCostsTax)
+            let costsInvoice = Invoice(title: "Monthly costs in \(property.name)", netValue: property.monthlyMaintenanceCost, taxRate: self.realEstateAgent.centralBank.taxRates.monthlyBuildingCostsTax)
             let costsTransaction = FinancialTransaction(payerID: owner.uuid, recipientID: government.uuid, invoice: costsInvoice)
             
             if property.monthlyMaintenanceCost > 0 {
-                centralbank.process(costsTransaction)
+                self.realEstateAgent.centralBank.process(costsTransaction)
             }
             if property.monthlyIncome > 0, property.accountantID != nil {
-                centralbank.refundIncomeTax(receiverID: ownerID, transaction: incomeTransaction, costs: property.monthlyMaintenanceCost)
+                self.realEstateAgent.centralBank.refundIncomeTax(receiverID: ownerID, transaction: incomeTransaction, costs: property.monthlyMaintenanceCost)
             }
         }
     }

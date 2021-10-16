@@ -11,6 +11,7 @@ import RxCocoa
 
 class GameEngine {
     let dataStore: DataStoreProvider
+    let taxRates: TaxRates
     let centralbank: CentralBank
     let gameMap: GameMap
     let gameMapManager: GameMapManager
@@ -23,7 +24,8 @@ class GameEngine {
     
     init(dataStore: DataStoreProvider) {
         self.dataStore = dataStore
-        self.centralbank = CentralBank(dataStore: self.dataStore)
+        self.taxRates = TaxRates()
+        self.centralbank = CentralBank(dataStore: self.dataStore, taxRates: self.taxRates)
         
         let government = Player(uuid: "p1", login: "Government", type: .government, wallet: 0)
         let realEstateAgent = Player(login: "Real Estate Agency", type: .realEstateAgency, wallet: 0)
@@ -36,7 +38,7 @@ class GameEngine {
         let gameManager = GameMapManager(self.gameMap)
         gameManager.loadMapFrom(path: "maps/roadMap1")
         self.gameMapManager = gameManager
-        self.realEstateAgent = RealEstateAgent(mapManager: self.gameMapManager, dataStore: self.dataStore)
+        self.realEstateAgent = RealEstateAgent(mapManager: self.gameMapManager, dataStore: self.dataStore, centralBank: self.centralbank)
         self.streetNavi = StreetNavi(gameMap: self.gameMap)
         self.gameTraffic = GameTraffic(streetNavi: self.streetNavi)
         self.websocketHandler = WebsocketHandler()
