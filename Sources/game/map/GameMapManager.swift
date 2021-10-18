@@ -107,10 +107,14 @@ class GameMapManager {
                     mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .cityCouncil))
                 case .warehouse:
                     mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .warehouse))
-                case .building:
-                    var sizes = [4,6,8,10]
-                    sizes.shuffle()
-                    mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .building(size: sizes.first!)))
+                case .building4:
+                    mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .building(size: 4)))
+                case .building6:
+                    mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .building(size: 6)))
+                case .building8:
+                    mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .building(size: 8)))
+                case .building10:
+                    mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .building(size: 10)))
                 case .tree1:
                     mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .tree(type: 1)))
                 case .tree2:
@@ -253,7 +257,10 @@ fileprivate enum GameMapFileEntry: String {
     case localStreet = "s"
     case mainStreet = "S"
     case btsAntenna = "A"
-    case building = "B"
+    case building4 = "b"
+    case building6 = "B"
+    case building8 = "r"
+    case building10 = "R"
     case cityCouncil = "C"
     case tree1 = "T"
     case tree2 = "t"
