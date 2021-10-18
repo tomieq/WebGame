@@ -250,12 +250,12 @@ class PropertyManagerRestAPI {
             do {
                 switch investmentType {
                     case "road":
-                    try self.gameEngine.constructionServices.buildRoad(address: address, playerUUID: session.playerUUID)
+                    try self.gameEngine.constructionServices.startRoadInvestment(address: address, playerUUID: session.playerUUID)
                     case "apartment":
                         guard let storeyValue = request.queryParam("storey"), let storeyAmount = Int(storeyValue) else {
                             return JSCode.showError(txt: "Invalid request! Missing storeyAmount.", duration: 10).response
                         }
-                        try self.gameEngine.constructionServices.buildResidentialBuilding(address: address, playerUUID: session.playerUUID, storeyAmount: storeyAmount)
+                        try self.gameEngine.constructionServices.startResidentialBuildingInvestment(address: address, playerUUID: session.playerUUID, storeyAmount: storeyAmount)
                     default:
                         return JSCode.showError(txt: "Invalid request! Invalid investmentType \(investmentType).", duration: 10).response
                 }

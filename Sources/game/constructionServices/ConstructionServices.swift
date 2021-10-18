@@ -49,7 +49,7 @@ class ConstructionServices {
         return ConstructionOffer(invoice: invoice, duration: duration)
     }
     
-    func buildRoad(address: MapPoint, playerUUID: String) throws {
+    func startRoadInvestment(address: MapPoint, playerUUID: String) throws {
         
         guard let land = (Storage.shared.landProperties.first { $0.address == address}) else {
             throw ConstructionServicesError.formalProblem(reason: "You can build road only on an empty land.")
@@ -80,7 +80,7 @@ class ConstructionServices {
         self.delegate?.reloadMap()
     }
 
-    func buildResidentialBuilding(address: MapPoint, playerUUID: String, storeyAmount: Int) throws {
+    func startResidentialBuildingInvestment(address: MapPoint, playerUUID: String, storeyAmount: Int) throws {
         
         guard let land = (Storage.shared.landProperties.first { $0.address == address}) else {
             throw ConstructionServicesError.formalProblem(reason: "You can build road only on an empty land.")
