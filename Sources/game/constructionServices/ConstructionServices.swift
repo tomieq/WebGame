@@ -21,6 +21,7 @@ enum ConstructionServicesError: Error {
 
 class ConstructionServices {
     
+    let currentTime: GameTime
     let mapManager: GameMapManager
     let centralBank: CentralBank
     let priceList: ConstructionPriceList
@@ -28,7 +29,8 @@ class ConstructionServices {
     var delegate: ConstructionServicesDelegate?
     let dataStore: DataStoreProvider
     
-    init(mapManager: GameMapManager, centralBank: CentralBank, delegate: ConstructionServicesDelegate? = nil) {
+    init(mapManager: GameMapManager, centralBank: CentralBank, time: GameTime, delegate: ConstructionServicesDelegate? = nil) {
+        self.currentTime = GameTime()
         self.mapManager = mapManager
         self.dataStore = centralBank.dataStore
         self.centralBank = centralBank
@@ -72,14 +74,14 @@ class ConstructionServices {
         
         let road = Road(land: land)
         road.isUnderConstruction = true
-        road.constructionFinishMonth = Storage.shared.monthIteration + offer.duration
+        road.constructionFinishMonth = self.currentTime.month + offer.duration
         
         Storage.shared.landProperties = Storage.shared.landProperties.filter { $0.address != address }
         Storage.shared.roadProperties.append(road)
         
         let tile = GameMapTile(address: address, type: .streetUnderConstruction)
         self.mapManager.map.replaceTile(tile: tile)
-        
+
         self.delegate?.notifyWalletChange(playerUUID: playerUUID)
         self.delegate?.reloadMap()
     }
@@ -100,7 +102,7 @@ class ConstructionServices {
         
         let building = ResidentialBuilding(land: land, storeyAmount: storeyAmount)
         building.isUnderConstruction = true
-        building.constructionFinishMonth = Storage.shared.monthIteration + offer.duration
+        building.constructionFinishMonth = self.currentTime.month + offer.duration
         // process the transaction
         let governmentID = self.dataStore.getPlayer(type: .government)?.uuid ?? ""
         let transaction = FinancialTransaction(payerID: playerUUID, recipientID: governmentID, invoice: offer.invoice)
@@ -115,5 +117,40 @@ class ConstructionServices {
         
         self.delegate?.notifyWalletChange(playerUUID: playerUUID)
         self.delegate?.reloadMap()
+    }
+    
+    func finishInvestments() {
+        var updateMap = false
+        
+        for road in (Storage.shared.roadProperties.filter{ $0.isUnderConstruction }) {
+            if road.constructionFinishMonth == self.currentTime.month {
+                road.isUnderConstruction = false
+                
+                self.mapManager.addStreet(address: road.address)
+                updateMap = true
+            }
+        }
+        
+        for building in (Storage.shared.residentialBuildings.filter{ $0.isUnderConstruction }) {
+            if building.constructionFinishMonth == self.currentTime.month {
+                building.isUnderConstruction = false
+                
+                /*for storey in (1...building.storeyAmount) {
+                    for flatNo in (1...building.numberOfFlatsPerStorey) {
+                        let apartment = Apartment(building, storey: storey, flatNumber: flatNo)
+                        apartment.monthlyBuildingFee = self.realEstateAgent.priceList.monthlyApartmentBuildingOwnerFee
+                        Storage.shared.apartments.append(apartment)
+                    }
+                }
+                self.realEstateAgent.recalculateFeesInTheBuilding(building)
+                */
+                let tile = GameMapTile(address: building.address, type: .building(size: building.storeyAmount))
+                self.mapManager.map.replaceTile(tile: tile)
+                updateMap = true
+            }
+        }
+        if updateMap {
+            self.delegate?.reloadMap()
+        }
     }
 }

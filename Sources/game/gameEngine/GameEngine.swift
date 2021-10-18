@@ -10,6 +10,7 @@ import RxSwift
 import RxCocoa
 
 class GameEngine {
+    let time: GameTime
     let dataStore: DataStoreProvider
     let taxRates: TaxRates
     let centralbank: CentralBank
@@ -24,6 +25,8 @@ class GameEngine {
     let disposeBag = DisposeBag()
     
     init(dataStore: DataStoreProvider) {
+        self.time = GameTime()
+        self.time.month = Storage.shared.monthIteration
         self.dataStore = dataStore
         self.taxRates = TaxRates()
         self.centralbank = CentralBank(dataStore: self.dataStore, taxRates: self.taxRates)
@@ -42,12 +45,12 @@ class GameEngine {
         self.realEstateAgent = RealEstateAgent(mapManager: self.gameMapManager, centralBank: self.centralbank)
         self.realEstateAgent.makeMapTilesFromDataStore()
         
-        self.constructionServices = ConstructionServices(mapManager: self.gameMapManager, centralBank: self.centralbank)
+        self.constructionServices = ConstructionServices(mapManager: self.gameMapManager, centralBank: self.centralbank, time: self.time)
         
         self.streetNavi = StreetNavi(gameMap: self.gameMap)
         self.gameTraffic = GameTraffic(streetNavi: self.streetNavi)
         self.websocketHandler = WebsocketHandler()
-        self.gameClock = GameClock(realEstateAgent: self.realEstateAgent)
+        self.gameClock = GameClock(realEstateAgent: self.realEstateAgent, time: self.time)
         
         self.realEstateAgent.delegate = self
         self.constructionServices.delegate = self
@@ -68,6 +71,7 @@ class GameEngine {
             case .updateWallet(let wallet):
                 self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .updateWallet, payload: wallet)
             case .updateGameDate(let date):
+                self?.constructionServices.finishInvestments()
                 self?.websocketHandler.sendToAll(commandType: .updateGameDate, payload: date)
             case .tileClicked(let point):
 

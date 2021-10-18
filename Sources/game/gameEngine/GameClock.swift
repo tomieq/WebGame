@@ -11,10 +11,12 @@ import RxCocoa
 
 class GameClock {
     let realEstateAgent: RealEstateAgent
+    let time: GameTime
     private let dataStore: DataStoreProvider
     private let disposeBag = DisposeBag()
     
-    init(realEstateAgent: RealEstateAgent) {
+    init(realEstateAgent: RealEstateAgent, time: GameTime) {
+        self.time = GameTime()
         self.realEstateAgent = realEstateAgent
         self.dataStore = realEstateAgent.dataStore
         
@@ -22,10 +24,11 @@ class GameClock {
             Logger.info("GameClock", "End of the month")
             self?.endTheMonth()
             self?.pruneBankTransactionArchive()
-            self?.finishConstructions()
             Storage.shared.monthIteration += 1
             
+            
             let now = GameDate(monthIteration: Storage.shared.monthIteration)
+            self?.time.month = now.monthIteration
             let updateDateEvent = GameEvent(playerSession: nil, action: .updateGameDate(now.text))
             GameEventBus.gameEvents.onNext(updateDateEvent)
         }.disposed(by: self.disposeBag)
@@ -95,33 +98,6 @@ class GameClock {
         //let currentMonth = Storage.shared.monthIteration
         //let borderMonth = currentMonth - 12
         //Storage.shared.transactionArchive = Storage.shared.transactionArchive.filter { $0.month > borderMonth }
-    }
-    
-    private func finishConstructions() {
-        var updateMap = false
-        let currentMonth = Storage.shared.monthIteration
-        for building in (Storage.shared.residentialBuildings.filter{ $0.isUnderConstruction }) {
-            if building.constructionFinishMonth == currentMonth {
-                building.isUnderConstruction = false
-                
-                for storey in (1...building.storeyAmount) {
-                    for flatNo in (1...building.numberOfFlatsPerStorey) {
-                        let apartment = Apartment(building, storey: storey, flatNumber: flatNo)
-                        apartment.monthlyBuildingFee = self.realEstateAgent.priceList.monthlyApartmentBuildingOwnerFee
-                        Storage.shared.apartments.append(apartment)
-                    }
-                }
-                self.realEstateAgent.recalculateFeesInTheBuilding(building)
-                
-                let tile = GameMapTile(address: building.address, type: .building(size: building.storeyAmount))
-                self.realEstateAgent.mapManager.map.replaceTile(tile: tile)
-                updateMap = true
-            }
-        }
-        if updateMap {
-            let reloadMapEvent = GameEvent(playerSession: nil, action: .reloadMap)
-            GameEventBus.gameEvents.onNext(reloadMapEvent)
-        }
     }
 }
 
