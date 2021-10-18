@@ -24,6 +24,7 @@ class ConstructionServices {
     let mapManager: GameMapManager
     let centralBank: CentralBank
     let priceList: ConstructionPriceList
+    let constructionDuration: ConstructionDuration
     var delegate: ConstructionServicesDelegate?
     let dataStore: DataStoreProvider
     
@@ -33,6 +34,19 @@ class ConstructionServices {
         self.centralBank = centralBank
         self.delegate = delegate
         self.priceList = ConstructionPriceList()
+        self.constructionDuration = ConstructionDuration()
+    }
+    
+    func roadOffer(landName: String) -> ConstructionOffer {
+        let invoice = Invoice(title: "Build road on property \(landName)", netValue: self.priceList.buildRoadPrice, taxRate: self.centralBank.taxRates.investmentTax)
+        let duration = self.constructionDuration.road
+        return ConstructionOffer(invoice: invoice, duration: duration)
+    }
+    
+    func residentialBuildingOffer(landName: String, storeyAmount: Int) -> ConstructionOffer {
+        let invoice = Invoice(title: "Build \(storeyAmount)-storey \(landName)", netValue: self.priceList.buildResidentialBuildingPrice(storey: storeyAmount), taxRate: self.centralBank.taxRates.investmentTax)
+        let duration = self.constructionDuration.residentialBuilding(storey: storeyAmount)
+        return ConstructionOffer(invoice: invoice, duration: duration)
     }
     
     func buildRoad(address: MapPoint, playerUUID: String) throws {
@@ -48,9 +62,10 @@ class ConstructionServices {
             throw ConstructionServicesError.formalProblem(reason: "You cannot build road here as this property has no direct access to the public road.")
         }
         let governmentID = self.dataStore.getPlayer(type: .government)?.uuid ?? ""
-        let invoice = Invoice(title: "Build road on property \(land.name)", netValue: self.priceList.buildRoadPrice, taxRate: self.centralBank.taxRates.investmentTax)
+        let offer = self.roadOffer(landName: land.name)
+
         // process the transaction
-        let transaction = FinancialTransaction(payerID: playerUUID, recipientID: governmentID, invoice: invoice)
+        let transaction = FinancialTransaction(payerID: playerUUID, recipientID: governmentID, invoice: offer.invoice)
         if case .failure(let reason) = self.centralBank.process(transaction) {
             throw ConstructionServicesError.financialTransactionProblem(reason: reason)
         }
@@ -76,13 +91,15 @@ class ConstructionServices {
         guard self.mapManager.map.hasDirectAccessToRoad(address: address) else {
             throw ConstructionServicesError.formalProblem(reason: "You cannot build apartment here as this property has no direct access to the public road.")
         }
+        
+        let offer = residentialBuildingOffer(landName: land.name, storeyAmount: storeyAmount)
+        
         let building = ResidentialBuilding(land: land, storeyAmount: storeyAmount)
         building.isUnderConstruction = true
-        building.constructionFinishMonth = Storage.shared.monthIteration + ConstructionDuration.buildingApartment(storey: storeyAmount)
-        let invoice = Invoice(title: "Build \(storeyAmount)-storey \(building.name)", netValue: self.priceList.buildResidentialBuildingPrice(storey: storeyAmount), taxRate: self.centralBank.taxRates.investmentTax)
+        building.constructionFinishMonth = Storage.shared.monthIteration + offer.duration
         // process the transaction
         let governmentID = self.dataStore.getPlayer(type: .government)?.uuid ?? ""
-        let transaction = FinancialTransaction(payerID: playerUUID, recipientID: governmentID, invoice: invoice)
+        let transaction = FinancialTransaction(payerID: playerUUID, recipientID: governmentID, invoice: offer.invoice)
         if case .failure(let reason) = self.centralBank.process(transaction) {
             throw ConstructionServicesError.financialTransactionProblem(reason: reason)
         }

@@ -19,10 +19,9 @@ class ConstructionPriceList {
 }
 
 class ConstructionDuration {
-    public static func buildingRoad() -> Int {
-        return 3
-    }
-    public static func buildingApartment(storey: Int) -> Int {
+    var road: Int = 3
+    
+    func residentialBuilding(storey: Int) -> Int {
         return 9 + storey
     }
 }

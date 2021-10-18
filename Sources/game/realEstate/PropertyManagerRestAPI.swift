@@ -466,25 +466,28 @@ class PropertyManagerRestAPI {
         if self.gameEngine.gameMapManager.map.hasDirectAccessToRoad(address: land.address) {
 
             var buildRoadData = [String:String]()
-            let investTransaction = Invoice(title: "Build road offer", netValue: InvestmentCost.makeRoadCost(), taxRate: self.gameEngine.taxRates.investmentTax)
+            let roadOffer = self.gameEngine.constructionServices.roadOffer(landName: land.name)
+            
             buildRoadData["name"] = "Road"
-            buildRoadData["investmentCost"] = investTransaction.netValue.money
-            buildRoadData["investmentTax"] = investTransaction.tax.money
-            buildRoadData["investmentTotal"] = investTransaction.total.money
-            buildRoadData["investmentDuration"] = "\(InvestmentDuration.buildingRoad()) months"
+            buildRoadData["investmentCost"] = roadOffer.invoice.netValue.money
+            buildRoadData["investmentTax"] = roadOffer.invoice.tax.money
+            buildRoadData["investmentTotal"] = roadOffer.invoice.total.money
+            buildRoadData["investmentDuration"] = "\(roadOffer.duration) months"
             buildRoadData["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/startInvestment.js?type=road&\(land.address.asQueryParams)"]).js
             buildRoadData["actionTitle"] = "Start investment"
             template.assign(variables: buildRoadData, inNest: "investment")
             
             for storey in [4, 6, 8, 10] {
                 var buildHouseData = [String:String]()
-                let invoice = Invoice(title: "Invest offer", netValue: InvestmentCost.makeResidentialBuildingCost(storey: storey), taxRate: self.gameEngine.taxRates.investmentTax)
+                
+                let offer = self.gameEngine.constructionServices.residentialBuildingOffer(landName: land.name, storeyAmount: storey)
+
                 buildHouseData["name"] = "\(storey) storey Apartment"
-                buildHouseData["investmentCost"] = invoice.netValue.money
-                buildHouseData["investmentCost"] = invoice.netValue.money
-                buildHouseData["investmentTax"] = invoice.tax.money
-                buildHouseData["investmentTotal"] = invoice.total.money
-                buildHouseData["investmentDuration"] = "\(InvestmentDuration.buildingApartment(storey: storey)) months"
+                buildHouseData["investmentCost"] = offer.invoice.netValue.money
+                buildHouseData["investmentCost"] = offer.invoice.netValue.money
+                buildHouseData["investmentTax"] = offer.invoice.tax.money
+                buildHouseData["investmentTotal"] = offer.invoice.total.money
+                buildHouseData["investmentDuration"] = "\(offer.duration) months"
                 buildHouseData["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/startInvestment.js?type=apartment&\(land.address.asQueryParams)&storey=\(storey)"]).js
                 buildHouseData["actionTitle"] = "Start investment"
                 template.assign(variables: buildHouseData, inNest: "investment")
