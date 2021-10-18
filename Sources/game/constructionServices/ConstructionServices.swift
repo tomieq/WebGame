@@ -23,6 +23,7 @@ class ConstructionServices {
     
     let mapManager: GameMapManager
     let centralBank: CentralBank
+    let priceList: ConstructionPriceList
     var delegate: ConstructionServicesDelegate?
     let dataStore: DataStoreProvider
     
@@ -31,6 +32,7 @@ class ConstructionServices {
         self.dataStore = centralBank.dataStore
         self.centralBank = centralBank
         self.delegate = delegate
+        self.priceList = ConstructionPriceList()
     }
     
     func buildRoad(address: MapPoint, playerUUID: String) throws {
@@ -46,7 +48,7 @@ class ConstructionServices {
             throw ConstructionServicesError.formalProblem(reason: "You cannot build road here as this property has no direct access to the public road.")
         }
         let governmentID = self.dataStore.getPlayer(type: .government)?.uuid ?? ""
-        let invoice = Invoice(title: "Build road on property \(land.name)", netValue: InvestmentCost.makeRoadCost(), taxRate: self.centralBank.taxRates.investmentTax)
+        let invoice = Invoice(title: "Build road on property \(land.name)", netValue: self.priceList.buildRoadPrice, taxRate: self.centralBank.taxRates.investmentTax)
         // process the transaction
         let transaction = FinancialTransaction(payerID: playerUUID, recipientID: governmentID, invoice: invoice)
         if case .failure(let reason) = self.centralBank.process(transaction) {
@@ -76,8 +78,8 @@ class ConstructionServices {
         }
         let building = ResidentialBuilding(land: land, storeyAmount: storeyAmount)
         building.isUnderConstruction = true
-        building.constructionFinishMonth = Storage.shared.monthIteration + InvestmentDuration.buildingApartment(storey: storeyAmount)
-        let invoice = Invoice(title: "Build \(storeyAmount)-storey \(building.name)", netValue: InvestmentCost.makeResidentialBuildingCost(storey: storeyAmount), taxRate: self.centralBank.taxRates.investmentTax)
+        building.constructionFinishMonth = Storage.shared.monthIteration + ConstructionDuration.buildingApartment(storey: storeyAmount)
+        let invoice = Invoice(title: "Build \(storeyAmount)-storey \(building.name)", netValue: self.priceList.buildResidentialBuildingPrice(storey: storeyAmount), taxRate: self.centralBank.taxRates.investmentTax)
         // process the transaction
         let governmentID = self.dataStore.getPlayer(type: .government)?.uuid ?? ""
         let transaction = FinancialTransaction(payerID: playerUUID, recipientID: governmentID, invoice: invoice)

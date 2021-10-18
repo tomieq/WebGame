@@ -213,7 +213,7 @@ class RealEstateAgent {
     
     func estimateApartmentValue(_ apartment: Apartment) -> Double {
         if let building = (Storage.shared.residentialBuildings.first{ $0.address == apartment.address }) {
-            let investmentCost = InvestmentCost.makeResidentialBuildingCost(storey: building.storeyAmount)
+            let investmentCost = 0.0//ConstructionPriceList.makeResidentialBuildingCost(storey: building.storeyAmount)
             let numberOfFlats = Double(building.numberOfFlatsPerStorey * building.storeyAmount)
             let baseValue = (investmentCost/numberOfFlats + self.priceList.residentialBuildingOwnerIncomeOnFlatSellPrice) * 1.42
             return (baseValue * building.condition/100 * apartment.condition/100 * self.calculateLocationValueFactor(building.address)).rounded(toPlaces: 0)
