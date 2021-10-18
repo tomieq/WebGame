@@ -71,10 +71,14 @@ class ConstructionServices {
         }
         
         let road = Road(land: land)
+        road.isUnderConstruction = true
+        road.constructionFinishMonth = Storage.shared.monthIteration + offer.duration
+        
         Storage.shared.landProperties = Storage.shared.landProperties.filter { $0.address != address }
         Storage.shared.roadProperties.append(road)
         
-        self.mapManager.addStreet(address: address)
+        let tile = GameMapTile(address: address, type: .streetUnderConstruction)
+        self.mapManager.map.replaceTile(tile: tile)
         
         self.delegate?.notifyWalletChange(playerUUID: playerUUID)
         self.delegate?.reloadMap()

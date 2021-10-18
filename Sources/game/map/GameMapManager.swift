@@ -101,6 +101,8 @@ class GameMapManager {
                     if let tile = self.evaluateMainStreetMapTile(address: MapPoint(x: dataX.key, y: dataY.key)) {
                         mapTiles.append(tile)
                     }
+                case .streetUnderConstruction:
+                    mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .streetUnderConstruction))
                 case .btsAntenna:
                     mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .btsAntenna))
                 case .cityCouncil:
@@ -255,6 +257,7 @@ class GameMapManager {
 
 fileprivate enum GameMapFileEntry: String {
     case localStreet = "s"
+    case streetUnderConstruction = "u"
     case mainStreet = "S"
     case btsAntenna = "A"
     case building4 = "b"

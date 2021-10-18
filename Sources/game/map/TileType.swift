@@ -11,6 +11,7 @@ enum TileType {
     case grass
     case soldLand
     case street(type: StreetType)
+    case streetUnderConstruction
     case btsAntenna
     case building(size: Int)
     case buildingUnderConstruction(size: Int)
@@ -38,6 +39,8 @@ extension TileType {
             return TileImage(path: "tiles/warehouse-1.png", width: 600, height: 600)
         case .tree(let type):
             return TileImage(path: "tiles/tree\(type).png", width: 600, height: 600)
+        case .streetUnderConstruction:
+            return TileImage(path: "tiles/streetUnderConstruction.png", width: 600, height: 400)
         case .street(let type):
             switch type {
 
