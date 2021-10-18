@@ -11,7 +11,7 @@ import XCTest
 
 final class RealEstateAgentTests: XCTestCase {
     
-    func test_estimateLocationAtRoad() {
+    func test_estimateValueAtRoad() {
         let dataStore = DataStoreMemoryProvider()
         let taxRates = TaxRates()
         let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
@@ -26,7 +26,7 @@ final class RealEstateAgentTests: XCTestCase {
         XCTAssertEqual(price, 100)
     }
     
-    func test_estimateLocationOneTileFromRoad() {
+    func test_estimateValueOneTileFromRoad() {
         let dataStore = DataStoreMemoryProvider()
         let taxRates = TaxRates()
         let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
@@ -42,7 +42,7 @@ final class RealEstateAgentTests: XCTestCase {
         XCTAssertEqual(price, 50)
     }
     
-    func test_estimateLocationTwoTilesFromRoad() {
+    func test_estimateValueTwoTilesFromRoad() {
         let dataStore = DataStoreMemoryProvider()
         let taxRates = TaxRates()
         let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
@@ -58,7 +58,7 @@ final class RealEstateAgentTests: XCTestCase {
         XCTAssertEqual(price, 25)
     }
 
-    func test_estimateLocationNextToBuilding() {
+    func test_estimateValueNextToBuilding() {
         let dataStore = DataStoreMemoryProvider()
         let taxRates = TaxRates()
         let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
@@ -74,7 +74,7 @@ final class RealEstateAgentTests: XCTestCase {
         XCTAssertEqual(price, 150)
     }
 
-    func test_estimateLocationNextToTwoBuilding() {
+    func test_estimateValueNextToTwoBuildings() {
         let dataStore = DataStoreMemoryProvider()
         let taxRates = TaxRates()
         let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
@@ -90,7 +90,7 @@ final class RealEstateAgentTests: XCTestCase {
         XCTAssertEqual(price, 200)
     }
     
-    func test_estimateLocationOneTileFromBuilding() {
+    func test_estimateValueTwoTilesFromBuilding() {
         let dataStore = DataStoreMemoryProvider()
         let taxRates = TaxRates()
         let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
