@@ -62,6 +62,12 @@ class GameMap {
     func isAddressOnMap(_ address: MapPoint) -> Bool {
         return address.x >= 0 && address.x < self.width && address.y >= 0 && address.y < self.height
     }
+
+    func hasDirectAccessToRoad(address: MapPoint) -> Bool {
+        return ![address.move(.up),address.move(.down),address.move(.left),address.move(.right)]
+        .compactMap { self.getTile(address: $0) }
+        .filter{ $0.isStreet() }.isEmpty
+    }
 }
 
 struct GameMapTile {

@@ -250,19 +250,19 @@ class PropertyManagerRestAPI {
             do {
                 switch investmentType {
                     case "road":
-                        try self.gameEngine.realEstateAgent.buildRoad(address: address, session: session)
+                    try self.gameEngine.constructionServices.buildRoad(address: address, playerUUID: session.playerUUID)
                     case "apartment":
                         guard let storeyValue = request.queryParam("storey"), let storeyAmount = Int(storeyValue) else {
                             return JSCode.showError(txt: "Invalid request! Missing storeyAmount.", duration: 10).response
                         }
-                        try self.gameEngine.realEstateAgent.buildResidentialBuilding(address: address, session: session, storeyAmount: storeyAmount)
+                        try self.gameEngine.constructionServices.buildResidentialBuilding(address: address, playerUUID: session.playerUUID, storeyAmount: storeyAmount)
                     default:
                         return JSCode.showError(txt: "Invalid request! Invalid investmentType \(investmentType).", duration: 10).response
                 }
                 
-            } catch StartInvestmentError.financialTransactionProblem(let reason) {
+            } catch ConstructionServicesError.financialTransactionProblem(let reason) {
                 return JSCode.showError(txt: reason , duration: 10).response
-            } catch StartInvestmentError.formalProblem(let reason) {
+            } catch ConstructionServicesError.formalProblem(let reason) {
                 return JSCode.showError(txt: reason , duration: 10).response
             } catch {
                 return JSCode.showError(txt: "Unexpected error [\(request.address ?? "")]", duration: 10).response
@@ -463,7 +463,7 @@ class PropertyManagerRestAPI {
 
         let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManagerLand.html"))
         
-        if self.gameEngine.realEstateAgent.hasDirectAccessToRoad(address: land.address) {
+        if self.gameEngine.gameMapManager.map.hasDirectAccessToRoad(address: land.address) {
 
             var buildRoadData = [String:String]()
             let investTransaction = Invoice(title: "Build road offer", netValue: InvestmentCost.makeRoadCost(), taxRate: self.gameEngine.taxRates.investmentTax)

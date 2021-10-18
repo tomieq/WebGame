@@ -192,67 +192,6 @@ class RealEstateAgent {
         }
     }
     
-    func buildRoad(address: MapPoint, session: PlayerSession) throws {
-        
-        guard let land = (Storage.shared.landProperties.first { $0.address == address}) else {
-            throw StartInvestmentError.formalProblem(reason: "You can build road only on an empty land.")
-        }
-        guard land.ownerID == session.playerUUID else {
-            throw StartInvestmentError.formalProblem(reason: "You can invest only on your properties.")
-        }
-        guard self.hasDirectAccessToRoad(address: address) else {
-            throw StartInvestmentError.formalProblem(reason: "You cannot build road here as this property has no direct access to the public road.")
-        }
-        let governmentID = self.dataStore.getPlayer(type: .government)?.uuid ?? ""
-        let invoice = Invoice(title: "Build road on property \(land.name)", netValue: InvestmentCost.makeRoadCost(), taxRate: self.centralBank.taxRates.investmentTax)
-        // process the transaction
-        let transaction = FinancialTransaction(payerID: session.playerUUID, recipientID: governmentID, invoice: invoice)
-        if case .failure(let reason) = self.centralBank.process(transaction) {
-            throw StartInvestmentError.financialTransactionProblem(reason: reason)
-        }
-        
-        let road = Road(land: land)
-        Storage.shared.landProperties = Storage.shared.landProperties.filter { $0.address != address }
-        Storage.shared.roadProperties.append(road)
-        
-        self.mapManager.addStreet(address: address)
-        
-        self.delegate?.notifyWalletChange(playerUUID: session.playerUUID)
-        self.delegate?.reloadMap()
-    }
-    
-    
-    func buildResidentialBuilding(address: MapPoint, session: PlayerSession, storeyAmount: Int) throws {
-        
-        guard let land = (Storage.shared.landProperties.first { $0.address == address}) else {
-            throw StartInvestmentError.formalProblem(reason: "You can build road only on an empty land.")
-        }
-        guard land.ownerID == session.playerUUID else {
-            throw StartInvestmentError.formalProblem(reason: "You can invest only on your properties.")
-        }
-        guard self.hasDirectAccessToRoad(address: address) else {
-            throw StartInvestmentError.formalProblem(reason: "You cannot build apartment here as this property has no direct access to the public road.")
-        }
-        let building = ResidentialBuilding(land: land, storeyAmount: storeyAmount)
-        building.isUnderConstruction = true
-        building.constructionFinishMonth = Storage.shared.monthIteration + InvestmentDuration.buildingApartment(storey: storeyAmount)
-        let invoice = Invoice(title: "Build \(storeyAmount)-storey \(building.name)", netValue: InvestmentCost.makeResidentialBuildingCost(storey: storeyAmount), taxRate: self.centralBank.taxRates.investmentTax)
-        // process the transaction
-        let governmentID = self.dataStore.getPlayer(type: .government)?.uuid ?? ""
-        let transaction = FinancialTransaction(payerID: session.playerUUID, recipientID: governmentID, invoice: invoice)
-        if case .failure(let reason) = self.centralBank.process(transaction) {
-            throw StartInvestmentError.financialTransactionProblem(reason: reason)
-        }
-        Storage.shared.landProperties = Storage.shared.landProperties.filter { $0.address != address }
-        Storage.shared.residentialBuildings.append(building)
-        
-        let tile = GameMapTile(address: address, type: .buildingUnderConstruction(size: storeyAmount))
-        self.mapManager.map.replaceTile(tile: tile)
-        
-        self.delegate?.notifyWalletChange(playerUUID: session.playerUUID)
-        self.delegate?.reloadMap()
-    }
-    
     func estimateValue(_ address: MapPoint) -> Double {
         
         let tile = self.mapManager.map.getTile(address: address)
@@ -260,15 +199,16 @@ class RealEstateAgent {
         if tile?.isStreet() ?? false {
             return 0.0
         }
+        var basePrice = self.priceList.baseLandValue * self.calculateLocationValueFactor(address)
         if tile?.isBuilding() ?? false {
-            var basePrice = self.priceList.baseLandValue * self.calculateLocationValueFactor(address)
+            
             let apartments = Storage.shared.getApartments(address: address)//.filter { $0.ownerID == building.ownerID }
             for apartment in apartments {
                 basePrice += self.estimateApartmentValue(apartment)
             }
             return basePrice.rounded(toPlaces: 0)
         }
-        return (self.priceList.baseLandValue * self.calculateLocationValueFactor(address)).rounded(toPlaces: 0)
+        return basePrice.rounded(toPlaces: 0)
     }
     
     func estimateApartmentValue(_ apartment: Apartment) -> Double {
@@ -276,8 +216,7 @@ class RealEstateAgent {
             let investmentCost = InvestmentCost.makeResidentialBuildingCost(storey: building.storeyAmount)
             let numberOfFlats = Double(building.numberOfFlatsPerStorey * building.storeyAmount)
             let baseValue = (investmentCost/numberOfFlats + self.priceList.residentialBuildingOwnerIncomeOnFlatSellPrice) * 1.42
-            // TODO: add dependency on neighbourhood
-            return (baseValue * building.condition/100 * apartment.condition/100).rounded(toPlaces: 0)
+            return (baseValue * building.condition/100 * apartment.condition/100 * self.calculateLocationValueFactor(building.address)).rounded(toPlaces: 0)
         }
         Logger.error("RealEstateAgent", "Apartment \(apartment.id) is detached from building!")
         return 900000000
@@ -285,7 +224,7 @@ class RealEstateAgent {
     
     func estimateRentFee(_ apartment: Apartment) -> Double {
         if let building = (Storage.shared.residentialBuildings.first { $0.address == apartment.address }) {
-            return (self.priceList.monthlyApartmentRentalFee * building.condition/100 * apartment.condition/100).rounded(toPlaces: 0)
+            return (self.priceList.monthlyApartmentRentalFee * building.condition/100 * apartment.condition/100 * self.calculateLocationValueFactor(building.address)).rounded(toPlaces: 0)
         }
         return 0.0
     }
@@ -372,21 +311,10 @@ class RealEstateAgent {
     private func occupiedSpaceOnMapFactor() -> Double {
         return Double(self.mapManager.map.tiles.count) / Double(self.mapManager.map.width * self.mapManager.map.height)
     }
-    
-    func hasDirectAccessToRoad(address: MapPoint) -> Bool {
-        return ![address.move(.up),address.move(.down),address.move(.left),address.move(.right)]
-        .compactMap { self.mapManager.map.getTile(address: $0) }
-        .filter{ $0.isStreet() }.isEmpty
-    }
  }
 
 
 enum BuyPropertyError: Error {
     case propertyNotForSale
-    case financialTransactionProblem(reason: String)
-}
-
-enum StartInvestmentError: Error {
-    case formalProblem(reason: String)
     case financialTransactionProblem(reason: String)
 }

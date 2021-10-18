@@ -19,6 +19,7 @@ class GameEngine {
     let gameTraffic: GameTraffic
     let websocketHandler: WebsocketHandler
     let realEstateAgent: RealEstateAgent
+    let constructionServices: ConstructionServices
     let gameClock: GameClock
     let disposeBag = DisposeBag()
     
@@ -41,12 +42,15 @@ class GameEngine {
         self.realEstateAgent = RealEstateAgent(mapManager: self.gameMapManager, centralBank: self.centralbank)
         self.realEstateAgent.makeMapTilesFromDataStore()
         
+        self.constructionServices = ConstructionServices(mapManager: self.gameMapManager, centralBank: self.centralbank)
+        
         self.streetNavi = StreetNavi(gameMap: self.gameMap)
         self.gameTraffic = GameTraffic(streetNavi: self.streetNavi)
         self.websocketHandler = WebsocketHandler()
         self.gameClock = GameClock(realEstateAgent: self.realEstateAgent)
         
         self.realEstateAgent.delegate = self
+        self.constructionServices.delegate = self
 
         GameEventBus.gameEvents.asObservable().bind { [weak self] gameEvent in
             switch gameEvent.action {
@@ -122,7 +126,7 @@ class GameEngine {
 }
 
 
-extension GameEngine: RealEstateAgentDelegate {
+extension GameEngine: RealEstateAgentDelegate, ConstructionServicesDelegate {
     func notifyWalletChange(playerUUID: String) {
         if let player = self.dataStore.find(uuid: playerUUID) {
             for session in PlayerSessionManager.shared.getSessions(playerUUID: playerUUID){
@@ -131,7 +135,6 @@ extension GameEngine: RealEstateAgentDelegate {
             }
         }
     }
-    
     func reloadMap() {
         let reloadMapEvent = GameEvent(playerSession: nil, action: .reloadMap)
         GameEventBus.gameEvents.onNext(reloadMapEvent)
