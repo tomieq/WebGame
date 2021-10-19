@@ -306,69 +306,6 @@ class PropertyManagerRestAPI {
             return code.response
         }
         
-        server.GET["/instantSell.js"] = { request, _ in
-            request.disableKeepAlive = true
-            let code = JSResponse()
-            guard let windowIndex = request.queryParam("windowIndex") else {
-                return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
-            }
-            guard let address = request.mapPoint else {
-                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
-            }
-            guard let property = self.gameEngine.realEstateAgent.getProperty(address: address) else {
-                return JSCode.showError(txt: "Property at \(address.description) not found!", duration: 10).response
-            }
-            guard let playerSessionID = request.queryParam("playerSessionID"),
-                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                    code.add(.closeWindow(windowIndex))
-                    code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
-                    return code.response
-            }
-            guard property.ownerUUID == session.playerUUID else {
-                code.add(.showError(txt: "You can sell only your properties.", duration: 10))
-                return code.response
-            }
-            self.gameEngine.realEstateAgent.instantSell(address: address, playerUUID: session.playerUUID)
-            code.add(.showSuccess(txt: "Successful sell transaction", duration: 5))
-            code.add(.closeWindow(windowIndex))
-            return code.response
-        }
-        
-        server.GET["/instantApartmentSell.js"] = { request, _ in
-            request.disableKeepAlive = true
-            let code = JSResponse()
-            guard let windowIndex = request.queryParam("windowIndex") else {
-                return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
-            }
-            guard let address = request.mapPoint else {
-                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
-            }
-            guard let propertyID = request.queryParam("propertyID") else {
-                return JSCode.showError(txt: "Invalid request! Missing propertyID.", duration: 10).response
-            }
-            guard let apartment = Storage.shared.getApartment(id: propertyID) else {
-                return JSCode.showError(txt: "Apartment \(propertyID) not found!", duration: 10).response
-            }
-            guard apartment.address == address else {
-                return JSCode.showError(txt: "Property address mismatch.", duration: 10).response
-            }
-            
-            guard let playerSessionID = request.queryParam("playerSessionID"),
-                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                    code.add(.closeWindow(windowIndex))
-                    code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
-                    return code.response
-            }
-            guard apartment.ownerUUID == session.playerUUID else {
-                code.add(.showError(txt: "You can sell only your apartment.", duration: 10))
-                return code.response
-            }
-            self.gameEngine.realEstateAgent.instantApartmentSell(apartment, playerUUID: session.playerUUID)
-            code.add(.showSuccess(txt: "You have sold \(apartment.name)", duration: 5))
-            code.add(.loadHtml(windowIndex, htmlPath: "/propertyManager.html?\(apartment.address.asQueryParams)"))
-            return code.response
-        }
-        
         server.GET["/loadApartmentDetails.js"] = { request, _ in
             request.disableKeepAlive = true
 
