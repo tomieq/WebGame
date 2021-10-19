@@ -100,6 +100,13 @@ extension GameMapTile {
         return false
     }
     
+    func isSoldLand() -> Bool {
+        if case .soldLand = self.type {
+            return true
+        }
+        return false
+    }
+    
     func isAntenna() -> Bool {
         if case .btsAntenna = self.type {
             return true

@@ -64,25 +64,37 @@ class RealEstateAgent {
     }
     
     func isForSale(address: MapPoint) -> Bool {
-        if self.getProperty(address: address)?.ownerUUID == SystemPlayer.government.uuid {
+        
+        guard let tile = self.mapManager.map.getTile(address: address) else {
             return true
         }
-        return self.mapManager.map.getTile(address: address) == nil
+        if tile.type == .cityCouncil {
+            return false
+        }
+        if self.getProperty(address: tile.address)?.ownerUUID == SystemPlayer.government.uuid {
+            return true
+        }
+        return false
     }
     
     func getProperty(address: MapPoint) -> Property? {
         
-        let tile = self.mapManager.map.getTile(address: address)
-        if tile?.isStreet() ?? false {
+        guard let tile = self.mapManager.map.getTile(address: address) else {
+            return nil
+        }
+        if tile.isStreet() || tile.isStreetUnderConstruction() {
             let road: Road? = self.dataStore.find(address: address)
             return road
         }
-        if tile?.isBuilding() ?? false {
+        if tile.isBuilding() {
             let building: ResidentialBuilding? = self.dataStore.find(address: address)
             return building
         }
-        let land: Land? = self.dataStore.find(address: address)
-        return land
+        if tile.isSoldLand() {
+            let land: Land? = self.dataStore.find(address: address)
+            return land
+        }
+        return nil
     }
 
     func buyLandProperty(address: MapPoint, playerUUID: String) throws {
@@ -90,12 +102,13 @@ class RealEstateAgent {
         guard self.isForSale(address: address) else {
             throw BuyPropertyError.propertyNotForSale
         }
-        let land = Land(address: address)
+        let name = "\(RandomNameGenerator.randomAdjective.capitalized) \(RandomNameGenerator.randomNoun.capitalized)"
+       
         guard let price = self.estimateValue(address) else {
             throw BuyPropertyError.propertyNotForSale
         }
-        let invoice = Invoice(title: "Purchase land \(land.name)", netValue: price, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
-        let commissionInvoice = Invoice(title: "Commission for purchase land \(land.name)", grossValue: price*self.priceList.realEstateSellPropertyCommisionFee, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
+        let invoice = Invoice(title: "Purchase land \(name)", netValue: price, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
+        let commissionInvoice = Invoice(title: "Commission for purchase land \(name)", grossValue: price*self.priceList.realEstateSellPropertyCommisionFee, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
         
         let governmentID = SystemPlayer.government.uuid
         let realEstateAgentID = SystemPlayer.realEstateAgency.uuid
@@ -112,16 +125,15 @@ class RealEstateAgent {
         } catch let error as FinancialTransactionError {
             throw BuyPropertyError.financialTransactionProblem(error)
         }
+        let land = Land(address: address, name: name, ownerUUID: playerUUID, purchaseNetValue: invoice.netValue)
         self.dataStore.create(land)
-        let update = LandMutation(uuid: land.uuid, attributes: [.ownerUUID(playerUUID), .purchaseNetValue(invoice.netValue)])
-        self.dataStore.update(update)
 
         self.mapManager.map.replaceTile(tile: land.mapTile)
         
         self.delegate?.notifyWalletChange(playerUUID: playerUUID)
         self.delegate?.reloadMap()
-        let name = self.dataStore.find(uuid: playerUUID)?.login ?? ""
-        self.delegate?.notifyEveryone(UINotification(text: "New transaction on the market. Player \(name) has just bought property `\(land.name)`", level: .info, duration: 10))
+        let playerName = self.dataStore.find(uuid: playerUUID)?.login ?? ""
+        self.delegate?.notifyEveryone(UINotification(text: "New transaction on the market. Player \(playerName) has just bought property `\(land.name)`", level: .info, duration: 10))
     }
     
     func instantSell(address: MapPoint, playerUUID: String) {
