@@ -105,9 +105,8 @@ class ConstructionServices {
         
         let offer = residentialBuildingOffer(landName: land.name, storeyAmount: storeyAmount)
         
-        let building = ResidentialBuilding(land: land, storeyAmount: storeyAmount)
-        building.isUnderConstruction = true
-        building.constructionFinishMonth = self.currentTime.month + offer.duration
+        let building = ResidentialBuilding(land: land, storeyAmount: storeyAmount, constructionFinishMonth: self.currentTime.month + offer.duration)
+        self.dataStore.create(building)
         // process the transaction
         let governmentID = SystemPlayer.government.uuid
         let transaction = FinancialTransaction(payerID: playerUUID, recipientID: governmentID, invoice: offer.invoice)
@@ -117,7 +116,7 @@ class ConstructionServices {
             throw ConstructionServicesError.financialTransactionProblem(error)
         }
         self.dataStore.removeLand(uuid: land.uuid)
-        Storage.shared.residentialBuildings.append(building)
+        self.dataStore.create(building)
         
         let tile = GameMapTile(address: address, type: .buildingUnderConstruction(size: storeyAmount))
         self.mapManager.map.replaceTile(tile: tile)
@@ -141,9 +140,11 @@ class ConstructionServices {
             }
         }
         
-        for building in (Storage.shared.residentialBuildings.filter{ $0.isUnderConstruction }) {
+        let buildings: [ResidentialBuilding] = self.dataStore.getUnderConstruction()
+        for building in buildings {
             if building.constructionFinishMonth == self.currentTime.month {
-                building.isUnderConstruction = false
+                
+                self.dataStore.update(ResidentialBuildingMutation(uuid: building.uuid, attributes: [.isUnderConstruction(false)]))
                 
                 /*for storey in (1...building.storeyAmount) {
                     for flatNo in (1...building.numberOfFlatsPerStorey) {
