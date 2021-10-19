@@ -169,16 +169,27 @@ class PropertyManagerRestAPI {
             guard let address = request.mapPoint else {
                 return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
             }
+            guard let type = request.queryParam("type") else {
+                return JSCode.showError(txt: "Invalid request! Missing type.", duration: 10).response
+            }
             let js = JSResponse()
             js.add(.setWindowTitle(windowIndex, title: "Property management"))
-            js.add(.loadHtml(windowIndex, htmlPath: "/propertyManager.html?\(address.asQueryParams)"))
+            switch type {
+            case "land":
+                js.add(.loadHtml(windowIndex, htmlPath: "/landManager.html?\(address.asQueryParams)"))
+            case "building":
+                js.add(.loadHtml(windowIndex, htmlPath: "/residentialBuildingManager.html?\(address.asQueryParams)"))
+            default:
+                return JSCode.showError(txt: "Invalid property type!", duration: 10).response
+            }
+            
             js.add(.resizeWindow(windowIndex, width: 0.7, height: 0.8))
             js.add(.disableWindowResizing(windowIndex))
             js.add(.centerWindow(windowIndex))
             return js.response
         }
         
-        server.GET["/propertyManager.html"] = { request, _ in
+        server.GET["/landManager.html"] = { request, _ in
             request.disableKeepAlive = true
             guard let playerSessionID = request.queryParam("playerSessionID"),
                 let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
@@ -190,17 +201,66 @@ class PropertyManagerRestAPI {
             guard let address = request.mapPoint else {
                 return .ok(.text("Invalid request! Missing address."))
             }
-            guard let property = self.gameEngine.realEstateAgent.getProperty(address: address) else {
+            guard let land: Land = self.dataStore.find(address: address) else {
                 return .ok(.text("Property at \(address.description) not found!"))
             }
-            guard let ownerID = property.ownerUUID, session.playerUUID == ownerID else {
+            guard let ownerID = land.ownerUUID, session.playerUUID == ownerID else {
                 return .ok(.text("Property at \(address.description) is not yours!"))
             }
             
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManager.html"))
             var data = [String:String]()
             
-            let propertyHasAccountant = property.accountantID != nil
+            let propertyHasAccountant = land.accountantID != nil
+            
+            let incomeForTaxCalculation = 0.0//propertyHasAccountant ? max(0, property.monthlyIncome - property.monthlyMaintenanceCost) : property.monthlyIncome
+
+            if propertyHasAccountant {
+                template.assign(variables: ["monthlyIncomeAmortizated":incomeForTaxCalculation.money], inNest: "amortization")
+            }
+            let incomeTax = incomeForTaxCalculation * self.gameEngine.taxRates.incomeTax
+            data["name"] = land.name
+            data["type"] = land.type
+            data["monthlyIncome"] = ""//property.monthlyIncome.money
+            data["taxRate"] = (self.gameEngine.taxRates.incomeTax*100).string
+            data["monthlyIncomeTax"] = ""//incomeTax.money
+            data["monthlyCosts"] = ""//property.monthlyMaintenanceCost.money
+            data["balance"] = ""//(property.monthlyIncome - property.monthlyMaintenanceCost - incomeTax).money
+            data["purchasePrice"] = land.purchaseNetValue?.money ?? ""
+            data["investmentsValue"] = land.investmentsNetValue.money
+            let estimatedValue = 0.0//self.gameEngine.realEstateAgent.estimateValue(property.address)
+            data["estimatedValue"] = estimatedValue.money
+
+            data["tileUrl"] = TileType.soldLand.image.path
+            template.assign(variables: ["actions": self.landPropertyActions(land: land, windowIndex: windowIndex)])
+            
+            template.assign(variables: data)
+            return .ok(.html(template.output()))
+        }
+        
+        server.GET["/residentialBuildingManager.html"] = { request, _ in
+            request.disableKeepAlive = true
+            guard let playerSessionID = request.queryParam("playerSessionID"),
+                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                    return .ok(.text("Invalid request! Missing session ID."))
+            }
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return .ok(.text("Invalid request! Missing window context."))
+            }
+            guard let address = request.mapPoint else {
+                return .ok(.text("Invalid request! Missing address."))
+            }
+            guard let land: Land = self.dataStore.find(address: address) else {
+                return .ok(.text("Property at \(address.description) not found!"))
+            }
+            guard let ownerID = land.ownerUUID, session.playerUUID == ownerID else {
+                return .ok(.text("Property at \(address.description) is not yours!"))
+            }
+            
+            let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManager.html"))
+            var data = [String:String]()
+            
+            let propertyHasAccountant = land.accountantID != nil
             /*
             let incomeForTaxCalculation = propertyHasAccountant ? max(0, property.monthlyIncome - property.monthlyMaintenanceCost) : property.monthlyIncome
 
@@ -258,7 +318,6 @@ class PropertyManagerRestAPI {
             template.assign(variables: data)
             return .ok(.html(template.output()))
         }
-        
         server.GET["/startInvestment.js"] = { request, _ in
             request.disableKeepAlive = true
             let code = JSResponse()
