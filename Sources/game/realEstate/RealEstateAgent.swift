@@ -97,42 +97,51 @@ class RealEstateAgent {
         return nil
     }
 
-    func buyLandProperty(address: MapPoint, playerUUID: String) throws {
-        
-        guard self.isForSale(address: address) else {
-            throw BuyPropertyError.propertyNotForSale
+    func landSaleOffer(address: MapPoint, buyerUUID: String) -> SaleOffer? {
+        let tile = self.mapManager.map.getTile(address: address)
+        guard tile == nil else {
+            return nil
         }
         let name = "\(RandomNameGenerator.randomAdjective.capitalized) \(RandomNameGenerator.randomNoun.capitalized)"
-       
-        guard let price = self.estimateValue(address) else {
+        let price = self.estimateLandValue(address)
+        let saleInvoice = Invoice(title: "Purchase land \(name)", netValue: price, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
+        let commissionInvoice = Invoice(title: "Commission for purchase land \(name)", grossValue: price*self.priceList.realEstateSellPropertyCommisionFee, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
+        let land = Land(address: address, name: name, ownerUUID: buyerUUID, purchaseNetValue: saleInvoice.netValue)
+        
+        return SaleOffer(saleInvoice: saleInvoice, commissionInvoice: commissionInvoice, property: land)
+    }
+
+    func buyLandProperty(address: MapPoint, buyerUUID: String) throws {
+        
+        guard let offer = self.landSaleOffer(address: address, buyerUUID: buyerUUID) else {
             throw BuyPropertyError.propertyNotForSale
         }
-        let invoice = Invoice(title: "Purchase land \(name)", netValue: price, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
-        let commissionInvoice = Invoice(title: "Commission for purchase land \(name)", grossValue: price*self.priceList.realEstateSellPropertyCommisionFee, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
-        
+       
+        guard let land = offer.property as? Land else {
+            throw BuyPropertyError.propertyNotForSale
+        }
         let governmentID = SystemPlayer.government.uuid
         let realEstateAgentID = SystemPlayer.realEstateAgency.uuid
         // process the transaction
-        var transaction = FinancialTransaction(payerID: playerUUID, recipientID: governmentID , invoice: invoice)
+        var transaction = FinancialTransaction(payerID: buyerUUID, recipientID: governmentID , invoice: offer.saleInvoice)
         do {
              try self.centralBank.process(transaction)
         } catch let error as FinancialTransactionError {
             throw BuyPropertyError.financialTransactionProblem(error)
         }
-        transaction = FinancialTransaction(payerID: playerUUID, recipientID: realEstateAgentID, invoice: commissionInvoice)
+        transaction = FinancialTransaction(payerID: buyerUUID, recipientID: realEstateAgentID, invoice: offer.commissionInvoice)
         do {
              try self.centralBank.process(transaction)
         } catch let error as FinancialTransactionError {
             throw BuyPropertyError.financialTransactionProblem(error)
         }
-        let land = Land(address: address, name: name, ownerUUID: playerUUID, purchaseNetValue: invoice.netValue)
         self.dataStore.create(land)
 
         self.mapManager.map.replaceTile(tile: land.mapTile)
         
-        self.delegate?.notifyWalletChange(playerUUID: playerUUID)
+        self.delegate?.notifyWalletChange(playerUUID: buyerUUID)
         self.delegate?.reloadMap()
-        let playerName = self.dataStore.find(uuid: playerUUID)?.login ?? ""
+        let playerName = self.dataStore.find(uuid: buyerUUID)?.login ?? ""
         self.delegate?.notifyEveryone(UINotification(text: "New transaction on the market. Player \(playerName) has just bought property `\(land.name)`", level: .info, duration: 10))
     }
     
