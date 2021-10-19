@@ -295,7 +295,7 @@ final class ConstructionServicesTests: XCTestCase {
         
         let constructionServices = ConstructionServices(mapManager: mapManager, centralBank: centralBank, time: time)
         XCTAssertThrowsError(try constructionServices.startResidentialBuildingInvestment(address: MapPoint(x: 0, y: 0), playerUUID: "player", storeyAmount: 4)){ error in
-            XCTAssertEqual(error as! ConstructionServicesError, .addressNotFound)
+            XCTAssertEqual(error as? ConstructionServicesError, .addressNotFound)
         }
     }
     
@@ -314,7 +314,7 @@ final class ConstructionServicesTests: XCTestCase {
         
         let constructionServices = ConstructionServices(mapManager: mapManager, centralBank: centralBank, time: time)
         XCTAssertThrowsError(try constructionServices.startResidentialBuildingInvestment(address: MapPoint(x: 0, y: 0), playerUUID: "player", storeyAmount: 4)){ error in
-            XCTAssertEqual(error as! ConstructionServicesError, .playerIsNotPropertyOwner)
+            XCTAssertEqual(error as? ConstructionServicesError, .playerIsNotPropertyOwner)
         }
     }
     
@@ -333,7 +333,7 @@ final class ConstructionServicesTests: XCTestCase {
         
         let constructionServices = ConstructionServices(mapManager: mapManager, centralBank: centralBank, time: time)
         XCTAssertThrowsError(try constructionServices.startResidentialBuildingInvestment(address: MapPoint(x: 0, y: 0), playerUUID: "tester", storeyAmount: 4)){ error in
-            XCTAssertEqual(error as! ConstructionServicesError, .noDirectAccessToRoad)
+            XCTAssertEqual(error as? ConstructionServicesError, .noDirectAccessToRoad)
         }
     }
     
@@ -361,7 +361,7 @@ final class ConstructionServicesTests: XCTestCase {
         constructionServices.priceList.buildResidentialBuildingPricePerStorey = 100
 
         XCTAssertThrowsError(try constructionServices.startResidentialBuildingInvestment(address: MapPoint(x: 0, y: 1), playerUUID: "p1", storeyAmount: 4)){ error in
-            XCTAssertEqual(error as! ConstructionServicesError, .financialTransactionProblem(.notEnoughMoney))
+            XCTAssertEqual(error as? ConstructionServicesError, .financialTransactionProblem(.notEnoughMoney))
         }
     }
     
