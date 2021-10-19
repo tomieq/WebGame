@@ -10,17 +10,16 @@ $( document ).ready(function() {
     gameStreetMap = new GameMap(canvasStreets, calculator);
     gameStreetMap.drawGround();
     gameStreetMap.drawCoordinates();
-    
+
     var canvasInteraction = $("#canvasInteraction");
     gameInteractionMap = new GameMap(canvasInteraction, calculator);
-    
 
     var canvasBuildings  = $('#canvasBuildings');
     gameBuildingsMap = new GameMap(canvasBuildings, calculator);
 
     var canvasTraffic  = $('#canvasTraffic');
     gameTraffic = new GameTraffic(canvasTraffic, calculator);
-                    
+
     var lastMousePoint = new MapPoint(-1, -1);
     $(window).on('mousemove', function(e) {
         if (!isMapInteractive()) { return; }
