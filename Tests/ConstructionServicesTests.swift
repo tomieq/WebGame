@@ -12,7 +12,7 @@ import XCTest
 
 final class ConstructionServicesTests: XCTestCase {
     
-    func test_RoadOfferDuration() {
+    func test_roadOfferDuration() {
         let map = GameMap(width: 2, height: 2, scale: 0.2)
         let mapManager = GameMapManager(map)
         
@@ -29,7 +29,7 @@ final class ConstructionServicesTests: XCTestCase {
         XCTAssertEqual(offer.duration, 10)
     }
     
-    func test_RoadOfferPrice() {
+    func test_roadOfferPrice() {
         let map = GameMap(width: 2, height: 2, scale: 0.2)
         let mapManager = GameMapManager(map)
         
@@ -46,7 +46,7 @@ final class ConstructionServicesTests: XCTestCase {
         XCTAssertEqual(offer.invoice.netValue, 10000)
     }
 
-    func test_RoadOfferTaxRate() {
+    func test_roadOfferTaxRate() {
         let map = GameMap(width: 2, height: 2, scale: 0.2)
         let mapManager = GameMapManager(map)
         
@@ -63,62 +63,6 @@ final class ConstructionServicesTests: XCTestCase {
         let offer = constructionServices.roadOffer(landName: "Sample Name")
         XCTAssertEqual(offer.invoice.netValue, 10000)
         XCTAssertEqual(offer.invoice.tax, 5000)
-    }
-    
-    func test_residentialBuildingOfferDuration() {
-        let map = GameMap(width: 2, height: 2, scale: 0.2)
-        let mapManager = GameMapManager(map)
-        
-        let time = GameTime()
-        
-        let dataStore = DataStoreMemoryProvider()
-        let taxRates = TaxRates()
-        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
-        
-        let constructionServices = ConstructionServices(mapManager: mapManager, centralBank: centralBank, time: time)
-        constructionServices.constructionDuration.residentialBuilding = 100
-        constructionServices.constructionDuration.residentialBuildingPerStorey = 10
-        
-        let offer = constructionServices.residentialBuildingOffer(landName: "Test", storeyAmount: 4)
-        XCTAssertEqual(offer.duration, 140)
-    }
-    
-    func test_ResidentialBuildingOfferPrice() {
-        let map = GameMap(width: 2, height: 2, scale: 0.2)
-        let mapManager = GameMapManager(map)
-        
-        let time = GameTime()
-        
-        let dataStore = DataStoreMemoryProvider()
-        let taxRates = TaxRates()
-        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
-        
-        let constructionServices = ConstructionServices(mapManager: mapManager, centralBank: centralBank, time: time)
-        constructionServices.priceList.buildResidentialBuildingPrice = 10000
-        constructionServices.priceList.buildResidentialBuildingPricePerStorey = 20
-        
-        let offer = constructionServices.residentialBuildingOffer(landName: "test", storeyAmount: 3)
-        XCTAssertEqual(offer.invoice.netValue, 10060)
-    }
-    
-    func test_ResidentialBuildingOfferTaxRate() {
-        let map = GameMap(width: 2, height: 2, scale: 0.2)
-        let mapManager = GameMapManager(map)
-        
-        let time = GameTime()
-        
-        let dataStore = DataStoreMemoryProvider()
-        let taxRates = TaxRates()
-        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
-        centralBank.taxRates.investmentTax = 0.5
-        
-        let constructionServices = ConstructionServices(mapManager: mapManager, centralBank: centralBank, time: time)
-        constructionServices.priceList.buildResidentialBuildingPrice = 10000
-        constructionServices.priceList.buildResidentialBuildingPricePerStorey = 1000
-        
-        let offer = constructionServices.residentialBuildingOffer(landName: "test", storeyAmount: 10)
-        XCTAssertEqual(offer.invoice.netValue, 20000)
-        XCTAssertEqual(offer.invoice.tax, 10000)
     }
     
     func test_startRoadInvestment_addressNotFound() {
@@ -281,5 +225,143 @@ final class ConstructionServicesTests: XCTestCase {
         constructionServices.finishInvestments()
         road = dataStore.find(address: address)
         XCTAssertEqual(road?.isUnderConstruction, false)
+    }
+    
+    func test_residentialBuildingOfferDuration() {
+        let map = GameMap(width: 2, height: 2, scale: 0.2)
+        let mapManager = GameMapManager(map)
+        
+        let time = GameTime()
+        
+        let dataStore = DataStoreMemoryProvider()
+        let taxRates = TaxRates()
+        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
+        
+        let constructionServices = ConstructionServices(mapManager: mapManager, centralBank: centralBank, time: time)
+        constructionServices.constructionDuration.residentialBuilding = 100
+        constructionServices.constructionDuration.residentialBuildingPerStorey = 10
+        
+        let offer = constructionServices.residentialBuildingOffer(landName: "Test", storeyAmount: 4)
+        XCTAssertEqual(offer.duration, 140)
+    }
+    
+    func test_residentialBuildingOfferPrice() {
+        let map = GameMap(width: 2, height: 2, scale: 0.2)
+        let mapManager = GameMapManager(map)
+        
+        let time = GameTime()
+        
+        let dataStore = DataStoreMemoryProvider()
+        let taxRates = TaxRates()
+        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
+        
+        let constructionServices = ConstructionServices(mapManager: mapManager, centralBank: centralBank, time: time)
+        constructionServices.priceList.buildResidentialBuildingPrice = 10000
+        constructionServices.priceList.buildResidentialBuildingPricePerStorey = 20
+        
+        let offer = constructionServices.residentialBuildingOffer(landName: "test", storeyAmount: 3)
+        XCTAssertEqual(offer.invoice.netValue, 10060)
+    }
+    
+    func test_residentialBuildingOfferTaxRate() {
+        let map = GameMap(width: 2, height: 2, scale: 0.2)
+        let mapManager = GameMapManager(map)
+        
+        let time = GameTime()
+        
+        let dataStore = DataStoreMemoryProvider()
+        let taxRates = TaxRates()
+        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
+        centralBank.taxRates.investmentTax = 0.5
+        
+        let constructionServices = ConstructionServices(mapManager: mapManager, centralBank: centralBank, time: time)
+        constructionServices.priceList.buildResidentialBuildingPrice = 10000
+        constructionServices.priceList.buildResidentialBuildingPricePerStorey = 1000
+        
+        let offer = constructionServices.residentialBuildingOffer(landName: "test", storeyAmount: 10)
+        XCTAssertEqual(offer.invoice.netValue, 20000)
+        XCTAssertEqual(offer.invoice.tax, 10000)
+    }
+    
+    func test_startResidentialBuildingInvestment_addressNotFound() {
+        let map = GameMap(width: 2, height: 2, scale: 0.2)
+        let mapManager = GameMapManager(map)
+        
+        let time = GameTime()
+        
+        let dataStore = DataStoreMemoryProvider()
+        let taxRates = TaxRates()
+        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
+        
+        let constructionServices = ConstructionServices(mapManager: mapManager, centralBank: centralBank, time: time)
+        XCTAssertThrowsError(try constructionServices.startResidentialBuildingInvestment(address: MapPoint(x: 0, y: 0), playerUUID: "player", storeyAmount: 4)){ error in
+            XCTAssertEqual(error as! ConstructionServicesError, .addressNotFound)
+        }
+    }
+    
+    func test_startResidentialBuildingInvestment_playerIsNotTheOwner() {
+        let map = GameMap(width: 2, height: 2, scale: 0.2)
+        let mapManager = GameMapManager(map)
+        
+        let time = GameTime()
+        
+        let dataStore = DataStoreMemoryProvider()
+        let taxRates = TaxRates()
+        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
+        
+        let land = Land(address: MapPoint(x: 0, y: 0))
+        dataStore.create(land)
+        
+        let constructionServices = ConstructionServices(mapManager: mapManager, centralBank: centralBank, time: time)
+        XCTAssertThrowsError(try constructionServices.startResidentialBuildingInvestment(address: MapPoint(x: 0, y: 0), playerUUID: "player", storeyAmount: 4)){ error in
+            XCTAssertEqual(error as! ConstructionServicesError, .playerIsNotPropertyOwner)
+        }
+    }
+    
+    func test_startResidentialBuildingInvestment_noAccessToRoad() {
+        let map = GameMap(width: 2, height: 2, scale: 0.2)
+        let mapManager = GameMapManager(map)
+        
+        let time = GameTime()
+        
+        let dataStore = DataStoreMemoryProvider()
+        let taxRates = TaxRates()
+        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
+        
+        let land = Land(address: MapPoint(x: 0, y: 0), ownerUUID: "tester")
+        dataStore.create(land)
+        
+        let constructionServices = ConstructionServices(mapManager: mapManager, centralBank: centralBank, time: time)
+        XCTAssertThrowsError(try constructionServices.startResidentialBuildingInvestment(address: MapPoint(x: 0, y: 0), playerUUID: "tester", storeyAmount: 4)){ error in
+            XCTAssertEqual(error as! ConstructionServicesError, .noDirectAccessToRoad)
+        }
+    }
+    
+    func test_startResidentialBuildingInvestment_noEnoughMoney() {
+        let map = GameMap(width: 2, height: 2, scale: 0.2)
+        let mapManager = GameMapManager(map)
+        mapManager.loadMapFrom(content: "s,s")
+        let time = GameTime()
+        
+        let dataStore = DataStoreMemoryProvider()
+        let taxRates = TaxRates()
+        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
+        
+        let land = Land(address: MapPoint(x: 0, y: 1), ownerUUID: "p1")
+        dataStore.create(land)
+        
+        let player = Player(uuid: "p1", login: "tester", wallet: 100)
+        dataStore.create(player)
+        
+        let government = Player(uuid: SystemPlayer.government.uuid, login: "Big Uncle", wallet: 0)
+        dataStore.create(government)
+        
+        let constructionServices = ConstructionServices(mapManager: mapManager, centralBank: centralBank, time: time)
+        constructionServices.priceList.buildResidentialBuildingPrice = 500
+        constructionServices.priceList.buildResidentialBuildingPricePerStorey = 100
+
+        XCTAssertThrowsError(try constructionServices.startResidentialBuildingInvestment(address: MapPoint(x: 0, y: 1), playerUUID: "p1", storeyAmount: 4)){ error in
+            XCTAssertEqual(error as! ConstructionServicesError, .financialTransactionProblem(.notEnoughMoney))
+        }
     }
 }
