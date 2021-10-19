@@ -16,7 +16,7 @@ class GameClock {
     private let disposeBag = DisposeBag()
     
     init(realEstateAgent: RealEstateAgent, time: GameTime) {
-        self.time = GameTime()
+        self.time = time
         self.realEstateAgent = realEstateAgent
         self.dataStore = realEstateAgent.dataStore
         
