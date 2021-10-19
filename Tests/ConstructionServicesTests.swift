@@ -175,5 +175,31 @@ final class ConstructionServicesTests: XCTestCase {
         }
     }
     
+    func test_startRoadInvestment_noEnoughMoney() {
+        let map = GameMap(width: 2, height: 2, scale: 0.2)
+        let mapManager = GameMapManager(map)
+        mapManager.loadMapFrom(content: "s,s")
+        let time = GameTime()
+        
+        let dataStore = DataStoreMemoryProvider()
+        let taxRates = TaxRates()
+        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
+        
+        let land = Land(address: MapPoint(x: 0, y: 1), ownerUUID: "p1")
+        dataStore.create(land)
+        
+        let player = Player(uuid: "p1", login: "tester", wallet: 200)
+        dataStore.create(player)
+        
+        let government = Player(uuid: SystemPlayer.government.uuid, login: "Big Uncle", wallet: 0)
+        dataStore.create(government)
+        
+        let constructionServices = ConstructionServices(mapManager: mapManager, centralBank: centralBank, time: time)
+        constructionServices.priceList.buildRoadPrice = 500
+
+        XCTAssertThrowsError(try constructionServices.startRoadInvestment(address: MapPoint(x: 0, y: 1), playerUUID: "p1")){ error in
+            XCTAssertEqual(error as! ConstructionServicesError, .financialTransactionProblem(.notEnoughMoney))
+        }
+    }
     }
 }
