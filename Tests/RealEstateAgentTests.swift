@@ -270,4 +270,23 @@ final class RealEstateAgentTests: XCTestCase {
         building = dataStore.find(address: MapPoint(x: 3, y: 0))
         XCTAssertEqual(building?.storeyAmount, 10)
     }
+    
+    func test_initDataStoreResidentialBuildingsFromMap_doNotReplaceExisting() {
+        let dataStore = DataStoreMemoryProvider()
+        let taxRates = TaxRates()
+        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
+        let map = GameMap(width: 10, height: 10, scale: 0.2)
+        let mapManager = GameMapManager(map)
+        mapManager.loadMapFrom(content: "b,B,r,R")
+        let agent = RealEstateAgent(mapManager: mapManager, centralBank: centralBank, delegate: nil)
+        
+        let building = ResidentialBuilding(land: Land(address: MapPoint(x: 0, y: 0), name: "testing"), storeyAmount: 6)
+        let uuid = dataStore.create(building)
+        
+        agent.syncMapWithDataStore()
+
+        let created: ResidentialBuilding? = dataStore.find(address: MapPoint(x: 0, y: 0))
+        XCTAssertEqual(created?.uuid, uuid)
+        XCTAssertEqual(created?.name, building.name)
+    }
 }

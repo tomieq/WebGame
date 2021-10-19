@@ -73,8 +73,10 @@ class RealEstateAgent {
                 self.mapManager.map.replaceTile(tile: tile)
             }
         }
-        for buinding in buildingToAdd {
-            self.dataStore.create(buinding)
+        for building in buildingToAdd {
+            if (!buildings.contains{ $0.address == building.address }) {
+                self.dataStore.create(building)
+            }
         }
     }
     
