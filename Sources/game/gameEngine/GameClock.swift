@@ -22,13 +22,13 @@ class GameClock {
         
         Observable<Int>.interval(.seconds(33), scheduler: MainScheduler.instance).bind { [weak self] _ in
             Logger.info("GameClock", "End of the month")
+            self?.time.nextMonth()
             self?.endTheMonth()
             self?.pruneBankTransactionArchive()
             Storage.shared.monthIteration += 1
             
             
             let now = GameDate(monthIteration: Storage.shared.monthIteration)
-            self?.time.month = now.monthIteration
             let updateDateEvent = GameEvent(playerSession: nil, action: .updateGameDate(now.text))
             GameEventBus.gameEvents.onNext(updateDateEvent)
         }.disposed(by: self.disposeBag)
