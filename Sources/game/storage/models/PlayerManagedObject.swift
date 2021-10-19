@@ -10,13 +10,11 @@ import Foundation
 class PlayerManagedObject {
     let uuid: String
     let login: String
-    let type: PlayerType
     var wallet: Double
     
     init(_ player: Player) {
         self.uuid = player.uuid.isEmpty ? UUID().uuidString : player.uuid
         self.login = player.login
-        self.type = player.type
         self.wallet = player.wallet
     }
 }

@@ -42,12 +42,14 @@ class CentralBank {
         guard transaction.invoice.total > 0 else { throw FinancialTransactionError.negativeTransactionValue }
 
         guard let payer = self.dataStore.find(uuid: transaction.payerID) else {
+            Logger.error("CentralBank", "Transaction rejected. Payer not found (\(transaction.payerID)")
             throw FinancialTransactionError.payerNotFound
         }
         guard let recipient = self.dataStore.find(uuid: transaction.recipientID) else {
+            Logger.error("CentralBank", "Transaction rejected. Recipient not found (\(transaction.recipientID)")
             throw FinancialTransactionError.recipientNotFound
         }
-        let government = self.dataStore.getPlayer(type: .government)
+        let government: Player? = self.dataStore.find(uuid: SystemPlayer.government.uuid)
         
         guard payer.wallet > transaction.invoice.total else {
             throw FinancialTransactionError.notEnoughMoney
@@ -56,7 +58,7 @@ class CentralBank {
         // update payer's wallet
         self.pay(payer, transaction.invoice.total)
 
-        if payer.type == .user {
+        if !payer.isSystemPlayer {
             self.archive(playerID: payer.uuid, title: transaction.invoice.title, amount: -1 * transaction.invoice.total)
         }
         
@@ -75,7 +77,7 @@ class CentralBank {
             if moneyToReceive > 0 {
                 self.receive(recipient, moneyToReceive)
             }
-            if recipient.type == .user {
+            if !recipient.isSystemPlayer {
                 self.archive(playerID: recipient.uuid, title: transaction.invoice.title, amount: transaction.invoice.netValue)
                 if incomeTax > 0 {
                     self.archive(playerID: recipient.uuid, title: "Income tax (\((self.taxRates.incomeTax*100).rounded(toPlaces: 1))%) for \(transaction.invoice.title)", amount: -1 * incomeTax)
@@ -103,7 +105,7 @@ class CentralBank {
             }
             if refund > 10 {
                 self.receive(payer, refund)
-                if let government = self.dataStore.getPlayer(type: .government) {
+                if let government: Player = self.dataStore.find(uuid: SystemPlayer.government.uuid) {
                     self.pay(government, refund)
                 }
                 self.archive(playerID: payer.uuid, title: "Tax refund based on costs for \(transaction.invoice.title)", amount: refund)

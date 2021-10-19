@@ -28,10 +28,6 @@ class DataStoreMemoryProvider: DataStoreProvider {
         return self.players.first { $0.uuid == uuid }.map{ Player($0) }
     }
     
-    func getPlayer(type: PlayerType) -> Player? {
-        return self.players.first { $0.type == type }.map{ Player($0) }
-    }
-    
     func removePlayer(id: String) {
         self.players.removeAll{ $0.uuid == id}
     }

@@ -57,7 +57,7 @@ class RealEstateAgent {
     }
     
     func isForSale(address: MapPoint) -> Bool {
-        if self.getProperty(address: address)?.ownerUUID == self.dataStore.getPlayer(type: .government)?.uuid {
+        if self.getProperty(address: address)?.ownerUUID == SystemPlayer.government.uuid {
             return true
         }
         return self.mapManager.map.getTile(address: address) == nil
@@ -85,8 +85,8 @@ class RealEstateAgent {
         let invoice = Invoice(title: "Purchase land \(land.name)", netValue: price, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
         let commissionInvoice = Invoice(title: "Commission for purchase land \(land.name)", grossValue: price*self.priceList.realEstateSellPropertyCommisionFee, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
         
-        let governmentID = self.dataStore.getPlayer(type: .government)?.uuid ?? ""
-        let realEstateAgentID = self.dataStore.getPlayer(type: .realEstateAgency)?.uuid ?? ""
+        let governmentID = SystemPlayer.government.uuid
+        let realEstateAgentID = SystemPlayer.realEstateAgency.uuid
         // process the transaction
         var transaction = FinancialTransaction(payerID: playerUUID, recipientID: governmentID , invoice: invoice)
         do {
@@ -122,10 +122,8 @@ class RealEstateAgent {
             Logger.error("RealEstateAgent", "Player \(name) is not owner of property \(property.ownerUUID)")
             return
         }
-        guard let government = self.dataStore.getPlayer(type: .government) else {
-            Logger.error("RealEstateAgent", "Could not find goverment player")
-            return
-        }
+        let governmentID = SystemPlayer.government.uuid
+
         // road will dissapear as roads are not for sale
         if property is Road {
             Storage.shared.roadProperties = Storage.shared.roadProperties.filter { $0.address != address }
@@ -133,18 +131,18 @@ class RealEstateAgent {
         if let building = property as? ResidentialBuilding {
             let apartments = Storage.shared.getApartments(address: building.address).filter { $0.ownerUUID == building.ownerUUID }
             for apartment in apartments {
-                apartment.ownerUUID = government.uuid
+                apartment.ownerUUID = governmentID
             }
-            building.ownerUUID = government.uuid
+            building.ownerUUID = governmentID
             self.recalculateFeesInTheBuilding(building)
         }
-        property.ownerUUID = government.uuid
+        property.ownerUUID = governmentID
         
         let value = self.estimateValue(property.address)
         let sellPrice = (value * self.priceList.instantSellValue).rounded(toPlaces: 0)
         
         let invoice = Invoice(title: "Selling property \(property.name)", netValue: sellPrice, taxRate: self.centralBank.taxRates.instantSellTax)
-        let transaction = FinancialTransaction(payerID: government.uuid, recipientID: playerUUID, invoice: invoice)
+        let transaction = FinancialTransaction(payerID: governmentID, recipientID: playerUUID, invoice: invoice)
     
         try? self.centralBank.process(transaction)
         if property.accountantID != nil {
@@ -154,19 +152,16 @@ class RealEstateAgent {
     }
     
     func instantApartmentSell(_ apartment: Apartment, playerUUID: String) {
-        guard let government = self.dataStore.getPlayer(type: .government) else {
-            Logger.error("RealEstateAgent", "Could not find goverment player")
-            return
-        }
+        
         guard let building = (Storage.shared.residentialBuildings.first { $0.address == apartment.address }) else {
             Logger.error("RealEstateAgent", "Could not find the building for apartment \(apartment.uuid)")
             return
         }
         let value = self.estimateApartmentValue(apartment)
         let sellPrice = (value * self.priceList.instantSellValue).rounded(toPlaces: 0)
-        
+        let governmentID = SystemPlayer.government.uuid
         let invoice = Invoice(title: "Selling apartment \(apartment.name)", netValue: sellPrice, taxRate: self.centralBank.taxRates.instantSellTax)
-        let transaction = FinancialTransaction(payerID: government.uuid, recipientID: playerUUID, invoice: invoice)
+        let transaction = FinancialTransaction(payerID: governmentID, recipientID: playerUUID, invoice: invoice)
         // TODO: Add error handling
         try? self.centralBank.process(transaction)
         
@@ -175,7 +170,7 @@ class RealEstateAgent {
             let costs = (((building.purchaseNetValue ?? 0.0) + building.investmentsNetValue)/(Double(building.numberOfFlats))).rounded(toPlaces: 0)
             self.centralBank.refundIncomeTax(receiverID: playerUUID, transaction: transaction, costs: costs)
         }
-        apartment.ownerUUID = government.uuid
+        apartment.ownerUUID = governmentID
         self.recalculateFeesInTheBuilding(building)
     
         self.delegate?.notifyWalletChange(playerUUID: playerUUID)

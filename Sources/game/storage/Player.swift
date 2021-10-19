@@ -7,31 +7,35 @@
 
 import Foundation
 
-enum PlayerType: String, Codable {
-    case user
+enum SystemPlayer: String, CaseIterable {
     case government
     case bank
     case realEstateAgency
+    
+    var uuid: String {
+        return self.rawValue
+    }
 }
 
 struct Player: Codable {
     let uuid: String
     let login: String
-    let type: PlayerType
     let wallet: Double
     
-    init(uuid: String? = nil, login: String, type: PlayerType = .user, wallet: Double) {
+    init(uuid: String? = nil, login: String, wallet: Double) {
         self.uuid = uuid ?? ""
         self.login = login
-        self.type = type
         self.wallet = wallet
     }
     
     init(_ managedObject: PlayerManagedObject) {
         self.uuid = managedObject.uuid
         self.login = managedObject.login
-        self.type = managedObject.type
         self.wallet = managedObject.wallet
+    }
+    
+    var isSystemPlayer: Bool {
+        return SystemPlayer.allCases.map{ $0.uuid }.contains(self.uuid)
     }
 }
 

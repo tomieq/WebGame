@@ -14,7 +14,6 @@ protocol DataStoreProvider {
     
     func find(uuid: String) -> Player?
     func find(address: MapPoint) -> Land?
-    func getPlayer(type: PlayerType) -> Player?
     func getFinancialTransactions(userID: String) -> [CashFlow]
     
     func getAll() -> [Land]

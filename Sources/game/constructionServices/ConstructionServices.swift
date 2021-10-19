@@ -65,7 +65,7 @@ class ConstructionServices {
         guard self.mapManager.map.hasDirectAccessToRoad(address: address) else {
             throw ConstructionServicesError.noDirectAccessToRoad
         }
-        let governmentID = self.dataStore.getPlayer(type: .government)?.uuid ?? ""
+        let governmentID = SystemPlayer.government.uuid
         let offer = self.roadOffer(landName: land.name)
 
         let transaction = FinancialTransaction(payerID: playerUUID, recipientID: governmentID, invoice: offer.invoice)
@@ -108,7 +108,7 @@ class ConstructionServices {
         building.isUnderConstruction = true
         building.constructionFinishMonth = self.currentTime.month + offer.duration
         // process the transaction
-        let governmentID = self.dataStore.getPlayer(type: .government)?.uuid ?? ""
+        let governmentID = SystemPlayer.government.uuid
         let transaction = FinancialTransaction(payerID: playerUUID, recipientID: governmentID, invoice: offer.invoice)
         do {
              try self.centralBank.process(transaction)
