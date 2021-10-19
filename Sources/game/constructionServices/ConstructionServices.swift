@@ -81,7 +81,7 @@ class ConstructionServices {
         road.constructionFinishMonth = self.currentTime.month + offer.duration
         
         self.dataStore.removeLand(uuid: land.uuid)
-        Storage.shared.roadProperties.append(road)
+        self.dataStore.create(road)
         
         let tile = GameMapTile(address: address, type: .streetUnderConstruction)
         self.mapManager.map.replaceTile(tile: tile)
@@ -127,7 +127,7 @@ class ConstructionServices {
     
     func finishInvestments() {
         var updateMap = false
-        
+        /*
         for road in (Storage.shared.roadProperties.filter{ $0.isUnderConstruction }) {
             if road.constructionFinishMonth == self.currentTime.month {
                 road.isUnderConstruction = false
@@ -136,7 +136,7 @@ class ConstructionServices {
                 updateMap = true
             }
         }
-        
+        */
         for building in (Storage.shared.residentialBuildings.filter{ $0.isUnderConstruction }) {
             if building.constructionFinishMonth == self.currentTime.month {
                 building.isUnderConstruction = false

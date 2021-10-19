@@ -41,7 +41,8 @@ class RealEstateAgent {
             let tile = GameMapTile(address: land.address, type: .soldLand)
             self.mapManager.map.replaceTile(tile: tile)
         }
-        for road in Storage.shared.roadProperties {
+        let roads: [Road] = self.dataStore.getAll()
+        for road in roads {
             self.mapManager.addStreet(address: road.address)
         }
         
@@ -128,7 +129,7 @@ class RealEstateAgent {
 
         // road will dissapear as roads are not for sale
         if property is Road {
-            Storage.shared.roadProperties = Storage.shared.roadProperties.filter { $0.address != address }
+            self.dataStore.removeRoad(uuid: property.uuid)
         }
         if let building = property as? ResidentialBuilding {
             let apartments = Storage.shared.getApartments(address: building.address).filter { $0.ownerUUID == building.ownerUUID }

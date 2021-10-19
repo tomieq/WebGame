@@ -51,11 +51,11 @@ class GameClock {
         for land in Storage.shared.landProperties {
             self.applyWalletChanges(property: land)
         }
-        */
+        
         for road in Storage.shared.roadProperties {
             self.applyWalletChanges(property: road)
         }
-        
+         */
         for building in Storage.shared.residentialBuildings {
             if !building.isUnderConstruction {
                 self.realEstateAgent.recalculateFeesInTheBuilding(building)
