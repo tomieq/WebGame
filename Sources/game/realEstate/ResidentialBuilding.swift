@@ -36,7 +36,7 @@ struct ResidentialBuilding: Property, Codable {
         self.storeyAmount = storeyAmount
         self.investmentsNetValue = (land.investmentsNetValue /*+ ConstructionPriceList.makeResidentialBuildingCost(storey: self.storeyAmount)*/).rounded(toPlaces: 0)
         self.condition = 100.0
-        self.isUnderConstruction = true
+        self.isUnderConstruction = constructionFinishMonth == nil ? false : true
         self.accountantID = land.accountantID
         self.constructionFinishMonth = constructionFinishMonth
     }

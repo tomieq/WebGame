@@ -27,7 +27,7 @@ struct Road: Property, Codable {
         self.ownerUUID = land.ownerUUID
         self.purchaseNetValue = land.purchaseNetValue
         self.investmentsNetValue = (land.investmentsNetValue /*+ ConstructionPriceList.makeRoadCost()*/).rounded(toPlaces: 0)
-        self.isUnderConstruction = true
+        self.isUnderConstruction = constructionFinishMonth == nil ? false: true
         self.constructionFinishMonth = constructionFinishMonth
         self.accountantID = nil
     }

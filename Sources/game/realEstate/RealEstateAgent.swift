@@ -43,7 +43,12 @@ class RealEstateAgent {
         }
         let roads: [Road] = self.dataStore.getAll()
         for road in roads {
-            self.mapManager.addStreet(address: road.address)
+            if road.isUnderConstruction {
+                let tile = GameMapTile(address: road.address, type: .streetUnderConstruction)
+                self.mapManager.map.replaceTile(tile: tile)
+            } else {
+                self.mapManager.addStreet(address: road.address)
+            }
         }
         
         let buildings: [ResidentialBuilding] = self.dataStore.getAll()
