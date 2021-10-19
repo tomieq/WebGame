@@ -64,15 +64,17 @@ class RealEstateAgent {
     }
     
     func getProperty(address: MapPoint) -> Property? {
+        
         let tile = self.mapManager.map.getTile(address: address)
         if tile?.isStreet() ?? false {
-            return Storage.shared.roadProperties.first { $0.address == address }
+            let road: Road? = self.dataStore.find(address: address)
+            return road
         }
         if tile?.isBuilding() ?? false {
             return Storage.shared.residentialBuildings.first { $0.address == address }
         }
-        
-        return self.dataStore.find(address: address)
+        let land: Land? = self.dataStore.find(address: address)
+        return land
     }
 
     func buyLandProperty(address: MapPoint, playerUUID: String) throws {

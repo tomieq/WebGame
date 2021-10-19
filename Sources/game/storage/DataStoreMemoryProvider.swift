@@ -11,10 +11,12 @@ class DataStoreMemoryProvider: DataStoreProvider {
     private var players: [PlayerManagedObject]
     private var transactions: [CashFlowManagedObject]
     private var lands: [LandManagedObject]
+    private var roads: [RoadManagedObject]
     init() {
         self.players = []
         self.transactions = []
         self.lands = []
+        self.roads = []
     }
     
     @discardableResult
@@ -76,6 +78,43 @@ class DataStoreMemoryProvider: DataStoreProvider {
     
     func update(_ mutation: LandMutation) {
         guard let land = (self.lands.first{ $0.uuid == mutation.uuid }) else { return }
+        for attribute in mutation.attributes {
+            switch attribute {
+                
+            case .isUnderConstruction(let value):
+                land.isUnderConstruction = value
+            case .constructionFinishMonth(let value):
+                land.constructionFinishMonth = value
+            case .ownerUUID(let value):
+                land.ownerUUID = value
+            case .purchaseNetValue(let value):
+                land.purchaseNetValue = value
+            }
+        }
+    }
+    
+    @discardableResult
+    func create(_ road: Road) -> String {
+        let managedObject = RoadManagedObject(road)
+        self.roads.append(managedObject)
+        return managedObject.uuid
+    }
+    
+    func find(address: MapPoint) -> Road? {
+        return self.roads.first{ $0.x == address.x && $0.y == address.y }.map { Road($0) }
+    }
+    
+    func getAll() -> [Road] {
+        return self.roads.map { Road($0) }
+    }
+    
+    func removeRoad(uuid: String) {
+        self.roads.removeAll{ $0.uuid == uuid }
+    }
+    
+    
+    func update(_ mutation: RoadMutation) {
+        guard let land = (self.roads.first{ $0.uuid == mutation.uuid }) else { return }
         for attribute in mutation.attributes {
             switch attribute {
                 
