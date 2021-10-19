@@ -425,7 +425,7 @@ class RealEstateAgent {
  }
 
 
-enum BuyPropertyError: Error {
+enum BuyPropertyError: Error, Equatable {
     case propertyNotForSale
     case financialTransactionProblem(FinancialTransactionError)
 }
