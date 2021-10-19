@@ -89,12 +89,16 @@ class RealEstateAgent {
         let realEstateAgentID = self.dataStore.getPlayer(type: .realEstateAgency)?.uuid ?? ""
         // process the transaction
         var transaction = FinancialTransaction(payerID: playerUUID, recipientID: governmentID , invoice: invoice)
-        if case .failure(let reason) = self.centralBank.process(transaction) {
-            throw BuyPropertyError.financialTransactionProblem(reason: reason)
+        do {
+             try self.centralBank.process(transaction)
+        } catch let error as FinancialTransactionError {
+            throw BuyPropertyError.financialTransactionProblem(error)
         }
         transaction = FinancialTransaction(payerID: playerUUID, recipientID: realEstateAgentID, invoice: commissionInvoice)
-        if case .failure(let reason) = self.centralBank.process(transaction) {
-            throw BuyPropertyError.financialTransactionProblem(reason: reason)
+        do {
+             try self.centralBank.process(transaction)
+        } catch let error as FinancialTransactionError {
+            throw BuyPropertyError.financialTransactionProblem(error)
         }
         
         let update = LandMutation(uuid: land.uuid, attributes: [.ownerUUID(playerUUID), .purchaseNetValue(invoice.netValue)])
@@ -142,7 +146,7 @@ class RealEstateAgent {
         let invoice = Invoice(title: "Selling property \(property.name)", netValue: sellPrice, taxRate: self.centralBank.taxRates.instantSellTax)
         let transaction = FinancialTransaction(payerID: government.uuid, recipientID: playerUUID, invoice: invoice)
     
-        self.centralBank.process(transaction)
+        try? self.centralBank.process(transaction)
         if property.accountantID != nil {
             self.centralBank.refundIncomeTax(receiverID: playerUUID, transaction: transaction, costs: (property.investmentsNetValue + (property.purchaseNetValue ?? 0.0)))
         }
@@ -163,7 +167,8 @@ class RealEstateAgent {
         
         let invoice = Invoice(title: "Selling apartment \(apartment.name)", netValue: sellPrice, taxRate: self.centralBank.taxRates.instantSellTax)
         let transaction = FinancialTransaction(payerID: government.uuid, recipientID: playerUUID, invoice: invoice)
-        self.centralBank.process(transaction)
+        // TODO: Add error handling
+        try? self.centralBank.process(transaction)
         
         // if user had built this building, he had costs, so this costs' taxes can be refunded, provided he has accountant
         if building.ownerUUID == playerUUID, building.accountantID != nil {
@@ -315,5 +320,5 @@ class RealEstateAgent {
 
 enum BuyPropertyError: Error {
     case propertyNotForSale
-    case financialTransactionProblem(reason: String)
+    case financialTransactionProblem(FinancialTransactionError)
 }

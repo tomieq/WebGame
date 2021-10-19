@@ -23,8 +23,8 @@ final class CentralBankTests: XCTestCase {
         
         let invoice = Invoice(title: "money transfer", grossValue: 30, taxRate: 0)
         let financialTransaction = FinancialTransaction(payerID: "payer", recipientID: "receiver", invoice: invoice)
-        CentralBank(dataStore: dataStore, taxRates: taxRates).process(financialTransaction)
         
+        XCTAssertNoThrow(try CentralBank(dataStore: dataStore, taxRates: taxRates).process(financialTransaction))
         XCTAssertEqual(dataStore.find(uuid: "payer")?.wallet, 70)
         XCTAssertEqual(dataStore.find(uuid: "receiver")?.wallet, 130)
     }
@@ -99,12 +99,7 @@ final class CentralBankTests: XCTestCase {
         
         let invoice = Invoice(title: "money transfer", netValue: 100, taxRate: 0.1)
         let financialTransaction = FinancialTransaction(payerID: "payer", recipientID: "receiver", invoice: invoice)
-        let result = CentralBank(dataStore: dataStore, taxRates: taxRates).process(financialTransaction)
-        if case .success = result {
-            
-        } else {
-            XCTFail()
-        }
+        XCTAssertNoThrow(try CentralBank(dataStore: dataStore, taxRates: taxRates).process(financialTransaction))
         XCTAssertEqual(dataStore.find(uuid: "receiver")?.wallet, 150)
     }
     
@@ -120,12 +115,7 @@ final class CentralBankTests: XCTestCase {
         
         let invoice = Invoice(title: "money transfer", netValue: 100, taxRate: 0.5)
         let financialTransaction = FinancialTransaction(payerID: "payer", recipientID: "receiver", invoice: invoice)
-        let result = CentralBank(dataStore: dataStore, taxRates: taxRates).process(financialTransaction)
-        if case .success = result {
-            
-        } else {
-            XCTFail()
-        }
+        XCTAssertNoThrow(try CentralBank(dataStore: dataStore, taxRates: taxRates).process(financialTransaction))
         XCTAssertEqual(dataStore.find(uuid: "payer")?.wallet, 750)
     }
     
@@ -141,12 +131,7 @@ final class CentralBankTests: XCTestCase {
         
         let invoice = Invoice(title: "money transfer", grossValue: 100, taxRate: 0.1)
         let financialTransaction = FinancialTransaction(payerID: "payer", recipientID: "receiver", invoice: invoice)
-        let result = CentralBank(dataStore: dataStore, taxRates: taxRates).process(financialTransaction)
-        if case .success = result {
-            
-        } else {
-            XCTFail()
-        }
+        XCTAssertNoThrow(try CentralBank(dataStore: dataStore, taxRates: taxRates).process(financialTransaction))
         XCTAssertEqual(dataStore.find(uuid: "payer")?.wallet, 800)
         XCTAssertEqual(dataStore.find(uuid: "receiver")?.wallet, 100)
     }

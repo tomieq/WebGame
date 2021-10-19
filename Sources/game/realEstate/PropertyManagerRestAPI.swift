@@ -84,7 +84,7 @@ class PropertyManagerRestAPI {
                 code.add(.showError(txt: "This property is not for sale any more.", duration: 10))
                 return code.response
             } catch BuyPropertyError.financialTransactionProblem(let reason) {
-                return JSCode.showError(txt: reason, duration: 10).response
+                return JSCode.showError(txt: reason.description, duration: 10).response
             } catch {
                 return JSCode.showError(txt: "Unexpected error [\(request.address ?? "")]", duration: 10).response
             }
@@ -268,7 +268,7 @@ class PropertyManagerRestAPI {
             } catch ConstructionServicesError.noDirectAccessToRoad {
                 return JSCode.showError(txt: "You cannot build here as this property has no direct access to the public road.", duration: 10).response
             } catch ConstructionServicesError.financialTransactionProblem(let reason) {
-                return JSCode.showError(txt: reason , duration: 10).response
+                return JSCode.showError(txt: reason.description , duration: 10).response
             } catch {
                 return JSCode.showError(txt: "Unexpected error [\(request.address ?? "")]", duration: 10).response
             }

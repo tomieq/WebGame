@@ -12,6 +12,19 @@ enum FinancialTransactionError: Error, Equatable {
     case payerNotFound
     case recipientNotFound
     case notEnoughMoney
+    
+    var description: String {
+        switch self {
+        case .negativeTransactionValue:
+            return "Negative transaction value"
+        case .payerNotFound:
+            return "Payer not found!"
+        case .recipientNotFound:
+            return "Recipient not found!"
+        case .notEnoughMoney:
+            return "Not enough amount of money to finish the financial transaction"
+        }
+    }
 }
 
 class CentralBank {

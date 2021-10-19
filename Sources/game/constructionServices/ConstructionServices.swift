@@ -18,7 +18,7 @@ enum ConstructionServicesError: Error, Equatable {
     case addressNotFound
     case playerIsNotPropertyOwner
     case noDirectAccessToRoad
-    case financialTransactionProblem(reason: String)
+    case financialTransactionProblem(FinancialTransactionError)
 }
 
 class ConstructionServices {
@@ -68,10 +68,12 @@ class ConstructionServices {
         let governmentID = self.dataStore.getPlayer(type: .government)?.uuid ?? ""
         let offer = self.roadOffer(landName: land.name)
 
-        // process the transaction
         let transaction = FinancialTransaction(payerID: playerUUID, recipientID: governmentID, invoice: offer.invoice)
-        if case .failure(let reason) = self.centralBank.process(transaction) {
-            throw ConstructionServicesError.financialTransactionProblem(reason: reason)
+        // process the transaction
+        do {
+             try self.centralBank.process(transaction)
+        } catch let error as FinancialTransactionError {
+            throw ConstructionServicesError.financialTransactionProblem(error)
         }
         
         let road = Road(land: land)
@@ -108,8 +110,10 @@ class ConstructionServices {
         // process the transaction
         let governmentID = self.dataStore.getPlayer(type: .government)?.uuid ?? ""
         let transaction = FinancialTransaction(payerID: playerUUID, recipientID: governmentID, invoice: offer.invoice)
-        if case .failure(let reason) = self.centralBank.process(transaction) {
-            throw ConstructionServicesError.financialTransactionProblem(reason: reason)
+        do {
+             try self.centralBank.process(transaction)
+        } catch let error as FinancialTransactionError {
+            throw ConstructionServicesError.financialTransactionProblem(error)
         }
         self.dataStore.removeLand(uuid: land.uuid)
         Storage.shared.residentialBuildings.append(building)
