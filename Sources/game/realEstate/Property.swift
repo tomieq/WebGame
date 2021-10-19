@@ -8,15 +8,13 @@
 import Foundation
 
 protocol Property {
-    var id: String { get }
+    var uuid: String { get }
     var type: String { get }
     var name: String { get }
-    var ownerID: String? { set get }
+    var ownerUUID: String? { set get }
     var address: MapPoint { get }
     var purchaseNetValue: Double? { set get }
     var investmentsNetValue: Double { set get }
-    var monthlyMaintenanceCost: Double { set get }
-    var monthlyIncome: Double { set get }
     var isUnderConstruction: Bool { set get }
     var constructionFinishMonth: Int? { set get }
     var accountantID: String? { set get }

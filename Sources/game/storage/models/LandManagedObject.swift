@@ -10,7 +10,7 @@ import Foundation
 class LandManagedObject: Codable {
 
     let uuid: String
-    var ownerID: String?
+    var ownerUUID: String?
     let x: Int
     let y: Int
     let name: String
@@ -22,6 +22,7 @@ class LandManagedObject: Codable {
 
     init(_ land: Land) {
         self.uuid = UUID().uuidString
+        self.ownerUUID = land.ownerUUID
         self.x = land.address.x
         self.y = land.address.y
         self.name = land.name

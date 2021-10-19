@@ -47,11 +47,11 @@ class GameClock {
                 }
             }
         }
-        
+        /*
         for land in Storage.shared.landProperties {
             self.applyWalletChanges(property: land)
         }
-        
+        */
         for road in Storage.shared.roadProperties {
             self.applyWalletChanges(property: road)
         }
@@ -73,6 +73,7 @@ class GameClock {
     }
     
     private func applyWalletChanges(property: Property) {
+        /*
         if let ownerID = property.ownerID, let owner = self.dataStore.find(uuid: ownerID), owner.type == .user,
             let government = self.dataStore.getPlayer(type: .government) {
             
@@ -92,6 +93,7 @@ class GameClock {
                 self.realEstateAgent.centralBank.refundIncomeTax(receiverID: ownerID, transaction: incomeTransaction, costs: property.monthlyMaintenanceCost)
             }
         }
+         */
     }
     
     private func pruneBankTransactionArchive() {

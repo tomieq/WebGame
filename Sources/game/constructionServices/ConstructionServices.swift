@@ -55,10 +55,10 @@ class ConstructionServices {
     
     func startRoadInvestment(address: MapPoint, playerUUID: String) throws {
         
-        guard let land = (Storage.shared.landProperties.first { $0.address == address}) else {
+        guard let land: Land = self.dataStore.find(address: address) else {
             throw ConstructionServicesError.addressNotFound
         }
-        guard land.ownerID == playerUUID else {
+        guard land.ownerUUID == playerUUID else {
             throw ConstructionServicesError.playerIsNotPropertyOwner
         }
 
@@ -78,7 +78,7 @@ class ConstructionServices {
         road.isUnderConstruction = true
         road.constructionFinishMonth = self.currentTime.month + offer.duration
         
-        Storage.shared.landProperties = Storage.shared.landProperties.filter { $0.address != address }
+        self.dataStore.removeLand(uuid: land.uuid)
         Storage.shared.roadProperties.append(road)
         
         let tile = GameMapTile(address: address, type: .streetUnderConstruction)
@@ -90,10 +90,10 @@ class ConstructionServices {
 
     func startResidentialBuildingInvestment(address: MapPoint, playerUUID: String, storeyAmount: Int) throws {
         
-        guard let land = (Storage.shared.landProperties.first { $0.address == address}) else {
+        guard let land: Land = self.dataStore.find(address: address) else {
             throw ConstructionServicesError.addressNotFound
         }
-        guard land.ownerID == playerUUID else {
+        guard land.ownerUUID == playerUUID else {
             throw ConstructionServicesError.playerIsNotPropertyOwner
         }
         guard self.mapManager.map.hasDirectAccessToRoad(address: address) else {
@@ -111,7 +111,7 @@ class ConstructionServices {
         if case .failure(let reason) = self.centralBank.process(transaction) {
             throw ConstructionServicesError.financialTransactionProblem(reason: reason)
         }
-        Storage.shared.landProperties = Storage.shared.landProperties.filter { $0.address != address }
+        self.dataStore.removeLand(uuid: land.uuid)
         Storage.shared.residentialBuildings.append(building)
         
         let tile = GameMapTile(address: address, type: .buildingUnderConstruction(size: storeyAmount))

@@ -117,7 +117,7 @@ class PropertyManagerRestAPI {
             guard let property = self.gameEngine.realEstateAgent.getProperty(address: address) else {
                 return .badRequest(.html("Property at \(address.description) not found!"))
             }
-            guard let ownerID = property.ownerID else {
+            guard let ownerID = property.ownerUUID else {
                 return .badRequest(.html("Property at \(address.description) has no owner!"))
             }
             let owner = self.dataStore.find(uuid: ownerID)
@@ -163,7 +163,7 @@ class PropertyManagerRestAPI {
             guard let property = self.gameEngine.realEstateAgent.getProperty(address: address) else {
                 return .ok(.text("Property at \(address.description) not found!"))
             }
-            guard let ownerID = property.ownerID, session.playerUUID == ownerID else {
+            guard let ownerID = property.ownerUUID, session.playerUUID == ownerID else {
                 return .ok(.text("Property at \(address.description) is not yours!"))
             }
             
@@ -171,6 +171,7 @@ class PropertyManagerRestAPI {
             var data = [String:String]()
             
             let propertyHasAccountant = property.accountantID != nil
+            /*
             let incomeForTaxCalculation = propertyHasAccountant ? max(0, property.monthlyIncome - property.monthlyMaintenanceCost) : property.monthlyIncome
 
             if propertyHasAccountant {
@@ -223,7 +224,7 @@ class PropertyManagerRestAPI {
                 }
                 template.assign(variables: ["actions": self.buildingActions(building: building, windowIndex: windowIndex, session: session)])
            }
-            
+            */
             template.assign(variables: data)
             return .ok(.html(template.output()))
         }
@@ -293,7 +294,7 @@ class PropertyManagerRestAPI {
                     code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
                     return code.response
             }
-            guard property.ownerID == session.playerUUID else {
+            guard property.ownerUUID == session.playerUUID else {
                 code.add(.showError(txt: "You can sell only your properties.", duration: 10))
                 return code.response
             }
@@ -328,7 +329,7 @@ class PropertyManagerRestAPI {
                     code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
                     return code.response
             }
-            guard apartment.ownerID == session.playerUUID else {
+            guard apartment.ownerUUID == session.playerUUID else {
                 code.add(.showError(txt: "You can sell only your apartment.", duration: 10))
                 return code.response
             }
@@ -385,7 +386,7 @@ class PropertyManagerRestAPI {
                     code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
                     return code.response
             }
-            guard apartment.ownerID == session.playerUUID else {
+            guard apartment.ownerUUID == session.playerUUID else {
                 code.add(.showError(txt: "You can rent only your properties.", duration: 10))
                 return code.response
             }
@@ -397,7 +398,7 @@ class PropertyManagerRestAPI {
             code.add(.showSuccess(txt: "Action successed", duration: 5))
             
             let htmlUrl = "/propertyManager.html?\(apartment.address.asQueryParams)"
-            let scriptUrl = "/loadApartmentDetails.js?propertyID=\(apartment.id)"
+            let scriptUrl = "/loadApartmentDetails.js?propertyID=\(apartment.uuid)"
             code.add(.loadHtmlThenRunScripts(windowIndex, htmlPath: htmlUrl, scriptPaths: [scriptUrl]))
             return code.response
         }
@@ -424,7 +425,7 @@ class PropertyManagerRestAPI {
             }
         
             let apartmentView = Template(raw: ResourceCache.shared.getAppResource("templates/apartmentView.html"))
-
+/*
             var data = [String:String]()
             data["name"] = apartment.name
             let incomeTax = apartment.monthlyRentalFee * self.gameEngine.taxRates.incomeTax
@@ -438,9 +439,9 @@ class PropertyManagerRestAPI {
                 data["taxRate"] = (self.gameEngine.taxRates.incomeTax*100).string
                 data["monthlyIncomeTax"] = incomeTax.money
                 data["actionTitle"] = "Kick out tenants"
-                data["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/rentApartment.js?unrent=true&\(apartment.address.asQueryParams)&propertyID=\(apartment.id)"]).js
+                data["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/rentApartment.js?unrent=true&\(apartment.address.asQueryParams)&propertyID=\(apartment.uuid)"]).js
                 apartmentView.assign(variables: data, inNest: "rented")
-            } else if apartment.ownerID != session.playerUUID {
+            } else if apartment.ownerUUID != session.playerUUID {
                 let buildingFee = apartment.monthlyBuildingFee
                 let incomeTax = apartment.monthlyBuildingFee * self.gameEngine.taxRates.incomeTax
                 data["monthlyIncome"] = buildingFee.money
@@ -452,13 +453,13 @@ class PropertyManagerRestAPI {
                 data["monthlyRentalFee"] = self.gameEngine.realEstateAgent.estimateRentFee(apartment).money
                 data["estimatedValue"] = estimatedPrice.money
                 data["instantSellPrice"] = (estimatedPrice * self.gameEngine.realEstateAgent.priceList.instantSellValue).money
-                data["instantSellJS"] = JSCode.runScripts(windowIndex, paths: ["/instantApartmentSell.js?\(apartment.address.asQueryParams)&propertyID=\(apartment.id)"]).js
+                data["instantSellJS"] = JSCode.runScripts(windowIndex, paths: ["/instantApartmentSell.js?\(apartment.address.asQueryParams)&propertyID=\(apartment.uuid)"]).js
                 let estimatedRent = self.gameEngine.realEstateAgent.estimateRentFee(apartment).money
                 data["actionTitle"] = "Rent for \(estimatedRent)"
-                data["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/rentApartment.js?\(apartment.address.asQueryParams)&propertyID=\(apartment.id)"]).js
+                data["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/rentApartment.js?\(apartment.address.asQueryParams)&propertyID=\(apartment.uuid)"]).js
                 apartmentView.assign(variables: data, inNest: "unrented")
             }
-            
+            */
             return apartmentView.asResponse()
         }
     }
@@ -530,13 +531,13 @@ class PropertyManagerRestAPI {
                 var css = "";
                 var incomeBalance = ""
                 var editUrl = "loadApartmentDetails.js"
-                
+                /*
                 if let apartment = (apartments.first { $0.storey == storey && $0.flatNumber == flatNumber }) {
                     if apartment.isRented {
                         // is rented
                         css = "background-color: #1F5E71;"
                         incomeBalance = (apartment.monthlyRentalFee - apartment.monthlyBills).money
-                    } else if apartment.ownerID != session.playerUUID {
+                    } else if apartment.ownerUUID != session.playerUUID {
                         // is sold
                         css = "border: 1px solid #1F5E71;"
                         incomeBalance = "Sold"
@@ -545,8 +546,9 @@ class PropertyManagerRestAPI {
                         css = "background-color: #70311E;"
                         incomeBalance = (-1 * apartment.monthlyBills).money
                     }
-                    editUrl.append("?propertyID=\(apartment.id)")
+                    editUrl.append("?propertyID=\(apartment.uuid)")
                 }
+                 */
                 let floated = Template.htmlNode(type: "div", attributes: ["class":"float-right"], content: incomeBalance)
                 tdAttributes["style"] = "width: \(Int(100/building.numberOfFlatsPerStorey))%; padding: 5px; \(css)"
                 tdAttributes["class"] = "hand"

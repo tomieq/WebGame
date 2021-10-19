@@ -36,7 +36,8 @@ class RealEstateAgent {
     }
     
     func makeMapTilesFromDataStore() {
-        for land in Storage.shared.landProperties {
+        let lands: [Land] = self.dataStore.getAll()
+        for land in lands  {
             let tile = GameMapTile(address: land.address, type: .soldLand)
             self.mapManager.map.replaceTile(tile: tile)
         }
@@ -56,7 +57,7 @@ class RealEstateAgent {
     }
     
     func isForSale(address: MapPoint) -> Bool {
-        if self.getProperty(address: address)?.ownerID == self.dataStore.getPlayer(type: .government)?.uuid {
+        if self.getProperty(address: address)?.ownerUUID == self.dataStore.getPlayer(type: .government)?.uuid {
             return true
         }
         return self.mapManager.map.getTile(address: address) == nil
@@ -71,7 +72,7 @@ class RealEstateAgent {
             return Storage.shared.residentialBuildings.first { $0.address == address }
         }
         
-        return Storage.shared.landProperties.first { $0.address == address }
+        return self.dataStore.find(address: address)
     }
 
     func buyLandProperty(address: MapPoint, playerUUID: String) throws {
@@ -79,7 +80,7 @@ class RealEstateAgent {
         guard self.isForSale(address: address) else {
             throw BuyPropertyError.propertyNotForSale
         }
-        let land = (Storage.shared.landProperties.first{ $0.address == address }) ?? Land(address: address)
+        let land = self.dataStore.find(address: address) ?? Land(address: address)
         let price = self.estimateValue(land.address)
         let invoice = Invoice(title: "Purchase land \(land.name)", netValue: price, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
         let commissionInvoice = Invoice(title: "Commission for purchase land \(land.name)", grossValue: price*self.priceList.realEstateSellPropertyCommisionFee, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
@@ -96,11 +97,8 @@ class RealEstateAgent {
             throw BuyPropertyError.financialTransactionProblem(reason: reason)
         }
         
-        land.ownerID = playerUUID
-        land.purchaseNetValue = invoice.netValue
-        
-        Storage.shared.landProperties = Storage.shared.landProperties.filter { $0.address != address }
-        Storage.shared.landProperties.append(land)
+        let update = LandMutation(uuid: land.uuid, attributes: [.ownerUUID(playerUUID), .purchaseNetValue(invoice.netValue)])
+        self.dataStore.update(update)
 
         self.mapManager.map.replaceTile(tile: land.mapTile)
         
@@ -115,9 +113,9 @@ class RealEstateAgent {
             Logger.error("RealEstateAgent", "Could not find property at \(address.description)")
             return
         }
-        guard property.ownerID == playerUUID else {
+        guard property.ownerUUID == playerUUID else {
             let name = self.dataStore.find(uuid: playerUUID)?.login ?? ""
-            Logger.error("RealEstateAgent", "Player \(name) is not owner of property \(property.id)")
+            Logger.error("RealEstateAgent", "Player \(name) is not owner of property \(property.ownerUUID)")
             return
         }
         guard let government = self.dataStore.getPlayer(type: .government) else {
@@ -129,14 +127,14 @@ class RealEstateAgent {
             Storage.shared.roadProperties = Storage.shared.roadProperties.filter { $0.address != address }
         }
         if let building = property as? ResidentialBuilding {
-            let apartments = Storage.shared.getApartments(address: building.address).filter { $0.ownerID == building.ownerID }
+            let apartments = Storage.shared.getApartments(address: building.address).filter { $0.ownerUUID == building.ownerUUID }
             for apartment in apartments {
-                apartment.ownerID = government.uuid
+                apartment.ownerUUID = government.uuid
             }
-            building.ownerID = government.uuid
+            building.ownerUUID = government.uuid
             self.recalculateFeesInTheBuilding(building)
         }
-        property.ownerID = government.uuid
+        property.ownerUUID = government.uuid
         
         let value = self.estimateValue(property.address)
         let sellPrice = (value * self.priceList.instantSellValue).rounded(toPlaces: 0)
@@ -157,7 +155,7 @@ class RealEstateAgent {
             return
         }
         guard let building = (Storage.shared.residentialBuildings.first { $0.address == apartment.address }) else {
-            Logger.error("RealEstateAgent", "Could not find the building for apartment \(apartment.id)")
+            Logger.error("RealEstateAgent", "Could not find the building for apartment \(apartment.uuid)")
             return
         }
         let value = self.estimateApartmentValue(apartment)
@@ -168,11 +166,11 @@ class RealEstateAgent {
         self.centralBank.process(transaction)
         
         // if user had built this building, he had costs, so this costs' taxes can be refunded, provided he has accountant
-        if building.ownerID == playerUUID, building.accountantID != nil {
+        if building.ownerUUID == playerUUID, building.accountantID != nil {
             let costs = (((building.purchaseNetValue ?? 0.0) + building.investmentsNetValue)/(Double(building.numberOfFlats))).rounded(toPlaces: 0)
             self.centralBank.refundIncomeTax(receiverID: playerUUID, transaction: transaction, costs: costs)
         }
-        apartment.ownerID = government.uuid
+        apartment.ownerUUID = government.uuid
         self.recalculateFeesInTheBuilding(building)
     
         self.delegate?.notifyWalletChange(playerUUID: playerUUID)
@@ -218,7 +216,7 @@ class RealEstateAgent {
             let baseValue = (investmentCost/numberOfFlats + self.priceList.residentialBuildingOwnerIncomeOnFlatSellPrice) * 1.42
             return (baseValue * building.condition/100 * apartment.condition/100 * self.calculateLocationValueFactor(building.address)).rounded(toPlaces: 0)
         }
-        Logger.error("RealEstateAgent", "Apartment \(apartment.id) is detached from building!")
+        Logger.error("RealEstateAgent", "Apartment \(apartment.uuid) is detached from building!")
         return 900000000
     }
     
@@ -276,7 +274,7 @@ class RealEstateAgent {
     }
     
     func recalculateFeesInTheBuilding(_ building: ResidentialBuilding) {
-        
+        /*
         let baseBuildingMonthlyCosts: Double = self.priceList.montlyResidentialBuildingCost + self.priceList.montlyResidentialBuildingCostPerStorey * building.storeyAmount.double
         let numberOfFlats = Double(building.storeyAmount * building.numberOfFlatsPerStorey)
         
@@ -306,6 +304,7 @@ class RealEstateAgent {
         }
         building.monthlyIncome = income.rounded(toPlaces: 0)
         building.monthlyMaintenanceCost = spendings.rounded(toPlaces: 0)
+         */
     }
     
     private func occupiedSpaceOnMapFactor() -> Double {

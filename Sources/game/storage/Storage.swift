@@ -12,7 +12,6 @@ class Storage: Codable {
     
     public static let shared = Storage.restore() ?? Storage()
     var bankTransactionCounter: Int
-    var landProperties: [Land]
     var roadProperties: [Road]
     var residentialBuildings: [ResidentialBuilding]
     var apartments: [Apartment]
@@ -22,7 +21,6 @@ class Storage: Codable {
         
         self.bankTransactionCounter = 1
         self.monthIteration = 0
-        self.landProperties = []
         self.roadProperties = []
         self.residentialBuildings = []
         self.apartments = []
@@ -31,7 +29,7 @@ class Storage: Codable {
     }
     
     func getApartment(id: String) -> Apartment? {
-        return self.apartments.first{ $0.id == id }
+        return self.apartments.first{ $0.uuid == id }
     }
     
     func getApartments(address: MapPoint) -> [Apartment] {

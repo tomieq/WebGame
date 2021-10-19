@@ -135,6 +135,7 @@ public class WebApplication {
                     return .badRequest(.text("Invalid request! Missing session ID."))
             }
             let template = Template.init(from: "/templates/walletBalance.html")
+            /*
             for land in (Storage.shared.landProperties.filter{ $0.ownerID == session.playerUUID }) {
                 
                 var data: [String:String] = [:]
@@ -159,6 +160,7 @@ public class WebApplication {
                 data["onclick"] = "mapClicked(\(building.address.x), \(building.address.y))"
                 template.assign(variables: data, inNest: "investment")
             }
+             */
             return .ok(.text(template.output()))
         }
         

@@ -7,10 +7,10 @@
 
 import Foundation
 
-class Land: Property, Codable {
+struct Land: Property {
     
-    let id: String
-    var ownerID: String?
+    let uuid: String
+    var ownerUUID: String?
     let address: MapPoint
     let name: String
     var purchaseNetValue: Double?
@@ -25,7 +25,7 @@ class Land: Property, Codable {
     }
     
     init(address: MapPoint) {
-        self.id = ""
+        self.uuid = ""
         self.address = address
         self.name = "\(RandomNameGenerator.randomAdjective.capitalized) \(RandomNameGenerator.randomNoun.capitalized)"
         self.investmentsNetValue = 0
@@ -35,7 +35,8 @@ class Land: Property, Codable {
     }
     
     init(_ managedObject: LandManagedObject) {
-        self.id = managedObject.uuid
+        self.uuid = managedObject.uuid
+        self.ownerUUID = managedObject.ownerUUID
         self.address = MapPoint(x: managedObject.x, y: managedObject.y)
         self.name = managedObject.name
         self.purchaseNetValue = managedObject.purchaseNetValue
@@ -53,5 +54,7 @@ struct LandMutation {
     enum Attribute {
         case isUnderConstruction(Bool)
         case constructionFinishMonth(Int)
+        case ownerUUID(String)
+        case purchaseNetValue(Double)
     }
 }

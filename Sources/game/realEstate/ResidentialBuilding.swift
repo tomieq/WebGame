@@ -9,17 +9,15 @@ import Foundation
 
 class ResidentialBuilding: Property, Codable {
     
-    let id: String
+    let uuid: String
     var type: String { return "\(self.storeyAmount)-storey Residential Building" }
-    var ownerID: String?
+    var ownerUUID: String?
     let address: MapPoint
     let name: String
     var purchaseNetValue: Double?
     var investmentsNetValue: Double
-    var monthlyMaintenanceCost: Double
-    var monthlyIncome: Double
     var condition: Double
-    let numberOfFlatsPerStorey = 4
+    var numberOfFlatsPerStorey = 4
     let storeyAmount: Int
     var isUnderConstruction: Bool
     var constructionFinishMonth: Int?
@@ -30,15 +28,13 @@ class ResidentialBuilding: Property, Codable {
     }
     
     init(land: Land, storeyAmount: Int) {
-        self.id = land.id
+        self.uuid = land.uuid
         self.address = land.address
         self.name = "\(land.name) Apartments"
-        self.ownerID = land.ownerID
+        self.ownerUUID = land.ownerUUID
         self.purchaseNetValue = land.purchaseNetValue
-        self.monthlyMaintenanceCost = land.monthlyMaintenanceCost
-        self.monthlyIncome = 0
         self.storeyAmount = storeyAmount
-        self.investmentsNetValue = (land.investmentsNetValue + InvestmentCost.makeResidentialBuildingCost(storey: self.storeyAmount)).rounded(toPlaces: 0)
+        self.investmentsNetValue = (land.investmentsNetValue /*+ ConstructionPriceList.makeResidentialBuildingCost(storey: self.storeyAmount)*/).rounded(toPlaces: 0)
         self.condition = 100.0
         self.isUnderConstruction = false
         self.accountantID = land.accountantID

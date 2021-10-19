@@ -81,7 +81,7 @@ class GameEngine {
                         self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .openWindow, payload: payload)
                     case false:
                         
-                        if self?.realEstateAgent.getProperty(address: point)?.ownerID == gameEvent.playerSession?.playerUUID {
+                        if self?.realEstateAgent.getProperty(address: point)?.ownerUUID == gameEvent.playerSession?.playerUUID {
                             
                             let payload = OpenWindow(title: "Loading", width: 0.7, height: 100, initUrl: "/openPropertyManager.js?x=\(point.x)&y=\(point.y)", address: nil)
                             self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .openWindow, payload: payload)

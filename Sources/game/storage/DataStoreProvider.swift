@@ -17,6 +17,8 @@ protocol DataStoreProvider {
     func getPlayer(type: PlayerType) -> Player?
     func getFinancialTransactions(userID: String) -> [CashFlow]
     
+    func getAll() -> [Land]
+    
     func update(_ mutation: PlayerMutation)
     func update(_ mutation: LandMutation)
 

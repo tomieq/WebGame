@@ -69,6 +69,10 @@ class DataStoreMemoryProvider: DataStoreProvider {
         return self.lands.first{ $0.x == address.x && $0.y == address.y }.map { Land($0) }
     }
     
+    func getAll() -> [Land] {
+        return self.lands.map { Land($0) }
+    }
+    
     func removeLand(uuid: String) {
         self.lands.removeAll{ $0.uuid == uuid }
     }
@@ -83,6 +87,10 @@ class DataStoreMemoryProvider: DataStoreProvider {
                 land.isUnderConstruction = value
             case .constructionFinishMonth(let value):
                 land.constructionFinishMonth = value
+            case .ownerUUID(let value):
+                land.ownerUUID = value
+            case .purchaseNetValue(let value):
+                land.purchaseNetValue = value
             }
         }
     }
