@@ -18,7 +18,7 @@ class PropertyManagerRestAPI {
         self.gameEngine = gameEngine
         self.dataStore = gameEngine.dataStore
         
-        server.GET["/openSaleLandOffer.js"] = { request, _ in
+        server.GET["/openSaleOffer.js"] = { request, _ in
             request.disableKeepAlive = true
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
@@ -26,17 +26,20 @@ class PropertyManagerRestAPI {
             guard let address = request.mapPoint else {
                 return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
             }
+            guard let type = request.queryParam("type") else {
+                return JSCode.showError(txt: "Invalid request! Missing type.", duration: 10).response
+            }
             guard self.gameEngine.realEstateAgent.isForSale(address: address) else {
                 return JSCode.showError(txt: "This property is not for sale", duration: 10).response
             }
             let js = JSResponse()
-            js.add(.loadHtml(windowIndex, htmlPath: "/saleLandOffer.html?\(address.asQueryParams)"))
+            js.add(.loadHtml(windowIndex, htmlPath: "/saleOffer.html?type=\(type)&\(address.asQueryParams)"))
             js.add(.setWindowTitle(windowIndex, title: "Buy land property"))
             js.add(.disableWindowResizing(windowIndex))
             return js.response
         }
         
-        server.GET["/saleLandOffer.html"] = { request, _ in
+        server.GET["/saleOffer.html"] = { request, _ in
             request.disableKeepAlive = true
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return .badRequest(.html("Invalid request! Missing window context."))
@@ -49,8 +52,20 @@ class PropertyManagerRestAPI {
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                       return .badRequest(.html("Invalid request! Missing sessionID."))
             }
-            guard let offer = self.gameEngine.realEstateAgent.landSaleOffer(address: address, buyerUUID: session.playerUUID) else {
-                return .badRequest(.html("This property is not for sale"))
+            guard let type = request.queryParam("type") else {
+                return JSCode.showError(txt: "Invalid request! Missing type.", duration: 10).response
+            }
+            var offer: SaleOffer?
+            switch type {
+            case "land":
+                offer = self.gameEngine.realEstateAgent.landSaleOffer(address: address, buyerUUID: session.playerUUID)
+            case "building":
+                offer = self.gameEngine.realEstateAgent.residentialBuildingSaleOffer(address: address, buyerUUID: session.playerUUID)
+            default:
+                break
+            }
+            guard let offer = offer else {
+                return .badRequest(.html("Uknown property type or proprty not for sale"))
             }
 
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/saleOffer.html"))
@@ -60,12 +75,12 @@ class PropertyManagerRestAPI {
             data["taxRate"] = (offer.saleInvoice.taxRate * 100).rounded(toPlaces: 1).string
             data["transactionFee"] = offer.commissionInvoice.total.money
             data["total"] = (offer.saleInvoice.total + offer.commissionInvoice.total).money
-            data["buyScript"] = JSCode.runScripts(windowIndex, paths: ["/buyLandProperty.js?\(address.asQueryParams)"]).js
+            data["buyScript"] = JSCode.runScripts(windowIndex, paths: ["/buyProperty.js?type=\(type)&\(address.asQueryParams)"]).js
             template.assign(variables: data)
             return .ok(.html(template.output()))
         }
         
-        server.GET["/buyLandProperty.js"] = {request, _ in
+        server.GET["/buyProperty.js"] = {request, _ in
             request.disableKeepAlive = true
             let code = JSResponse()
             guard let windowIndex = request.queryParam("windowIndex") else {
@@ -80,8 +95,19 @@ class PropertyManagerRestAPI {
                     code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
                     return code.response
             }
+            guard let type = request.queryParam("type") else {
+                return JSCode.showError(txt: "Invalid request! Missing type.", duration: 10).response
+            }
             do {
-                try self.gameEngine.realEstateAgent.buyLandProperty(address: address, buyerUUID: session.playerUUID)
+                switch type {
+                case "land":
+                    try self.gameEngine.realEstateAgent.buyLandProperty(address: address, buyerUUID: session.playerUUID)
+                case "building":
+                    try self.gameEngine.realEstateAgent.buyResidentialBuilding(address: address, buyerUUID: session.playerUUID)
+                default:
+                    return JSCode.showError(txt: "Invalid request! Unknown type.", duration: 10).response
+                }
+                
             } catch BuyPropertyError.propertyNotForSale {
                 code.add(.closeWindow(windowIndex))
                 code.add(.showError(txt: "This property is not for sale any more.", duration: 10))
@@ -94,6 +120,7 @@ class PropertyManagerRestAPI {
             code.add(.closeWindow(windowIndex))
             return code.response
         }
+        
         
         server.GET["/openPropertyInfo.js"] = { request, _ in
             request.disableKeepAlive = true
