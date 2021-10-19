@@ -40,4 +40,29 @@ class ResidentialBuilding: Property, Codable {
         self.accountantID = land.accountantID
     }
     
+    init(_ managedObject: ResidentialBuildingManagedObject) {
+        self.uuid = managedObject.uuid
+        self.ownerUUID = managedObject.ownerUUID
+        self.address = MapPoint(x: managedObject.x, y: managedObject.y)
+        self.name = managedObject.name
+        self.purchaseNetValue = managedObject.purchaseNetValue
+        self.investmentsNetValue = managedObject.investmentsNetValue
+        self.isUnderConstruction = managedObject.isUnderConstruction
+        self.constructionFinishMonth = managedObject.constructionFinishMonth
+        self.accountantID = managedObject.accountantID
+        self.condition = managedObject.condition
+        self.storeyAmount = managedObject.storeyAmount
+    }
+}
+
+struct ResidentialBuildingMutation {
+    let uuid: String
+    let attributes: [ResidentialBuildingMutation.Attribute]
+    
+    enum Attribute {
+        case isUnderConstruction(Bool)
+        case constructionFinishMonth(Int)
+        case ownerUUID(String)
+        case purchaseNetValue(Double)
+    }
 }
