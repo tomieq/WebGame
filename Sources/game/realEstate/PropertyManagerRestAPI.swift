@@ -260,9 +260,13 @@ class PropertyManagerRestAPI {
                         return JSCode.showError(txt: "Invalid request! Invalid investmentType \(investmentType).", duration: 10).response
                 }
                 
+            } catch ConstructionServicesError.addressNotFound {
+                return JSCode.showError(txt: "You can build only on an empty land.", duration: 10).response
+            } catch ConstructionServicesError.playerIsNotPropertyOwner {
+                return JSCode.showError(txt: "You can invest only on your properties.", duration: 10).response
+            } catch ConstructionServicesError.noDirectAccessToRoad {
+                return JSCode.showError(txt: "You cannot build here as this property has no direct access to the public road.", duration: 10).response
             } catch ConstructionServicesError.financialTransactionProblem(let reason) {
-                return JSCode.showError(txt: reason , duration: 10).response
-            } catch ConstructionServicesError.formalProblem(let reason) {
                 return JSCode.showError(txt: reason , duration: 10).response
             } catch {
                 return JSCode.showError(txt: "Unexpected error [\(request.address ?? "")]", duration: 10).response

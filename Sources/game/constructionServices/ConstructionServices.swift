@@ -14,8 +14,10 @@ protocol ConstructionServicesDelegate {
     func reloadMap()
 }
 
-enum ConstructionServicesError: Error {
-    case formalProblem(reason: String)
+enum ConstructionServicesError: Error, Equatable {
+    case addressNotFound
+    case playerIsNotPropertyOwner
+    case noDirectAccessToRoad
     case financialTransactionProblem(reason: String)
 }
 
@@ -54,14 +56,14 @@ class ConstructionServices {
     func startRoadInvestment(address: MapPoint, playerUUID: String) throws {
         
         guard let land = (Storage.shared.landProperties.first { $0.address == address}) else {
-            throw ConstructionServicesError.formalProblem(reason: "You can build road only on an empty land.")
+            throw ConstructionServicesError.addressNotFound
         }
         guard land.ownerID == playerUUID else {
-            throw ConstructionServicesError.formalProblem(reason: "You can invest only on your properties.")
+            throw ConstructionServicesError.playerIsNotPropertyOwner
         }
 
         guard self.mapManager.map.hasDirectAccessToRoad(address: address) else {
-            throw ConstructionServicesError.formalProblem(reason: "You cannot build road here as this property has no direct access to the public road.")
+            throw ConstructionServicesError.noDirectAccessToRoad
         }
         let governmentID = self.dataStore.getPlayer(type: .government)?.uuid ?? ""
         let offer = self.roadOffer(landName: land.name)
@@ -89,13 +91,13 @@ class ConstructionServices {
     func startResidentialBuildingInvestment(address: MapPoint, playerUUID: String, storeyAmount: Int) throws {
         
         guard let land = (Storage.shared.landProperties.first { $0.address == address}) else {
-            throw ConstructionServicesError.formalProblem(reason: "You can build road only on an empty land.")
+            throw ConstructionServicesError.addressNotFound
         }
         guard land.ownerID == playerUUID else {
-            throw ConstructionServicesError.formalProblem(reason: "You can invest only on your properties.")
+            throw ConstructionServicesError.playerIsNotPropertyOwner
         }
         guard self.mapManager.map.hasDirectAccessToRoad(address: address) else {
-            throw ConstructionServicesError.formalProblem(reason: "You cannot build apartment here as this property has no direct access to the public road.")
+            throw ConstructionServicesError.noDirectAccessToRoad
         }
         
         let offer = residentialBuildingOffer(landName: land.name, storeyAmount: storeyAmount)

@@ -120,4 +120,22 @@ final class ConstructionServicesTests: XCTestCase {
         XCTAssertEqual(offer.invoice.netValue, 20000)
         XCTAssertEqual(offer.invoice.tax, 10000)
     }
+    
+    func test_startRoadInvestment() {
+        let map = GameMap(width: 2, height: 2, scale: 0.2)
+        let mapManager = GameMapManager(map)
+        
+        let time = GameTime()
+        
+        let dataStore = DataStoreMemoryProvider()
+        let taxRates = TaxRates()
+        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
+        centralBank.taxRates.investmentTax = 0.5
+        
+        let constructionServices = ConstructionServices(mapManager: mapManager, centralBank: centralBank, time: time)
+        XCTAssertThrowsError(try constructionServices.startRoadInvestment(address: MapPoint(x: 0, y: 0), playerUUID: "tester")){ error in
+            XCTAssertEqual(error as! ConstructionServicesError, .addressNotFound)
+        }
+        
+    }
 }
