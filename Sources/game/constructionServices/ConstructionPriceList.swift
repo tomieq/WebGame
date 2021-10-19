@@ -19,9 +19,11 @@ class ConstructionPriceList {
 }
 
 class ConstructionDuration {
-    var road: Int = 3
+    var road: Int = 1
+    var residentialBuilding = 9
+    var residentialBuildingPerStorey = 1
     
     func residentialBuilding(storey: Int) -> Int {
-        return 9 + storey
+        return self.residentialBuilding + storey * self.residentialBuildingPerStorey
     }
 }
