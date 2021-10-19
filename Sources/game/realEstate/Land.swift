@@ -11,7 +11,7 @@ class Land: Property, Codable {
     
     let id: String
     var ownerID: String?
-    var address: MapPoint
+    let address: MapPoint
     let name: String
     var purchaseNetValue: Double?
     var investmentsNetValue: Double
@@ -43,5 +43,15 @@ class Land: Property, Codable {
         self.isUnderConstruction = managedObject.isUnderConstruction
         self.constructionFinishMonth = managedObject.constructionFinishMonth
         self.accountantID = managedObject.accountantID
+    }
+}
+
+struct LandMutation {
+    let uuid: String
+    let attributes: [LandMutation.Attribute]
+    
+    enum Attribute {
+        case isUnderConstruction(Bool)
+        case constructionFinishMonth(Int)
     }
 }

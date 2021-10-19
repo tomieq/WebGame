@@ -10,9 +10,11 @@ import Foundation
 class DataStoreMemoryProvider: DataStoreProvider {
     private var players: [PlayerManagedObject]
     private var transactions: [CashFlowManagedObject]
+    private var lands: [LandManagedObject]
     init() {
         self.players = []
         self.transactions = []
+        self.lands = []
     }
     
     @discardableResult
@@ -34,9 +36,9 @@ class DataStoreMemoryProvider: DataStoreProvider {
         self.players.removeAll{ $0.uuid == id}
     }
 
-    func update(_ playerMutation: PlayerMutation) {
-        guard let managedPlayer = (self.players.first{ $0.uuid == playerMutation.id }) else { return }
-        for attribute in playerMutation.attributes {
+    func update(_ mutation: PlayerMutation) {
+        guard let managedPlayer = (self.players.first{ $0.uuid == mutation.id }) else { return }
+        for attribute in mutation.attributes {
             switch attribute {
                 
             case .wallet(let value):
@@ -53,5 +55,35 @@ class DataStoreMemoryProvider: DataStoreProvider {
     
     func getFinancialTransactions(userID: String) -> [CashFlow] {
         self.transactions.filter{ $0.playerID == userID }.sorted { $0.id > $1.id }.map{ CashFlow($0)}
+    }
+    
+    
+    @discardableResult
+    func create(_ land: Land) -> String {
+        let managedObject = LandManagedObject(land)
+        self.lands.append(managedObject)
+        return managedObject.uuid
+    }
+    
+    func find(address: MapPoint) -> Land? {
+        return self.lands.first{ $0.x == address.x && $0.y == address.y }.map { Land($0) }
+    }
+    
+    func removeLand(uuid: String) {
+        self.lands.removeAll{ $0.uuid == uuid }
+    }
+    
+    
+    func update(_ mutation: LandMutation) {
+        guard let land = (self.lands.first{ $0.uuid == mutation.uuid }) else { return }
+        for attribute in mutation.attributes {
+            switch attribute {
+                
+            case .isUnderConstruction(let value):
+                land.isUnderConstruction = value
+            case .constructionFinishMonth(let value):
+                land.constructionFinishMonth = value
+            }
+        }
     }
 }
