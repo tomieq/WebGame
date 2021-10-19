@@ -24,7 +24,7 @@ struct Land: Property {
         return GameMapTile(address: address, type: .soldLand)
     }
     
-    init(address: MapPoint, ownerUUID: String? = nil) {
+    init(address: MapPoint, ownerUUID: String? = nil, purchaseNetValue: Double? = nil) {
         self.uuid = ""
         self.ownerUUID = ownerUUID
         self.address = address
@@ -33,7 +33,7 @@ struct Land: Property {
         self.isUnderConstruction = false
         self.constructionFinishMonth = nil
         self.accountantID = nil
-        self.purchaseNetValue = nil
+        self.purchaseNetValue = purchaseNetValue
     }
     
     init(_ managedObject: LandManagedObject) {

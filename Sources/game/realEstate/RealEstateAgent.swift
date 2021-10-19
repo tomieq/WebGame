@@ -85,8 +85,10 @@ class RealEstateAgent {
         guard self.isForSale(address: address) else {
             throw BuyPropertyError.propertyNotForSale
         }
-        let land = self.dataStore.find(address: address) ?? Land(address: address)
-        let price = self.estimateValue(land.address)
+        let land = Land(address: address)
+        guard let price = self.estimateValue(address) else {
+            throw BuyPropertyError.propertyNotForSale
+        }
         let invoice = Invoice(title: "Purchase land \(land.name)", netValue: price, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
         let commissionInvoice = Invoice(title: "Commission for purchase land \(land.name)", grossValue: price*self.priceList.realEstateSellPropertyCommisionFee, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
         
@@ -105,7 +107,7 @@ class RealEstateAgent {
         } catch let error as FinancialTransactionError {
             throw BuyPropertyError.financialTransactionProblem(error)
         }
-        
+        self.dataStore.create(land)
         let update = LandMutation(uuid: land.uuid, attributes: [.ownerUUID(playerUUID), .purchaseNetValue(invoice.netValue)])
         self.dataStore.update(update)
 
@@ -144,7 +146,9 @@ class RealEstateAgent {
             
         }
         
-        let value = self.estimateValue(property.address)
+        guard let value = self.estimateValue(property.address) else {
+            return
+        }
         let sellPrice = (value * self.priceList.instantSellValue).rounded(toPlaces: 0)
         
         let invoice = Invoice(title: "Selling property \(property.name)", netValue: sellPrice, taxRate: self.centralBank.taxRates.instantSellTax)
@@ -196,23 +200,31 @@ class RealEstateAgent {
         }
     }
     
-    func estimateValue(_ address: MapPoint) -> Double {
+    private func estimateLandValue(_ address: MapPoint) -> Double {
+        return (self.priceList.baseLandValue * self.calculateLocationValueFactor(address)).rounded(toPlaces: 0)
+    }
+    
+    private func estimateRoadValue(_ address: MapPoint) -> Double {
+        return 0
+    }
+    
+    private func estimateResidentialBuildingValue(_ address: MapPoint) -> Double {
+        return 10
+    }
+    
+    func estimateValue(_ address: MapPoint) -> Double? {
         
-        let tile = self.mapManager.map.getTile(address: address)
+        guard let tile = self.mapManager.map.getTile(address: address) else {
+            return self.estimateLandValue(address)
+        }
 
-        if tile?.isStreet() ?? false {
-            return 0.0
+        if tile.isStreet() || tile.isStreetUnderConstruction() {
+            return self.estimateRoadValue(address)
         }
-        var basePrice = self.priceList.baseLandValue * self.calculateLocationValueFactor(address)
-        if tile?.isBuilding() ?? false {
-            
-            let apartments = Storage.shared.getApartments(address: address)//.filter { $0.ownerID == building.ownerID }
-            for apartment in apartments {
-                basePrice += self.estimateApartmentValue(apartment)
-            }
-            return basePrice.rounded(toPlaces: 0)
+        if tile.isBuilding() {
+            return self.estimateResidentialBuildingValue(address)
         }
-        return basePrice.rounded(toPlaces: 0)
+        return nil
     }
     
     func estimateApartmentValue(_ apartment: Apartment) -> Double {

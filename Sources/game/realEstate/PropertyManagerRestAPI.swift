@@ -42,10 +42,12 @@ class PropertyManagerRestAPI {
                 return .badRequest(.html("Invalid request! Missing window context."))
             }
             guard let address = request.mapPoint else {
-                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
+                return .badRequest(.html("Invalid request! Missing address."))
             }
             
-            let value = self.gameEngine.realEstateAgent.estimateValue(address)
+           guard let value = self.gameEngine.realEstateAgent.estimateValue(address) else {
+               return .badRequest(.html("This property is not for sale"))
+            }
             let offer = Invoice(title: "Offer", netValue: value, taxRate: self.gameEngine.taxRates.propertyPurchaseTax)
             let transactionFee = offer.netValue * self.gameEngine.realEstateAgent.priceList.realEstateSellPropertyCommisionFee
 
