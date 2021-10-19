@@ -83,6 +83,13 @@ extension GameMapTile {
         return false
     }
 
+    func isStreetUnderConstruction() -> Bool {
+        if case .streetUnderConstruction = self.type {
+            return true
+        }
+        return false
+    }
+
     func isBuilding() -> Bool {
         if case .building = self.type {
             return true
