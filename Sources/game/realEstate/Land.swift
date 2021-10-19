@@ -10,30 +10,38 @@ import Foundation
 class Land: Property, Codable {
     
     let id: String
-    var type: String { return "Land property" }
     var ownerID: String?
     var address: MapPoint
     let name: String
     var purchaseNetValue: Double?
     var investmentsNetValue: Double
-    var monthlyMaintenanceCost: Double
-    var monthlyIncome: Double
     var isUnderConstruction: Bool
     var constructionFinishMonth: Int?
     var accountantID: String?
+
+    var type: String { return "Land property" }
     var mapTile: GameMapTile {
         return GameMapTile(address: address, type: .soldLand)
     }
     
     init(address: MapPoint) {
-        self.id = UUID().uuidString
+        self.id = ""
         self.address = address
         self.name = "\(RandomNameGenerator.randomAdjective.capitalized) \(RandomNameGenerator.randomNoun.capitalized)"
-        self.monthlyMaintenanceCost = 100
-        self.monthlyIncome = 0
         self.investmentsNetValue = 0
         self.isUnderConstruction = false
         self.constructionFinishMonth = nil
         self.accountantID = nil
+    }
+    
+    init(_ managedObject: LandManagedObject) {
+        self.id = managedObject.uuid
+        self.address = MapPoint(x: managedObject.x, y: managedObject.y)
+        self.name = managedObject.name
+        self.purchaseNetValue = managedObject.purchaseNetValue
+        self.investmentsNetValue = managedObject.investmentsNetValue
+        self.isUnderConstruction = managedObject.isUnderConstruction
+        self.constructionFinishMonth = managedObject.constructionFinishMonth
+        self.accountantID = managedObject.accountantID
     }
 }
