@@ -362,4 +362,77 @@ final class RealEstateAgentTests: XCTestCase {
         let land: Land? = dataStore.find(address: address)
         XCTAssertEqual(land?.ownerUUID, "buyer")
     }
+    
+    func test_residentialBuildingSaleOffer_notABuilding() {
+        let dataStore = DataStoreMemoryProvider()
+        let taxRates = TaxRates()
+        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
+        let map = GameMap(width: 10, height: 10, scale: 0.2)
+        let mapManager = GameMapManager(map)
+        let agent = RealEstateAgent(mapManager: mapManager, centralBank: centralBank, delegate: nil)
+
+        XCTAssertNil(agent.residentialBuildingSaleOffer(address: MapPoint(x: 3, y: 3), buyerUUID: "random"))
+    }
+    
+    func test_residentialBuildingSaleOffer_properOffer() {
+        let dataStore = DataStoreMemoryProvider()
+        let taxRates = TaxRates()
+        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
+        let map = GameMap(width: 10, height: 10, scale: 0.2)
+        let mapManager = GameMapManager(map)
+        mapManager.loadMapFrom(content: "b")
+        let agent = RealEstateAgent(mapManager: mapManager, centralBank: centralBank, delegate: nil)
+        
+        agent.syncMapWithDataStore()
+        
+        XCTAssertNil(agent.landSaleOffer(address: MapPoint(x: 0, y: 0), buyerUUID: "random"))
+    }
+    
+    func test_residentialBuildingSaleOffer_notEnoughMoney() {
+        
+        let dataStore = DataStoreMemoryProvider()
+        let taxRates = TaxRates()
+        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
+        let map = GameMap(width: 10, height: 10, scale: 0.2)
+        let mapManager = GameMapManager(map)
+        mapManager.loadMapFrom(content: "b")
+        let agent = RealEstateAgent(mapManager: mapManager, centralBank: centralBank, delegate: nil)
+        agent.syncMapWithDataStore()
+        
+        let player = Player(uuid: "buyer", login: "tester", wallet: 0)
+        dataStore.create(player)
+        
+        let government = Player(uuid: SystemPlayer.government.uuid, login: "Big Uncle", wallet: 0)
+        dataStore.create(government)
+        
+        XCTAssertThrowsError(try agent.buyResidentialBuilding(address: MapPoint(x: 0, y: 0), buyerUUID: "buyer")){ error in
+            XCTAssertEqual(error as? BuyPropertyError, .financialTransactionProblem(.notEnoughMoney))
+        }
+    }
+    
+    func test_residentialBuildingSaleOffer_fromGovernment() {
+        
+        let dataStore = DataStoreMemoryProvider()
+        let taxRates = TaxRates()
+        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
+        let map = GameMap(width: 10, height: 10, scale: 0.2)
+        let mapManager = GameMapManager(map)
+        mapManager.loadMapFrom(content: "b")
+        let agent = RealEstateAgent(mapManager: mapManager, centralBank: centralBank, delegate: nil)
+        agent.syncMapWithDataStore()
+        let address = MapPoint(x: 0, y: 0)
+        let player = Player(uuid: "buyer", login: "tester", wallet: 10000000)
+        dataStore.create(player)
+        
+        let government = Player(uuid: SystemPlayer.government.uuid, login: "Big Uncle", wallet: 0)
+        dataStore.create(government)
+        
+        let agency = Player(uuid: SystemPlayer.realEstateAgency.uuid, login: "Agency", wallet: 0)
+        dataStore.create(agency)
+        
+        XCTAssertNoThrow(try agent.buyResidentialBuilding(address: address, buyerUUID: "buyer"))
+        
+        let building: ResidentialBuilding? = dataStore.find(address: address)
+        XCTAssertEqual(building?.ownerUUID, "buyer")
+    }
 }
