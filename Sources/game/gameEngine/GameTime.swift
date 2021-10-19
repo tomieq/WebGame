@@ -8,7 +8,11 @@
 import Foundation
 
 class GameTime {
-    var month: Int = 0
+    var month: Int
+    
+    init() {
+        self.month = 0
+    }
     
     func nextMonth() {
         self.month += 1
