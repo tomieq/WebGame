@@ -32,7 +32,7 @@ class ConstructionServices {
     let dataStore: DataStoreProvider
     
     init(mapManager: GameMapManager, centralBank: CentralBank, time: GameTime, delegate: ConstructionServicesDelegate? = nil) {
-        self.currentTime = GameTime()
+        self.currentTime = time
         self.mapManager = mapManager
         self.dataStore = centralBank.dataStore
         self.centralBank = centralBank
@@ -76,11 +76,12 @@ class ConstructionServices {
             throw ConstructionServicesError.financialTransactionProblem(error)
         }
         
-        let road = Road(land: land)
-        road.isUnderConstruction = true
-        road.constructionFinishMonth = self.currentTime.month + offer.duration
+        
         
         self.dataStore.removeLand(uuid: land.uuid)
+        
+        
+        let road = Road(land: land, constructionFinishMonth: self.currentTime.month + offer.duration)
         self.dataStore.create(road)
         
         let tile = GameMapTile(address: address, type: .streetUnderConstruction)
@@ -126,17 +127,20 @@ class ConstructionServices {
     }
     
     func finishInvestments() {
+        Logger.info("ConstructionServices", "Finish all constructions for \(self.currentTime.month)")
         var updateMap = false
-        /*
-        for road in (Storage.shared.roadProperties.filter{ $0.isUnderConstruction }) {
+        
+        let roads: [Road] = self.dataStore.getUnderConstruction()
+        for road in roads {
             if road.constructionFinishMonth == self.currentTime.month {
-                road.isUnderConstruction = false
+                let mutation = RoadMutation(uuid: road.uuid, attributes: [.isUnderConstruction(false)])
+                self.dataStore.update(mutation)
                 
                 self.mapManager.addStreet(address: road.address)
                 updateMap = true
             }
         }
-        */
+        
         for building in (Storage.shared.residentialBuildings.filter{ $0.isUnderConstruction }) {
             if building.constructionFinishMonth == self.currentTime.month {
                 building.isUnderConstruction = false

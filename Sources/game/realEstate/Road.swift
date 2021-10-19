@@ -7,7 +7,7 @@
 
 import Foundation
 
-class Road: Property, Codable {
+struct Road: Property, Codable {
     
     let uuid: String
     var type: String { return "Public street" }
@@ -20,15 +20,15 @@ class Road: Property, Codable {
     var constructionFinishMonth: Int?
     var accountantID: String?
     
-    init(land: Land) {
+    init(land: Land, constructionFinishMonth: Int? = nil) {
         self.uuid = land.uuid
         self.address = land.address
         self.name = land.name
         self.ownerUUID = land.ownerUUID
         self.purchaseNetValue = land.purchaseNetValue
         self.investmentsNetValue = (land.investmentsNetValue /*+ ConstructionPriceList.makeRoadCost()*/).rounded(toPlaces: 0)
-        self.isUnderConstruction = false
-        self.constructionFinishMonth = nil
+        self.isUnderConstruction = true
+        self.constructionFinishMonth = constructionFinishMonth
         self.accountantID = nil
     }
     

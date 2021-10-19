@@ -235,4 +235,51 @@ final class ConstructionServicesTests: XCTestCase {
         let deletedLand: Land? = dataStore.find(address: address)
         XCTAssertNil(deletedLand)
     }
+    
+    func test_finishRoadInvestment() {
+        let map = GameMap(width: 2, height: 2, scale: 0.2)
+        let mapManager = GameMapManager(map)
+        mapManager.loadMapFrom(content: "s,s")
+        let time = GameTime()
+        
+        let dataStore = DataStoreMemoryProvider()
+        let taxRates = TaxRates()
+        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
+        
+        let address = MapPoint(x: 0, y: 1)
+        
+        let land = Land(address: address, ownerUUID: "p1")
+        dataStore.create(land)
+        
+        let player = Player(uuid: "p1", login: "tester", wallet: 1200)
+        dataStore.create(player)
+        
+        let government = Player(uuid: SystemPlayer.government.uuid, login: "Big Uncle", wallet: 0)
+        dataStore.create(government)
+        
+        let constructionServices = ConstructionServices(mapManager: mapManager, centralBank: centralBank, time: time)
+        constructionServices.constructionDuration.road = 2
+        constructionServices.priceList.buildRoadPrice = 500
+        
+        XCTAssertIdentical(time, constructionServices.currentTime)
+
+        XCTAssertNoThrow(try constructionServices.startRoadInvestment(address: address, playerUUID: "p1"))
+        XCTAssertEqual(map.getTile(address: address)?.type, .streetUnderConstruction)
+        var road: Road? = dataStore.find(address: address)
+        XCTAssertEqual(road?.isUnderConstruction, true)
+        XCTAssertEqual(road?.constructionFinishMonth, 2)
+        
+        // first month
+        time.nextMonth()
+        constructionServices.finishInvestments()
+        road = dataStore.find(address: address)
+        XCTAssertEqual(road?.isUnderConstruction, true)
+        
+        // second month so the investment shoul finish
+        time.nextMonth()
+        XCTAssertEqual(time.month, 2)
+        constructionServices.finishInvestments()
+        road = dataStore.find(address: address)
+        XCTAssertEqual(road?.isUnderConstruction, false)
+    }
 }

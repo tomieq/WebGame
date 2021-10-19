@@ -21,6 +21,8 @@ protocol DataStoreProvider {
     func getAll() -> [Land]
     func getAll() -> [Road]
     
+    func getUnderConstruction() -> [Road]
+    
     func update(_ mutation: PlayerMutation)
     func update(_ mutation: LandMutation)
     func update(_ mutation: RoadMutation)

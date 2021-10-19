@@ -108,6 +108,10 @@ class DataStoreMemoryProvider: DataStoreProvider {
         return self.roads.map { Road($0) }
     }
     
+    func getUnderConstruction() -> [Road] {
+        return self.roads.filter{ $0.isUnderConstruction }.map { Road($0) }
+    }
+    
     func removeRoad(uuid: String) {
         self.roads.removeAll{ $0.uuid == uuid }
     }
