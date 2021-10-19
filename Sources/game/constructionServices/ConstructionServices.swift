@@ -75,11 +75,8 @@ class ConstructionServices {
         } catch let error as FinancialTransactionError {
             throw ConstructionServicesError.financialTransactionProblem(error)
         }
-        
-        
-        
-        self.dataStore.removeLand(uuid: land.uuid)
-        
+
+        self.dataStore.removeLand(uuid: land.uuid)        
         
         let road = Road(land: land, constructionFinishMonth: self.currentTime.month + offer.duration)
         self.dataStore.create(road)
