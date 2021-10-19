@@ -121,11 +121,29 @@ class RealEstateAgent {
         }
         let name = "\(RandomNameGenerator.randomAdjective.capitalized) \(RandomNameGenerator.randomNoun.capitalized)"
         let price = self.estimateLandValue(address)
+        var commission = price * self.priceList.realEstateSellPropertyCommisionFee
+        if commission < 100 { commission = 100 }
         let saleInvoice = Invoice(title: "Purchase land \(name)", netValue: price, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
-        let commissionInvoice = Invoice(title: "Commission for purchase land \(name)", grossValue: price*self.priceList.realEstateSellPropertyCommisionFee, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
+        let commissionInvoice = Invoice(title: "Commission for purchase land \(name)", grossValue: commission, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
         let land = Land(address: address, name: name, ownerUUID: buyerUUID, purchaseNetValue: saleInvoice.netValue)
         
         return SaleOffer(saleInvoice: saleInvoice, commissionInvoice: commissionInvoice, property: land)
+    }
+    
+    func residentialBuildingSaleOffer(address: MapPoint, buyerUUID: String) -> SaleOffer? {
+        guard let tile = self.mapManager.map.getTile(address: address), tile.isBuilding() else {
+            return nil
+        }
+        guard let building: ResidentialBuilding = self.dataStore.find(address: address) else {
+            return nil
+        }
+        let price = self.estimateResidentialBuildingValue(address)
+        var commission = price * self.priceList.realEstateSellPropertyCommisionFee
+        if commission < 100 { commission = 100 }
+        let saleInvoice = Invoice(title: "Purchase \(building.name)", netValue: price, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
+        let commissionInvoice = Invoice(title: "Commission for purchase land \(building.name)", grossValue: commission, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
+        
+        return SaleOffer(saleInvoice: saleInvoice, commissionInvoice: commissionInvoice, property: building)
     }
 
     func buyLandProperty(address: MapPoint, buyerUUID: String) throws {
@@ -160,6 +178,39 @@ class RealEstateAgent {
         self.delegate?.reloadMap()
         let playerName = self.dataStore.find(uuid: buyerUUID)?.login ?? ""
         self.delegate?.notifyEveryone(UINotification(text: "New transaction on the market. Player \(playerName) has just bought property `\(land.name)`", level: .info, duration: 10))
+    }
+    
+    func buyResidentialBuilding(address: MapPoint, buyerUUID: String) throws {
+        
+        guard let offer = self.residentialBuildingSaleOffer(address: address, buyerUUID: buyerUUID) else {
+            throw BuyPropertyError.propertyNotForSale
+        }
+       
+        guard let building = offer.property as? ResidentialBuilding else {
+            throw BuyPropertyError.propertyNotForSale
+        }
+        let recipientID = building.ownerUUID ?? SystemPlayer.government.uuid
+        let realEstateAgentID = SystemPlayer.realEstateAgency.uuid
+        // process the transaction
+        var transaction = FinancialTransaction(payerID: buyerUUID, recipientID: recipientID , invoice: offer.saleInvoice)
+        do {
+             try self.centralBank.process(transaction)
+        } catch let error as FinancialTransactionError {
+            throw BuyPropertyError.financialTransactionProblem(error)
+        }
+        transaction = FinancialTransaction(payerID: buyerUUID, recipientID: realEstateAgentID, invoice: offer.commissionInvoice)
+        do {
+             try self.centralBank.process(transaction)
+        } catch let error as FinancialTransactionError {
+            throw BuyPropertyError.financialTransactionProblem(error)
+        }
+        
+        let mutation = ResidentialBuildingMutation(uuid: building.uuid, attributes: [.ownerUUID(buyerUUID), .purchaseNetValue(offer.saleInvoice.netValue)])
+        self.dataStore.update(mutation)
+        
+        self.delegate?.notifyWalletChange(playerUUID: buyerUUID)
+        let playerName = self.dataStore.find(uuid: buyerUUID)?.login ?? ""
+        self.delegate?.notifyEveryone(UINotification(text: "New transaction on the market. Player \(playerName) has just bought property `\(building.name)`", level: .info, duration: 10))
     }
     
     func instantSell(address: MapPoint, playerUUID: String) {
