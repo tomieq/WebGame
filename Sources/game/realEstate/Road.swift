@@ -11,14 +11,14 @@ struct Road: Property, Codable {
     
     let uuid: String
     var type: String { return "Public street" }
-    var ownerUUID: String?
-    var address: MapPoint
+    let ownerUUID: String?
+    let address: MapPoint
     let name: String
-    var purchaseNetValue: Double?
-    var investmentsNetValue: Double
-    var isUnderConstruction: Bool
-    var constructionFinishMonth: Int?
-    var accountantID: String?
+    let purchaseNetValue: Double?
+    let investmentsNetValue: Double
+    let isUnderConstruction: Bool
+    let constructionFinishMonth: Int?
+    let accountantID: String?
     
     init(land: Land, constructionFinishMonth: Int? = nil) {
         self.uuid = land.uuid

@@ -46,7 +46,8 @@ class RealEstateAgent {
             self.mapManager.addStreet(address: road.address)
         }
         
-        for building in Storage.shared.residentialBuildings {
+        let buildings: [ResidentialBuilding] = self.dataStore.getAll()
+        for building in buildings {
             if building.isUnderConstruction {
                 let tile = GameMapTile(address: building.address, type: .buildingUnderConstruction(size: building.storeyAmount))
                 self.mapManager.map.replaceTile(tile: tile)
@@ -72,7 +73,8 @@ class RealEstateAgent {
             return road
         }
         if tile?.isBuilding() ?? false {
-            return Storage.shared.residentialBuildings.first { $0.address == address }
+            let building: ResidentialBuilding? = self.dataStore.find(address: address)
+            return building
         }
         let land: Land? = self.dataStore.find(address: address)
         return land
@@ -130,16 +132,17 @@ class RealEstateAgent {
         // road will dissapear as roads are not for sale
         if property is Road {
             self.dataStore.removeRoad(uuid: property.uuid)
-        }
-        if let building = property as? ResidentialBuilding {
+        } else if let building = property as? ResidentialBuilding {
             let apartments = Storage.shared.getApartments(address: building.address).filter { $0.ownerUUID == building.ownerUUID }
             for apartment in apartments {
                 apartment.ownerUUID = governmentID
             }
-            building.ownerUUID = governmentID
+            self.dataStore.update(ResidentialBuildingMutation(uuid: building.uuid, attributes: [.ownerUUID(governmentID)]))
             self.recalculateFeesInTheBuilding(building)
+        } else if let land = property as? Land {
+            self.dataStore.update(LandMutation(uuid: land.uuid, attributes: [.ownerUUID(governmentID)]))
+            
         }
-        property.ownerUUID = governmentID
         
         let value = self.estimateValue(property.address)
         let sellPrice = (value * self.priceList.instantSellValue).rounded(toPlaces: 0)
@@ -156,7 +159,7 @@ class RealEstateAgent {
     
     func instantApartmentSell(_ apartment: Apartment, playerUUID: String) {
         
-        guard let building = (Storage.shared.residentialBuildings.first { $0.address == apartment.address }) else {
+        guard let building: ResidentialBuilding = self.dataStore.find(address: apartment.address) else {
             Logger.error("RealEstateAgent", "Could not find the building for apartment \(apartment.uuid)")
             return
         }
@@ -181,14 +184,14 @@ class RealEstateAgent {
     
     func rentApartment(_ apartment: Apartment) {
         apartment.isRented = true
-        if let building = (Storage.shared.residentialBuildings.first { $0.address == apartment.address }) {
+        if let building: ResidentialBuilding = self.dataStore.find(address: apartment.address) {
             self.recalculateFeesInTheBuilding(building)
         }
     }
     
     func unrentApartment(_ apartment: Apartment) {
         apartment.isRented = false
-        if let building = (Storage.shared.residentialBuildings.first { $0.address == apartment.address }) {
+        if let building: ResidentialBuilding = self.dataStore.find(address: apartment.address) {
             self.recalculateFeesInTheBuilding(building)
         }
     }
@@ -213,7 +216,7 @@ class RealEstateAgent {
     }
     
     func estimateApartmentValue(_ apartment: Apartment) -> Double {
-        if let building = (Storage.shared.residentialBuildings.first{ $0.address == apartment.address }) {
+        if let building: ResidentialBuilding = self.dataStore.find(address: apartment.address) {
             let investmentCost = 0.0//ConstructionPriceList.makeResidentialBuildingCost(storey: building.storeyAmount)
             let numberOfFlats = Double(building.numberOfFlatsPerStorey * building.storeyAmount)
             let baseValue = (investmentCost/numberOfFlats + self.priceList.residentialBuildingOwnerIncomeOnFlatSellPrice) * 1.42
@@ -224,7 +227,7 @@ class RealEstateAgent {
     }
     
     func estimateRentFee(_ apartment: Apartment) -> Double {
-        if let building = (Storage.shared.residentialBuildings.first { $0.address == apartment.address }) {
+        if let building: ResidentialBuilding = self.dataStore.find(address: apartment.address) {
             return (self.priceList.monthlyApartmentRentalFee * building.condition/100 * apartment.condition/100 * self.calculateLocationValueFactor(building.address)).rounded(toPlaces: 0)
         }
         return 0.0

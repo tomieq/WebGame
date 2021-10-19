@@ -10,28 +10,30 @@ import Foundation
 struct Land: Property {
     
     let uuid: String
-    var ownerUUID: String?
+    let ownerUUID: String?
     let address: MapPoint
     let name: String
-    var purchaseNetValue: Double?
-    var investmentsNetValue: Double
-    var isUnderConstruction: Bool
-    var constructionFinishMonth: Int?
-    var accountantID: String?
+    let purchaseNetValue: Double?
+    let investmentsNetValue: Double
+    let isUnderConstruction: Bool
+    let constructionFinishMonth: Int?
+    let accountantID: String?
 
     var type: String { return "Land property" }
     var mapTile: GameMapTile {
         return GameMapTile(address: address, type: .soldLand)
     }
     
-    init(address: MapPoint) {
+    init(address: MapPoint, ownerUUID: String? = nil) {
         self.uuid = ""
+        self.ownerUUID = ownerUUID
         self.address = address
         self.name = "\(RandomNameGenerator.randomAdjective.capitalized) \(RandomNameGenerator.randomNoun.capitalized)"
         self.investmentsNetValue = 0
         self.isUnderConstruction = false
         self.constructionFinishMonth = nil
         self.accountantID = nil
+        self.purchaseNetValue = nil
     }
     
     init(_ managedObject: LandManagedObject) {

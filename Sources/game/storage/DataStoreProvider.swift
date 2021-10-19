@@ -30,6 +30,7 @@ protocol DataStoreProvider {
     func update(_ mutation: PlayerMutation)
     func update(_ mutation: LandMutation)
     func update(_ mutation: RoadMutation)
+    func update(_ mutation: ResidentialBuildingMutation)
 
     func removePlayer(id: String)
     func removeLand(uuid: String)

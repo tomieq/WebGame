@@ -55,14 +55,14 @@ class GameClock {
         for road in Storage.shared.roadProperties {
             self.applyWalletChanges(property: road)
         }
-         */
+         
         for building in Storage.shared.residentialBuildings {
             if !building.isUnderConstruction {
                 self.realEstateAgent.recalculateFeesInTheBuilding(building)
                 self.applyWalletChanges(property: building)
             }
         }
-        
+         */
         for session in PlayerSessionManager.shared.getActiveSessions() {
             if let player = self.dataStore.find(uuid: session.playerUUID) {
                 let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(player.wallet.money))
