@@ -190,7 +190,7 @@ final class RealEstateAgentTests: XCTestCase {
         let roadUnderConstruction = Road(land: Land(address: MapPoint(x: 22, y: 20)), constructionFinishMonth: 2)
         dataStore.create(roadUnderConstruction)
         
-        agent.makeMapTilesFromDataStore()
+        agent.syncMapWithDataStore()
         
         XCTAssertEqual(map.getTile(address: MapPoint(x: 20, y: 20))?.isStreet(), true)
         XCTAssertEqual(map.getTile(address: MapPoint(x: 21, y: 20))?.isStreet(), true)
@@ -210,7 +210,7 @@ final class RealEstateAgentTests: XCTestCase {
         let land = Land(address: MapPoint(x: 10, y: 10))
         dataStore.create(land)
         
-        agent.makeMapTilesFromDataStore()
+        agent.syncMapWithDataStore()
         
         XCTAssertEqual(map.getTile(address: MapPoint(x: 10, y: 10))?.type, .soldLand)
     }
@@ -231,10 +231,43 @@ final class RealEstateAgentTests: XCTestCase {
         let buildingUnderConstruction = ResidentialBuilding(land: Land(address: MapPoint(x: 11, y: 11)), storeyAmount: 6, constructionFinishMonth: 5)
         dataStore.create(buildingUnderConstruction)
         
-        agent.makeMapTilesFromDataStore()
+        agent.syncMapWithDataStore()
         
         XCTAssertEqual(map.getTile(address: MapPoint(x: 10, y: 10))?.isBuilding(), true)
         XCTAssertEqual(map.getTile(address: MapPoint(x: 11, y: 11))?.isBuilding(), true)
         XCTAssertEqual(map.getTile(address: MapPoint(x: 11, y: 11))?.type, .buildingUnderConstruction(size: 6))
+    }
+    
+    func test_initDataStoreResidentialBuildingsFromMap() {
+        let dataStore = DataStoreMemoryProvider()
+        let taxRates = TaxRates()
+        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
+        let map = GameMap(width: 10, height: 10, scale: 0.2)
+        let mapManager = GameMapManager(map)
+        mapManager.loadMapFrom(content: "b,B,r,R")
+        let agent = RealEstateAgent(mapManager: mapManager, centralBank: centralBank, delegate: nil)
+        
+        var building: ResidentialBuilding?
+        building = dataStore.find(address: MapPoint(x: 0, y: 0))
+        XCTAssertNil(building)
+        building = dataStore.find(address: MapPoint(x: 1, y: 0))
+        XCTAssertNil(building)
+        building = dataStore.find(address: MapPoint(x: 2, y: 0))
+        XCTAssertNil(building)
+        building = dataStore.find(address: MapPoint(x: 3, y: 0))
+        XCTAssertNil(building)
+        
+        
+        agent.syncMapWithDataStore()
+
+        building = dataStore.find(address: MapPoint(x: 0, y: 0))
+        XCTAssertEqual(building?.storeyAmount, 4)
+        XCTAssertEqual(building?.ownerUUID, SystemPlayer.government.uuid)
+        building = dataStore.find(address: MapPoint(x: 1, y: 0))
+        XCTAssertEqual(building?.storeyAmount, 6)
+        building = dataStore.find(address: MapPoint(x: 2, y: 0))
+        XCTAssertEqual(building?.storeyAmount, 8)
+        building = dataStore.find(address: MapPoint(x: 3, y: 0))
+        XCTAssertEqual(building?.storeyAmount, 10)
     }
 }

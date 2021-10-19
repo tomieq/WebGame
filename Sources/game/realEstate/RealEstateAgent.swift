@@ -35,7 +35,19 @@ class RealEstateAgent {
         self.priceList = PriceList()
     }
     
-    func makeMapTilesFromDataStore() {
+    func syncMapWithDataStore() {
+        
+        var buildingToAdd: [ResidentialBuilding] = []
+        for tile in self.mapManager.map.tiles {
+            switch tile.type {
+            case .building(let size):
+                let building = ResidentialBuilding(land: Land(address: tile.address, ownerUUID: SystemPlayer.government.uuid), storeyAmount: size)
+                buildingToAdd.append(building)
+            default:
+                break
+            }
+        }
+        
         let lands: [Land] = self.dataStore.getAll()
         for land in lands  {
             let tile = GameMapTile(address: land.address, type: .soldLand)
@@ -61,6 +73,9 @@ class RealEstateAgent {
                 self.mapManager.map.replaceTile(tile: tile)
             }
         }
+        for buinding in buildingToAdd {
+            self.dataStore.create(buinding)
+        }
     }
     
     func isForSale(address: MapPoint) -> Bool {
@@ -76,7 +91,7 @@ class RealEstateAgent {
         }
         return false
     }
-    
+
     func getProperty(address: MapPoint) -> Property? {
         
         guard let tile = self.mapManager.map.getTile(address: address) else {
