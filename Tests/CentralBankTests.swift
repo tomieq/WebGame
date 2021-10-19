@@ -36,12 +36,9 @@ final class CentralBankTests: XCTestCase {
         
         let invoice = Invoice(title: "money transfer", grossValue: 30, taxRate: 0)
         let financialTransaction = FinancialTransaction(payerID: "payer", recipientID: "receiver", invoice: invoice)
-        let result = CentralBank(dataStore: dataStore, taxRates: taxRates).process(financialTransaction)
         
-        if case .failure(reason: "Payer not found!") = result {
-            
-        } else {
-            XCTFail()
+        XCTAssertThrowsError(try CentralBank(dataStore: dataStore, taxRates: taxRates).process(financialTransaction)){ error in
+            XCTAssertEqual(error as? FinancialTransactionError, .payerNotFound)
         }
     }
     
@@ -54,12 +51,9 @@ final class CentralBankTests: XCTestCase {
         
         let invoice = Invoice(title: "money transfer", grossValue: 30, taxRate: 0)
         let financialTransaction = FinancialTransaction(payerID: "payer", recipientID: "receiver", invoice: invoice)
-        let result = CentralBank(dataStore: dataStore, taxRates: taxRates).process(financialTransaction)
         
-        if case .failure(reason: "Recipient not found!") = result {
-            
-        } else {
-            XCTFail()
+        XCTAssertThrowsError(try CentralBank(dataStore: dataStore, taxRates: taxRates).process(financialTransaction)){ error in
+            XCTAssertEqual(error as? FinancialTransactionError, .recipientNotFound)
         }
     }
     
@@ -74,12 +68,9 @@ final class CentralBankTests: XCTestCase {
         
         let invoice = Invoice(title: "money transfer", grossValue: 150, taxRate: 0)
         let financialTransaction = FinancialTransaction(payerID: "payer", recipientID: "receiver", invoice: invoice)
-        let result = CentralBank(dataStore: dataStore, taxRates: taxRates).process(financialTransaction)
         
-        if case .failure(reason: "Not enough amount of money to finish the financial transaction") = result {
-            
-        } else {
-            XCTFail()
+        XCTAssertThrowsError(try CentralBank(dataStore: dataStore, taxRates: taxRates).process(financialTransaction)){ error in
+            XCTAssertEqual(error as? FinancialTransactionError, .notEnoughMoney)
         }
     }
     
@@ -90,12 +81,9 @@ final class CentralBankTests: XCTestCase {
         
         let invoice = Invoice(title: "money transfer", grossValue: -90, taxRate: 0)
         let financialTransaction = FinancialTransaction(payerID: "payer", recipientID: "receiver", invoice: invoice)
-        let result = CentralBank(dataStore: dataStore, taxRates: taxRates).process(financialTransaction)
         
-        if case .failure(reason: "Negative transaction value") = result {
-            
-        } else {
-            XCTFail()
+        XCTAssertThrowsError(try CentralBank(dataStore: dataStore, taxRates: taxRates).process(financialTransaction)){ error in
+            XCTAssertEqual(error as? FinancialTransactionError, .negativeTransactionValue)
         }
     }
     

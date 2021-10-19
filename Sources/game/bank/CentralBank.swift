@@ -7,6 +7,13 @@
 
 import Foundation
 
+enum FinancialTransactionError: Error, Equatable {
+    case negativeTransactionValue
+    case payerNotFound
+    case recipientNotFound
+    case notEnoughMoney
+}
+
 class CentralBank {
     let dataStore: DataStoreProvider
     let taxRates: TaxRates
@@ -15,23 +22,22 @@ class CentralBank {
         self.dataStore = dataStore
         self.taxRates = taxRates
     }
-    
-    @discardableResult
-    func process(_ transaction: FinancialTransaction) -> FinancialTransactionResult {
+
+    func process(_ transaction: FinancialTransaction) throws {
         Logger.info("CentralBank", "New transaction \(transaction.toJSONString() ?? "")")
         
-        guard transaction.invoice.total > 0 else { return .failure(reason: "Negative transaction value") }
+        guard transaction.invoice.total > 0 else { throw FinancialTransactionError.negativeTransactionValue }
 
         guard let payer = self.dataStore.find(uuid: transaction.payerID) else {
-            return .failure(reason: "Payer not found!")
+            throw FinancialTransactionError.payerNotFound
         }
         guard let recipient = self.dataStore.find(uuid: transaction.recipientID) else {
-            return .failure(reason: "Recipient not found!")
+            throw FinancialTransactionError.recipientNotFound
         }
         let government = self.dataStore.getPlayer(type: .government)
         
         guard payer.wallet > transaction.invoice.total else {
-            return .failure(reason: "Not enough amount of money to finish the financial transaction")
+            throw FinancialTransactionError.notEnoughMoney
         }
         
         // update payer's wallet
@@ -63,8 +69,6 @@ class CentralBank {
                 }
             }
         }
-        
-        return .success
     }
     
     func refundIncomeTax(receiverID: String, transaction: FinancialTransaction, costs: Double) {
@@ -113,9 +117,4 @@ class CentralBank {
         let archive = CashFlow(month: monthIteration, title: title, playerID: playerID, amount: amount)
         self.dataStore.create(archive)
     }
-}
-
-enum FinancialTransactionResult {
-    case success
-    case failure(reason: String)
 }
