@@ -10,33 +10,11 @@ import Foundation
 enum ClickTileAction {
     case roadInfo
     case landInfo
-    case buyLandOffer
-    case buyResidentialBuildingOffer
+    case buyLand
+    case buyResidentialBuilding
     case landManager
     case residentialBuildingManager
     case noAction
-}
-
-extension ClickTileAction {
-    func commands( point: MapPoint) -> [WebsocketOutCommand] {
-        switch self {
-            
-        case .roadInfo:
-            return  [.openWindow(OpenWindow(title: "Property info", width: 400, height: 200, initUrl: "/openPropertyInfo.js?x=\(point.x)&y=\(point.y)", address: point))]
-        case .landInfo:
-            return [.openWindow(OpenWindow(title: "Property info", width: 400, height: 200, initUrl: "/openPropertyInfo.js?x=\(point.x)&y=\(point.y)", address: point))]
-        case .buyLandOffer:
-            return [.openWindow(OpenWindow(title: "Sale offer", width: 300, height: 250, initUrl: "/openSaleOffer.js?type=land&x=\(point.x)&y=\(point.y)", address: point))]
-        case .buyResidentialBuildingOffer:
-            return [.openWindow(OpenWindow(title: "Sale offer", width: 300, height: 250, initUrl: "/openSaleOffer.js?type=building&x=\(point.x)&y=\(point.y)", address: point))]
-        case .landManager:
-            return [.openWindow(OpenWindow(title: "Loading", width: 0.7, height: 100, initUrl: "/openPropertyManager.js?type=land&x=\(point.x)&y=\(point.y)", address: nil))]
-        case .residentialBuildingManager:
-            return [.openWindow(OpenWindow(title: "Loading", width: 0.7, height: 100, initUrl: "/openPropertyManager.js?type=building&x=\(point.x)&y=\(point.y)", address: nil))]
-        case .noAction:
-            return []
-        }
-    }
 }
 
 class ClickTileRouter {
@@ -52,7 +30,7 @@ class ClickTileRouter {
     func action(address: MapPoint, playerUUID: String?) -> ClickTileAction {
         let tile = self.map.getTile(address: address)
         guard let tile = tile else {
-            return .buyLandOffer
+            return .buyLand
         }
         if tile.isStreet() {
             return .roadInfo
@@ -61,7 +39,7 @@ class ClickTileRouter {
             if building.ownerUUID == playerUUID {
                 return .residentialBuildingManager
             } else {
-                return .buyResidentialBuildingOffer
+                return .buyResidentialBuilding
             }
         }
         if let land: Land = self.dataStore.find(address: address) {
@@ -72,5 +50,39 @@ class ClickTileRouter {
             }
         }
         return .noAction
+    }
+}
+
+extension ClickTileAction {
+    func commands( point: MapPoint) -> [WebsocketOutCommand] {
+        switch self {
+            
+        case .roadInfo:
+            return  [
+                .openWindow(OpenWindow(title: "Property info", width: 400, height: 200, initUrl: "/openPropertyInfo.js?x=\(point.x)&y=\(point.y)", address: point))
+            ]
+        case .landInfo:
+            return [
+                .openWindow(OpenWindow(title: "Property info", width: 400, height: 200, initUrl: "/openPropertyInfo.js?x=\(point.x)&y=\(point.y)", address: point))
+            ]
+        case .buyLand:
+            return [
+                .openWindow(OpenWindow(title: "Sale offer", width: 300, height: 250, initUrl: "/openSaleOffer.js?type=land&x=\(point.x)&y=\(point.y)", address: point))
+            ]
+        case .buyResidentialBuilding:
+            return [
+                .openWindow(OpenWindow(title: "Sale offer", width: 300, height: 250, initUrl: "/openSaleOffer.js?type=building&x=\(point.x)&y=\(point.y)", address: point))
+            ]
+        case .landManager:
+            return [
+                .openWindow(OpenWindow(title: "Loading", width: 0.7, height: 100, initUrl: "/openPropertyManager.js?type=land&x=\(point.x)&y=\(point.y)", address: nil))
+            ]
+        case .residentialBuildingManager:
+            return [
+                .openWindow(OpenWindow(title: "Loading", width: 0.7, height: 100, initUrl: "/openPropertyManager.js?type=building&x=\(point.x)&y=\(point.y)", address: nil))
+            ]
+        case .noAction:
+            return []
+        }
     }
 }
