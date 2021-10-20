@@ -180,6 +180,37 @@ final class ConstructionServicesTests: XCTestCase {
         XCTAssertNil(deletedLand)
     }
     
+    func test_startRoadInvestment_verifyInvestmentValue() {
+        let map = GameMap(width: 2, height: 2, scale: 0.2)
+        let mapManager = GameMapManager(map)
+        mapManager.loadMapFrom(content: "s,s")
+        let time = GameTime()
+        
+        let dataStore = DataStoreMemoryProvider()
+        let taxRates = TaxRates()
+        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
+        
+        let address = MapPoint(x: 0, y: 1)
+        
+        let land = Land(address: address, ownerUUID: "p1")
+        dataStore.create(land)
+        
+        let player = Player(uuid: "p1", login: "tester", wallet: 1200)
+        dataStore.create(player)
+        
+        let government = Player(uuid: SystemPlayer.government.uuid, login: "Big Uncle", wallet: 0)
+        dataStore.create(government)
+        
+        let constructionServices = ConstructionServices(mapManager: mapManager, centralBank: centralBank, time: time)
+        constructionServices.priceList.buildRoadPrice = 500
+
+        XCTAssertNoThrow(try constructionServices.startRoadInvestment(address: address, playerUUID: "p1"))
+        XCTAssertEqual(map.getTile(address: address)?.type, .streetUnderConstruction)
+        let road: Road? = dataStore.find(address: address)
+        XCTAssertNotNil(road)
+        XCTAssertEqual(road?.investmentsNetValue, 500)
+    }
+    
     func test_finishRoadInvestment() {
         let map = GameMap(width: 2, height: 2, scale: 0.2)
         let mapManager = GameMapManager(map)

@@ -76,9 +76,11 @@ class ConstructionServices {
             throw ConstructionServicesError.financialTransactionProblem(error)
         }
 
-        self.dataStore.removeLand(uuid: land.uuid)        
-        
-        let road = Road(land: land, constructionFinishMonth: self.currentTime.month + offer.duration)
+        self.dataStore.removeLand(uuid: land.uuid)
+
+        let constructionFinishMonth = self.currentTime.month + offer.duration
+        let investmentsNetValue = offer.invoice.netValue
+        let road = Road(land: land, constructionFinishMonth: constructionFinishMonth, investmentsNetValue: investmentsNetValue)
         self.dataStore.create(road)
         
         let tile = GameMapTile(address: address, type: .streetUnderConstruction)
