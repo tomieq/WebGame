@@ -18,6 +18,44 @@ class PropertyManagerRestAPI {
         self.gameEngine = gameEngine
         self.dataStore = gameEngine.dataStore
         
+        // MARK: roadInfo
+        server.GET["/openRoadInfo.js"] = { request, _ in
+            request.disableKeepAlive = true
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
+            }
+            guard let address = request.mapPoint else {
+                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
+            }
+            let js = JSResponse()
+            js.add(.loadHtml(windowIndex, htmlPath: "/roadInfo.html?&\(address.asQueryParams)"))
+            js.add(.setWindowTitle(windowIndex, title: "Road info"))
+            js.add(.disableWindowResizing(windowIndex))
+            return js.response
+        }
+        
+        server.GET["/roadInfo.html"] = { request, _ in
+            request.disableKeepAlive = true
+            guard let address = request.mapPoint else {
+                return .badRequest(.html("Invalid request! Missing address."))
+            }
+            
+            var ownerName = "Government"
+            if let road: Road = self.dataStore.find(address: address) {
+                if let ownerUUID = road.ownerUUID,
+                    ownerUUID != SystemPlayer.government.uuid,
+                    let owner: Player = self.dataStore.find(uuid: ownerUUID) {
+                    ownerName = owner.login
+                }
+            }
+
+            let template = Template(raw: ResourceCache.shared.getAppResource("templates/roadInfo.html"))
+            var data = [String:String]()
+            data["owner"] = ownerName
+            data["tileUrl"] = TileType.street(type: .local(.localX)).image.path
+            template.assign(variables: data)
+            return .ok(.html(template.output()))
+        }
         server.GET["/openSaleOffer.js"] = { request, _ in
             request.disableKeepAlive = true
             guard let windowIndex = request.queryParam("windowIndex") else {

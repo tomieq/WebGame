@@ -59,7 +59,7 @@ extension ClickTileAction {
             
         case .roadInfo:
             return  [
-                .openWindow(OpenWindow(title: "Property info", width: 400, height: 200, initUrl: "/openPropertyInfo.js?x=\(point.x)&y=\(point.y)", address: point))
+                .openWindow(OpenWindow(title: "Road info", width: 400, height: 250, initUrl: "/openRoadInfo.js?x=\(point.x)&y=\(point.y)", address: point))
             ]
         case .landInfo:
             return [
