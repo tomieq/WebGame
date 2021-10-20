@@ -12,6 +12,7 @@ enum ClickTileAction {
     case landInfo
     case buyLand
     case buyResidentialBuilding
+    case roadManager
     case landManager
     case residentialBuildingManager
     case noAction
@@ -33,6 +34,9 @@ class ClickTileRouter {
             return .buyLand
         }
         if tile.isStreet() {
+            if let road: Road = self.dataStore.find(address: address), road.ownerUUID == playerUUID {
+                return .roadManager
+            }
             return .roadInfo
         }
         if tile.isBuilding(), let building: ResidentialBuilding = self.dataStore.find(address: address) {
@@ -60,6 +64,10 @@ extension ClickTileAction {
         case .roadInfo:
             return  [
                 .openWindow(OpenWindow(title: "Road info", width: 400, height: 250, initUrl: "/openRoadInfo.js?x=\(point.x)&y=\(point.y)", address: point))
+            ]
+        case .roadManager:
+            return  [
+                .openWindow(OpenWindow(title: "Road manager", width: 400, height: 250, initUrl: "/openRoadManager.js?x=\(point.x)&y=\(point.y)", address: point))
             ]
         case .landInfo:
             return [

@@ -35,9 +35,11 @@ class GameEngine {
         let government = Player(uuid: SystemPlayer.government.uuid, login: "Government", wallet: 0)
         let realEstateAgent = Player(uuid: SystemPlayer.realEstateAgency.uuid, login: "Real Estate Agency", wallet: 0)
         let user1 = Player(uuid: "p1", login: "Mike Wachlewsky", wallet: 2000000)
+        let user2 = Player(uuid: "p2", login: "Richard Smith", wallet: 2000000)
         self.dataStore.create(government)
         self.dataStore.create(realEstateAgent)
         self.dataStore.create(user1)
+        self.dataStore.create(user2)
         
         self.gameMap = GameMap(width: 25, height: 25, scale: 0.30)
         self.gameMapManager = GameMapManager(self.gameMap)
@@ -88,11 +90,11 @@ class GameEngine {
                     }
                 }
                 
-                
+                /*
                 if let points = self?.gameMap.getNeighbourAddresses(to: point, radius: 1) {
                     let payload = HighlightArea(points: points, color: "red")
                     self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, command: .highlightArea(payload))
-                }/*
+                }
                 if let points = self?.gameMap.getNeighbourAddresses(to: point, radius: 2) {
                     let payload = HighlightArea(points: points, color: "red")
                     self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .highlightArea, payload: payload)
