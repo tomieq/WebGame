@@ -15,6 +15,17 @@ enum SystemPlayer: String, CaseIterable {
     var uuid: String {
         return self.rawValue
     }
+    
+    var login: String {
+        switch self {
+        case .government:
+            return "Government"
+        case .bank:
+            return "Bank"
+        case .realEstateAgency:
+            return "Real Estate Agency"
+        }
+    }
 }
 
 struct Player: Codable {

@@ -59,7 +59,7 @@ class RoadRestAPI: RestAPI {
                 return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
             }
             let js = JSResponse()
-            js.add(.loadHtml(windowIndex, htmlPath: "/roadInfo.html?&\(address.asQueryParams)"))
+            js.add(.loadHtml(windowIndex, htmlPath: "/roadManager.html?\(address.asQueryParams)"))
             js.add(.setWindowTitle(windowIndex, title: "Road manager"))
             js.add(.disableWindowResizing(windowIndex))
             return js.response
@@ -72,7 +72,7 @@ class RoadRestAPI: RestAPI {
                 return .badRequest(.html("Invalid request! Missing address."))
             }
             
-            var ownerName = "Government"
+            var ownerName = SystemPlayer.government.login
             if let road: Road = self.dataStore.find(address: address) {
                 if let ownerUUID = road.ownerUUID,
                     ownerUUID != SystemPlayer.government.uuid,

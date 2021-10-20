@@ -32,8 +32,8 @@ class GameEngine {
         self.taxRates = TaxRates()
         self.centralbank = CentralBank(dataStore: self.dataStore, taxRates: self.taxRates)
         
-        let government = Player(uuid: SystemPlayer.government.uuid, login: "Government", wallet: 0)
-        let realEstateAgent = Player(uuid: SystemPlayer.realEstateAgency.uuid, login: "Real Estate Agency", wallet: 0)
+        let government = Player(uuid: SystemPlayer.government.uuid, login: SystemPlayer.government.login, wallet: 0)
+        let realEstateAgent = Player(uuid: SystemPlayer.realEstateAgency.uuid, login: SystemPlayer.realEstateAgency.login, wallet: 0)
         let user1 = Player(uuid: "p1", login: "Mike Wachlewsky", wallet: 2000000)
         let user2 = Player(uuid: "p2", login: "Richard Smith", wallet: 2000000)
         self.dataStore.create(government)
