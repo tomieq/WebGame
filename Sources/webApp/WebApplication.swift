@@ -12,12 +12,17 @@ public class WebApplication {
 
     let dataStore: DataStoreProvider
     let gameEngine: GameEngine
+    let api: [RestAPI]
     let propertyManagerAPI: PropertyManagerRestAPI
     
     public init(_ server: HttpServer) {
         self.dataStore = DataStoreMemoryProvider()
         self.gameEngine = GameEngine(dataStore: self.dataStore)
         self.propertyManagerAPI = PropertyManagerRestAPI(server, gameEngine: self.gameEngine)
+        
+        var api: [RestAPI] = []
+        api.append(RoadRestAPI(server, gameEngine: self.gameEngine))
+        self.api = api
 
         server.GET["/"] = { request, responseHeaders in
             request.disableKeepAlive = true
