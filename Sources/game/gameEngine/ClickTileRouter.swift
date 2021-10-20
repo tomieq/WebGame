@@ -7,18 +7,39 @@
 
 import Foundation
 
+enum ClickTileAction {
+    case roadInfo
+    case landInfo
+    case buyLandOffer
+    case buyResidentialBuildingOffer
+    case landManager
+    case residentialBuildingManager
+    case noAction
+}
+
+extension ClickTileAction {
+    func commandPayload(_ point: MapPoint) -> OpenWindow? {
+        switch self {
+            
+        case .roadInfo:
+            return OpenWindow(title: "Property info", width: 400, height: 200, initUrl: "/openPropertyInfo.js?x=\(point.x)&y=\(point.y)", address: point)
+        case .landInfo:
+            return OpenWindow(title: "Property info", width: 400, height: 200, initUrl: "/openPropertyInfo.js?x=\(point.x)&y=\(point.y)", address: point)
+        case .buyLandOffer:
+            return OpenWindow(title: "Sale offer", width: 300, height: 250, initUrl: "/openSaleOffer.js?type=land&x=\(point.x)&y=\(point.y)", address: point)
+        case .buyResidentialBuildingOffer:
+            return OpenWindow(title: "Sale offer", width: 300, height: 250, initUrl: "/openSaleOffer.js?type=building&x=\(point.x)&y=\(point.y)", address: point)
+        case .landManager:
+            return OpenWindow(title: "Loading", width: 0.7, height: 100, initUrl: "/openPropertyManager.js?type=land&x=\(point.x)&y=\(point.y)", address: nil)
+        case .residentialBuildingManager:
+            return OpenWindow(title: "Loading", width: 0.7, height: 100, initUrl: "/openPropertyManager.js?type=building&x=\(point.x)&y=\(point.y)", address: nil)
+        case .noAction:
+            return nil
+        }
+    }
+}
 
 class ClickTileRouter {
-    
-    enum Action {
-        case roadInfo
-        case landInfo
-        case buyLandOffer
-        case buyResidentialBuildingOffer
-        case landManager
-        case residentialBuildingManager
-        case noAction
-    }
     
     let map: GameMap
     let dataStore: DataStoreProvider
@@ -28,7 +49,7 @@ class ClickTileRouter {
         self.dataStore = dataStore
     }
     
-    func action(address: MapPoint, playerUUID: String?) -> Action {
+    func action(address: MapPoint, playerUUID: String?) -> ClickTileAction {
         let tile = self.map.getTile(address: address)
         guard let tile = tile else {
             return .buyLandOffer

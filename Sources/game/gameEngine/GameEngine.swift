@@ -80,35 +80,17 @@ class GameEngine {
             case .tileClicked(let point):
 
                 let playerUUID = gameEvent.playerSession?.playerUUID
-                switch self?.clickRouter.action(address: point, playerUUID: playerUUID) ?? .noAction {
-        
-                case .roadInfo:
-                    let payload = OpenWindow(title: "Property info", width: 400, height: 200, initUrl: "/openPropertyInfo.js?x=\(point.x)&y=\(point.y)", address: point)
+                
+                
+                if let payload = self?.clickRouter.action(address: point, playerUUID: playerUUID).commandPayload(point) {
                     self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .openWindow, payload: payload)
-                case .landInfo:
-                    let payload = OpenWindow(title: "Property info", width: 400, height: 200, initUrl: "/openPropertyInfo.js?x=\(point.x)&y=\(point.y)", address: point)
-                    self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .openWindow, payload: payload)
-                case .buyLandOffer:
-                    let payload = OpenWindow(title: "Sale offer", width: 300, height: 250, initUrl: "/openSaleOffer.js?type=land&x=\(point.x)&y=\(point.y)", address: point)
-                    self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .openWindow, payload: payload)
-                case .buyResidentialBuildingOffer:
-                    let payload = OpenWindow(title: "Sale offer", width: 300, height: 250, initUrl: "/openSaleOffer.js?type=building&x=\(point.x)&y=\(point.y)", address: point)
-                    self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .openWindow, payload: payload)
-                case .landManager:
-                    let payload = OpenWindow(title: "Loading", width: 0.7, height: 100, initUrl: "/openPropertyManager.js?type=land&x=\(point.x)&y=\(point.y)", address: nil)
-                    self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .openWindow, payload: payload)
-                case .residentialBuildingManager:
-                    let payload = OpenWindow(title: "Loading", width: 0.7, height: 100, initUrl: "/openPropertyManager.js?type=building&x=\(point.x)&y=\(point.y)", address: nil)
-                    self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .openWindow, payload: payload)
-                case .noAction:
-                    break
                 }
                 
-                /*
+                
                 if let points = self?.gameMap.getNeighbourAddresses(to: point, radius: 1) {
                     let payload = HighlightArea(points: points, color: "red")
                     self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .highlightArea, payload: payload)
-                }
+                }/*
                 if let points = self?.gameMap.getNeighbourAddresses(to: point, radius: 2) {
                     let payload = HighlightArea(points: points, color: "red")
                     self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .highlightArea, payload: payload)
