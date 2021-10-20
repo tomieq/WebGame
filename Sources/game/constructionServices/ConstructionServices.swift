@@ -104,7 +104,9 @@ class ConstructionServices {
         
         let offer = residentialBuildingOffer(landName: land.name, storeyAmount: storeyAmount)
         
-        let building = ResidentialBuilding(land: land, storeyAmount: storeyAmount, constructionFinishMonth: self.currentTime.month + offer.duration)
+        let constructionFinishMonth = self.currentTime.month + offer.duration
+        let investmentsNetValue = offer.invoice.netValue
+        let building = ResidentialBuilding(land: land, storeyAmount: storeyAmount, constructionFinishMonth: constructionFinishMonth, investmentsNetValue: investmentsNetValue)
         self.dataStore.create(building)
         // process the transaction
         let governmentID = SystemPlayer.government.uuid
