@@ -121,8 +121,7 @@ class RealEstateAgent {
         }
         let name = "\(RandomNameGenerator.randomAdjective.capitalized) \(RandomNameGenerator.randomNoun.capitalized)"
         let price = self.estimateLandValue(address)
-        var commission = price * self.priceList.realEstateSellPropertyCommisionFee
-        if commission < 100 { commission = 100 }
+        let commission = self.priceList.realEstateSellLandPropertyCommisionFee + price * self.priceList.realEstateSellPropertyCommisionRate
         let saleInvoice = Invoice(title: "Purchase land \(name)", netValue: price, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
         let commissionInvoice = Invoice(title: "Commission for purchase land \(name)", grossValue: commission, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
         let land = Land(address: address, name: name, ownerUUID: buyerUUID, purchaseNetValue: saleInvoice.netValue)
@@ -138,8 +137,7 @@ class RealEstateAgent {
             return nil
         }
         let price = self.estimateResidentialBuildingValue(address)
-        var commission = price * self.priceList.realEstateSellPropertyCommisionFee
-        if commission < 100 { commission = 100 }
+        let commission = self.priceList.realEstateSellResidentialBuildingCommisionFee + price * self.priceList.realEstateSellPropertyCommisionRate
         let saleInvoice = Invoice(title: "Purchase \(building.name)", netValue: price, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
         let commissionInvoice = Invoice(title: "Commission for purchase land \(building.name)", grossValue: commission, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
         

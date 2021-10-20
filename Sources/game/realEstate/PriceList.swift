@@ -12,16 +12,17 @@ class PriceList {
     
     public var residentialBuildingOwnerIncomeOnFlatSellPrice: Double = 75000
     
-    public var instantSellValue: Double = 0.85
-    public var realEstateSellPropertyCommisionFee = 0.01
+    public var realEstateSellLandPropertyCommisionFee: Double = 200
+    public var realEstateSellResidentialBuildingCommisionFee: Double = 1000
+    public var realEstateSellPropertyCommisionRate: Double = 0.01
     // property value loss
     public var propertyValueDistanceFromRoadLoss: Double = 0.6
     public var propertyValueAntennaSurroundingLoss: Double = 0.22
     // property value gain
-    public var propertyValueDistanceFromResidentialBuildingGain = 0.2
+    public var propertyValueDistanceFromResidentialBuildingGain: Double = 0.2
     // montly costs
-    public var montlyResidentialBuildingCost = 1300.0
-    public var montlyResidentialBuildingCostPerStorey = 1100.0
+    public var montlyResidentialBuildingCost: Double = 1300.0
+    public var montlyResidentialBuildingCostPerStorey: Double = 1100.0
     public var monthlyResidentialBuildingOwnerIncomePerFlat: Double = 300.0
     public var monthlyBillsForRentedApartment: Double = 452.0
     public var monthlyBillsForUnrentedApartment: Double = 180.0
