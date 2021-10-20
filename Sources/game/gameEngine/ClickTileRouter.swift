@@ -18,23 +18,23 @@ enum ClickTileAction {
 }
 
 extension ClickTileAction {
-    func commandPayload(_ point: MapPoint) -> OpenWindow? {
+    func commands( point: MapPoint) -> [WebsocketOutCommand] {
         switch self {
             
         case .roadInfo:
-            return OpenWindow(title: "Property info", width: 400, height: 200, initUrl: "/openPropertyInfo.js?x=\(point.x)&y=\(point.y)", address: point)
+            return  [.openWindow(OpenWindow(title: "Property info", width: 400, height: 200, initUrl: "/openPropertyInfo.js?x=\(point.x)&y=\(point.y)", address: point))]
         case .landInfo:
-            return OpenWindow(title: "Property info", width: 400, height: 200, initUrl: "/openPropertyInfo.js?x=\(point.x)&y=\(point.y)", address: point)
+            return [.openWindow(OpenWindow(title: "Property info", width: 400, height: 200, initUrl: "/openPropertyInfo.js?x=\(point.x)&y=\(point.y)", address: point))]
         case .buyLandOffer:
-            return OpenWindow(title: "Sale offer", width: 300, height: 250, initUrl: "/openSaleOffer.js?type=land&x=\(point.x)&y=\(point.y)", address: point)
+            return [.openWindow(OpenWindow(title: "Sale offer", width: 300, height: 250, initUrl: "/openSaleOffer.js?type=land&x=\(point.x)&y=\(point.y)", address: point))]
         case .buyResidentialBuildingOffer:
-            return OpenWindow(title: "Sale offer", width: 300, height: 250, initUrl: "/openSaleOffer.js?type=building&x=\(point.x)&y=\(point.y)", address: point)
+            return [.openWindow(OpenWindow(title: "Sale offer", width: 300, height: 250, initUrl: "/openSaleOffer.js?type=building&x=\(point.x)&y=\(point.y)", address: point))]
         case .landManager:
-            return OpenWindow(title: "Loading", width: 0.7, height: 100, initUrl: "/openPropertyManager.js?type=land&x=\(point.x)&y=\(point.y)", address: nil)
+            return [.openWindow(OpenWindow(title: "Loading", width: 0.7, height: 100, initUrl: "/openPropertyManager.js?type=land&x=\(point.x)&y=\(point.y)", address: nil))]
         case .residentialBuildingManager:
-            return OpenWindow(title: "Loading", width: 0.7, height: 100, initUrl: "/openPropertyManager.js?type=building&x=\(point.x)&y=\(point.y)", address: nil)
+            return [.openWindow(OpenWindow(title: "Loading", width: 0.7, height: 100, initUrl: "/openPropertyManager.js?type=building&x=\(point.x)&y=\(point.y)", address: nil))]
         case .noAction:
-            return nil
+            return []
         }
     }
 }

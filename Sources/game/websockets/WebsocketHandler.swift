@@ -26,30 +26,20 @@ class WebsocketHandler {
     }
     
     
-    func sendTo<T:Codable>(playerSessionID: String?, commandType: WebsocketCommandOutType, payload: T) {
-        let command = WebsocketOutCommand<T>(commandType, payload)
-        if let json = command.toJSONString() {
-            Logger.info("WebsocketHandler", "Send to \(playerSessionID ?? "nil"): \(json)")
-            for playerSession in (self.activeSessions.filter{ $0.playerSession?.id == playerSessionID}) {
-                playerSession.websocketSession.writeText(json)
-            }
-        } else {
-            Logger.error("WebsocketHandler", "Couldn't serialize command \(commandType)")
+    func sendTo(playerSessionID: String?, command: WebsocketOutCommand) {
+        let json = command.json
+        Logger.info("WebsocketHandler", "Send to \(playerSessionID ?? "nil"): \(json)")
+        for playerSession in (self.activeSessions.filter{ $0.playerSession?.id == playerSessionID}) {
+            playerSession.websocketSession.writeText(json)
         }
-        
     }
     
-    func sendToAll<T:Codable>(commandType: WebsocketCommandOutType, payload: T) {
-        let command = WebsocketOutCommand<T>(commandType, payload)
-        if let json = command.toJSONString() {
-            Logger.info("WebsocketHandler", "Send to all: \(json)")
-            for playerSession in self.activeSessions {
-                playerSession.websocketSession.writeText(json)
-            }
-        } else {
-            Logger.error("WebsocketHandler", "Couldn't serialize command \(commandType)")
+    func sendToAll(command: WebsocketOutCommand) {
+        let json = command.json
+        Logger.info("WebsocketHandler", "Send to all: \(json)")
+        for playerSession in self.activeSessions {
+            playerSession.websocketSession.writeText(json)
         }
-        
     }
     
     func handleMessage(websocketSession: WebSocketSession, text: String) {

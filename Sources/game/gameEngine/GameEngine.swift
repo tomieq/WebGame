@@ -63,7 +63,7 @@ class GameEngine {
             switch gameEvent.action {
             case .userConnected:
                 if let session = gameEvent.playerSession, let player = self?.dataStore.find(uuid: session.playerUUID) {
-                    self?.websocketHandler.sendTo(playerSessionID: session.id, commandType: .updateWallet, payload: player.wallet.money)
+                    self?.websocketHandler.sendTo(playerSessionID: session.id, command: .updateWallet(player.wallet.money))
                 }
             case .userDisconnected:
                 if let session = gameEvent.playerSession {
@@ -71,25 +71,27 @@ class GameEngine {
                 }
             case .reloadMap:
                 self?.streetNavi.reload()
-                self?.websocketHandler.sendToAll(commandType: .reloadMap, payload: "\(gameEvent.playerSession?.playerUUID ?? "nil")")
+                self?.websocketHandler.sendToAll(command: .reloadMap)
             case .updateWallet(let wallet):
-                self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .updateWallet, payload: wallet)
+                self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, command: .updateWallet(wallet))
             case .updateGameDate(let date):
                 self?.constructionServices.finishInvestments()
-                self?.websocketHandler.sendToAll(commandType: .updateGameDate, payload: date)
+                self?.websocketHandler.sendToAll(command: .updateGameDate(date))
             case .tileClicked(let point):
 
                 let playerUUID = gameEvent.playerSession?.playerUUID
                 
                 
-                if let payload = self?.clickRouter.action(address: point, playerUUID: playerUUID).commandPayload(point) {
-                    self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .openWindow, payload: payload)
+                if let commands = self?.clickRouter.action(address: point, playerUUID: playerUUID).commands(point: point) {
+                    for command in commands {
+                        self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, command: command)
+                    }
                 }
                 
                 
                 if let points = self?.gameMap.getNeighbourAddresses(to: point, radius: 1) {
                     let payload = HighlightArea(points: points, color: "red")
-                    self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, commandType: .highlightArea, payload: payload)
+                    self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, command: .highlightArea(payload))
                 }/*
                 if let points = self?.gameMap.getNeighbourAddresses(to: point, radius: 2) {
                     let payload = HighlightArea(points: points, color: "red")
@@ -106,16 +108,16 @@ class GameEngine {
             case .vehicleTravelStarted(let payload):
                 switch gameEvent.playerSession {
                 case .none:
-                    self?.websocketHandler.sendToAll(commandType: .startVehicle, payload: payload)
+                    self?.websocketHandler.sendToAll(command: .startVehicle(payload))
                 case .some(let playerSession):
-                    self?.websocketHandler.sendTo(playerSessionID: playerSession.id, commandType: .startVehicle, payload: payload)
+                    self?.websocketHandler.sendTo(playerSessionID: playerSession.id, command: .startVehicle(payload))
                 }
             case .notification(let payload):
                 switch gameEvent.playerSession {
                 case .none:
-                    self?.websocketHandler.sendToAll(commandType: .notification, payload: payload)
+                    self?.websocketHandler.sendToAll(command: .notification(payload))
                 case .some(let playerSession):
-                    self?.websocketHandler.sendTo(playerSessionID: playerSession.id, commandType: .notification, payload: payload)
+                    self?.websocketHandler.sendTo(playerSessionID: playerSession.id, command: .notification(payload))
                 }
             default:
                 break
