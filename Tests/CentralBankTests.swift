@@ -153,7 +153,7 @@ final class CentralBankTests: XCTestCase {
         XCTAssertEqual(dataStore.find(uuid: "receiver")?.wallet, 100)
     }
     
-    func test_multipleTransfers() {
+    func test_multipleThreadTransfers() {
         let dataStore = DataStoreMemoryProvider()
         let payer = Player(uuid: "payer", login: "user1", wallet: 190000)
         let receiver = Player(uuid: "receiver", login: "user2", wallet: 0)

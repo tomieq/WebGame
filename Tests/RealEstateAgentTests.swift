@@ -234,7 +234,7 @@ final class RealEstateAgentTests: XCTestCase {
         agent.syncMapWithDataStore()
         
         XCTAssertEqual(map.getTile(address: MapPoint(x: 10, y: 10))?.isBuilding(), true)
-        XCTAssertEqual(map.getTile(address: MapPoint(x: 11, y: 11))?.isBuilding(), true)
+        XCTAssertEqual(map.getTile(address: MapPoint(x: 11, y: 11))?.isBuildingUnderConstruction(), true)
         XCTAssertEqual(map.getTile(address: MapPoint(x: 11, y: 11))?.type, .buildingUnderConstruction(size: 6))
     }
     

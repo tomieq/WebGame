@@ -100,14 +100,11 @@ extension GameMapTile {
         if case .building = self.type {
             return true
         }
-        if case .buildingUnderConstruction = self.type {
-            return true
-        }
         return false
     }
     
-    func isSoldLand() -> Bool {
-        if case .soldLand = self.type {
+    func isBuildingUnderConstruction() -> Bool {
+        if case .buildingUnderConstruction = self.type {
             return true
         }
         return false

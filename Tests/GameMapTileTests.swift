@@ -38,7 +38,7 @@ final class GameMapTileTests: XCTestCase {
     
     func test_isBuilding_buildingUnderConstruction() {
         let mapTile = GameMapTile(address: MapPoint(x: 5, y: 6), type: .buildingUnderConstruction(size: 2))
-        XCTAssertTrue(mapTile.isBuilding())
+        XCTAssertTrue(mapTile.isBuildingUnderConstruction())
     }
     
     func test_isBuilding_localStreet() {

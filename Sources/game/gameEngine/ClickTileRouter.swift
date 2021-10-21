@@ -33,24 +33,30 @@ class ClickTileRouter {
         guard let tile = tile else {
             return .buyLand
         }
-        if tile.isStreet() {
+        guard let propertyType = tile.propertyType else {
+            return .noAction
+        }
+        switch propertyType {
+        case .land:
+            if let land: Land = self.dataStore.find(address: address) {
+                if land.ownerUUID == playerUUID {
+                    return .landManager
+                } else {
+                    return .landInfo
+                }
+            }
+        case .road:
             if let road: Road = self.dataStore.find(address: address), road.ownerUUID == playerUUID {
                 return .roadManager
             }
             return .roadInfo
-        }
-        if tile.isBuilding(), let building: ResidentialBuilding = self.dataStore.find(address: address) {
-            if building.ownerUUID == playerUUID {
-                return .residentialBuildingManager
-            } else {
-                return .buyResidentialBuilding
-            }
-        }
-        if let land: Land = self.dataStore.find(address: address) {
-            if land.ownerUUID == playerUUID {
-                return .landManager
-            } else {
-                return .landInfo
+        case .residentialBuilding:
+            if let building: ResidentialBuilding = self.dataStore.find(address: address) {
+                if building.ownerUUID == playerUUID {
+                    return .residentialBuildingManager
+                } else {
+                    return .buyResidentialBuilding
+                }
             }
         }
         return .noAction
@@ -67,7 +73,7 @@ extension ClickTileAction {
             ]
         case .roadManager:
             return  [
-                .openWindow(OpenWindow(title: "Road manager", width: 400, height: 250, initUrl: "/openRoadManager.js?x=\(point.x)&y=\(point.y)", address: point))
+                .openWindow(OpenWindow(title: "Road manager", width: 0.7, height: 250, initUrl: "/openRoadManager.js?x=\(point.x)&y=\(point.y)", address: point))
             ]
         case .landInfo:
             return [

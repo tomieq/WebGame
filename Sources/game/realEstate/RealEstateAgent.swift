@@ -92,19 +92,20 @@ class RealEstateAgent {
         guard let tile = self.mapManager.map.getTile(address: address) else {
             return nil
         }
-        if tile.isStreet() || tile.isStreetUnderConstruction() {
+        guard let propertyType = tile.propertyType else {
+            return nil
+        }
+        switch propertyType {
+        case .land:
+            let land: Land? = self.dataStore.find(address: address)
+            return land
+        case .road:
             let road: Road? = self.dataStore.find(address: address)
             return road
-        }
-        if tile.isBuilding() {
+        case .residentialBuilding:
             let building: ResidentialBuilding? = self.dataStore.find(address: address)
             return building
         }
-        if tile.isSoldLand() {
-            let land: Land? = self.dataStore.find(address: address)
-            return land
-        }
-        return nil
     }
 
     func landSaleOffer(address: MapPoint, buyerUUID: String) -> SaleOffer? {
@@ -235,14 +236,17 @@ class RealEstateAgent {
         guard let tile = self.mapManager.map.getTile(address: address) else {
             return self.estimateLandValue(address)
         }
-
-        if tile.isStreet() || tile.isStreetUnderConstruction() {
-            return self.estimateRoadValue(address)
+        guard let propertyType = tile.propertyType else {
+            return nil
         }
-        if tile.isBuilding() {
+        switch propertyType {
+        case .land:
+            return self.estimateLandValue(address)
+        case .road:
+            return self.estimateRoadValue(address)
+        case .residentialBuilding:
             return self.estimateResidentialBuildingValue(address)
         }
-        return nil
     }
     
     func estimateApartmentValue(_ apartment: Apartment) -> Double {
