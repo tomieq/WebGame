@@ -19,6 +19,7 @@ class GameEngine {
     let streetNavi: StreetNavi
     let gameTraffic: GameTraffic
     let websocketHandler: WebsocketHandler
+    let propertyValuer: PropertyValuer
     let realEstateAgent: RealEstateAgent
     let constructionServices: ConstructionServices
     let gameClock: GameClock
@@ -45,7 +46,8 @@ class GameEngine {
         self.gameMapManager = GameMapManager(self.gameMap)
         self.gameMapManager.loadMapFrom(path: "maps/roadMap1")
         
-        self.realEstateAgent = RealEstateAgent(mapManager: self.gameMapManager, centralBank: self.centralbank)
+        self.propertyValuer = PropertyValuer(mapManager: self.gameMapManager, dataStore: self.dataStore)
+        self.realEstateAgent = RealEstateAgent(mapManager: self.gameMapManager, propertyValuer: self.propertyValuer, centralBank: self.centralbank)
         self.realEstateAgent.syncMapWithDataStore()
         
         self.constructionServices = ConstructionServices(mapManager: self.gameMapManager, centralBank: self.centralbank, time: self.time)

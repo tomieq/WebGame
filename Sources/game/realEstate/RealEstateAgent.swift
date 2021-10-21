@@ -17,11 +17,13 @@ class RealEstateAgent {
     let mapManager: GameMapManager
     let centralBank: CentralBank
     let priceList: PriceList
+    let propertyValuer: PropertyValuer
     var delegate: RealEstateAgentDelegate?
     let dataStore: DataStoreProvider
     
-    init(mapManager: GameMapManager, centralBank: CentralBank, delegate: RealEstateAgentDelegate? = nil) {
+    init(mapManager: GameMapManager, propertyValuer: PropertyValuer, centralBank: CentralBank, delegate: RealEstateAgentDelegate? = nil) {
         self.mapManager = mapManager
+        self.propertyValuer = propertyValuer
         self.dataStore = centralBank.dataStore
         self.centralBank = centralBank
         self.delegate = delegate
@@ -113,9 +115,11 @@ class RealEstateAgent {
         guard tile == nil else {
             return nil
         }
-        let name = "\(RandomNameGenerator.randomAdjective.capitalized) \(RandomNameGenerator.randomNoun.capitalized)"
-        let price = self.estimateLandValue(address)
+        guard let price = self.propertyValuer.estimateValue(address) else {
+            return nil
+        }
         let commission = self.priceList.realEstateSellLandPropertyCommisionFee + price * self.priceList.realEstateSellPropertyCommisionRate
+        let name = "\(RandomNameGenerator.randomAdjective.capitalized) \(RandomNameGenerator.randomNoun.capitalized)"
         let saleInvoice = Invoice(title: "Purchase land \(name)", netValue: price, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
         let commissionInvoice = Invoice(title: "Commission for purchase land \(name)", grossValue: commission, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
         let land = Land(address: address, name: name, ownerUUID: buyerUUID, purchaseNetValue: saleInvoice.netValue)
@@ -130,7 +134,9 @@ class RealEstateAgent {
         guard let building: ResidentialBuilding = self.dataStore.find(address: address) else {
             return nil
         }
-        let price = self.estimateResidentialBuildingValue(address)
+        guard let price = self.propertyValuer.estimateValue(address) else {
+            return nil
+        }
         let commission = self.priceList.realEstateSellResidentialBuildingCommisionFee + price * self.priceList.realEstateSellPropertyCommisionRate
         let saleInvoice = Invoice(title: "Purchase \(building.name)", netValue: price, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
         let commissionInvoice = Invoice(title: "Commission for purchase land \(building.name)", grossValue: commission, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
@@ -218,37 +224,7 @@ class RealEstateAgent {
             self.recalculateFeesInTheBuilding(building)
         }
     }
-    
-    private func estimateLandValue(_ address: MapPoint) -> Double {
-        return (self.priceList.baseLandValue * self.calculateLocationValueFactor(address)).rounded(toPlaces: 0)
-    }
-    
-    private func estimateRoadValue(_ address: MapPoint) -> Double {
-        return 0
-    }
-    
-    private func estimateResidentialBuildingValue(_ address: MapPoint) -> Double {
-        return 10
-    }
-    
-    func estimateValue(_ address: MapPoint) -> Double? {
-        
-        guard let tile = self.mapManager.map.getTile(address: address) else {
-            return self.estimateLandValue(address)
-        }
-        guard let propertyType = tile.propertyType else {
-            return nil
-        }
-        switch propertyType {
-        case .land:
-            return self.estimateLandValue(address)
-        case .road:
-            return self.estimateRoadValue(address)
-        case .residentialBuilding:
-            return self.estimateResidentialBuildingValue(address)
-        }
-    }
-    
+    /*
     func estimateApartmentValue(_ apartment: Apartment) -> Double {
         if let building: ResidentialBuilding = self.dataStore.find(address: apartment.address) {
             let investmentCost = 0.0//ConstructionPriceList.makeResidentialBuildingCost(storey: building.storeyAmount)
@@ -266,53 +242,7 @@ class RealEstateAgent {
         }
         return 0.0
     }
-    
-    private func calculateLocationValueFactor(_ address: MapPoint) -> Double {
-        // in future add price relation to bus stop
-        
-        func getBuildingsFactor(_ address: MapPoint) -> Double {
-            var startPrice = 1.0
-            for distance in (1...4) {
-                for streetAddress in self.mapManager.map.getNeighbourAddresses(to: address, radius: distance) {
-                    if let tile = self.mapManager.map.getTile(address: streetAddress), tile.isStreet() {
-                        
-                        if distance == 1 {
-                            
-                            for buildingDistance in (1...3) {
-                                var numberOfBuildings = 0
-                                for buildingAddress in self.mapManager.map.getNeighbourAddresses(to: address, radius: buildingDistance) {
-                                    if let tile = self.mapManager.map.getTile(address: buildingAddress), tile.isBuilding() {
-                                        numberOfBuildings += 1
-                                    }
-                                }
-                                if numberOfBuildings > 0 {
-                                    let factor = self.priceList.propertyValueDistanceFromResidentialBuildingGain/buildingDistance.double
-                                    startPrice = startPrice * (1 + numberOfBuildings.double * factor)
-                                }
-                            }
-                        }
-                        return startPrice
-                    }
-                }
-                startPrice = startPrice * self.priceList.propertyValueDistanceFromRoadLoss
-            }
-            return startPrice
-        }
-        
-        func getAntennaFactor(_ address: MapPoint) -> Double {
-            var startPrice = 1.0
-            for distance in (1...3) {
-                for streetAddress in self.mapManager.map.getNeighbourAddresses(to: address, radius: distance) {
-                    if let tile = self.mapManager.map.getTile(address: streetAddress), tile.isAntenna() {
-                        startPrice = startPrice * self.priceList.propertyValueAntennaSurroundingLoss * distance.double
-                    }
-                }
-            }
-            return startPrice
-        }
-        return getBuildingsFactor(address) * getAntennaFactor(address) * (1 + self.occupiedSpaceOnMapFactor())
-    }
-    
+    */
     func recalculateFeesInTheBuilding(_ building: ResidentialBuilding) {
         /*
         let baseBuildingMonthlyCosts: Double = self.priceList.montlyResidentialBuildingCost + self.priceList.montlyResidentialBuildingCostPerStorey * building.storeyAmount.double
