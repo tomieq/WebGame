@@ -19,7 +19,7 @@ $( document ).ready(function() {
         } else {
         // e.g. server process killed or network down
         // event.code is usually 1006 in this case
-            alert('[webSocket] [close] Connection died ' + event.code);
+            gameDisconnected()
         }
     };
 

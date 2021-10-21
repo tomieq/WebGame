@@ -14,6 +14,11 @@ class GameTraffic {
         this.isRunning = false;
     }
     
+    stopTraffic() {
+        this.movableObjects = [];
+        this.clearMap();
+    }
+    
     addObject(id, type, mapPoints, speed) {
         this.movableObjects.push(new GameMovableObject(id, type, this.calculator, mapPoints, 400, speed));
         if(this.isRunning == false) {
