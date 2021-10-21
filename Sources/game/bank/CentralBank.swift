@@ -52,6 +52,7 @@ class CentralBank {
         let government: Player? = self.dataStore.find(uuid: SystemPlayer.government.uuid)
         
         guard payer.wallet > transaction.invoice.total else {
+        guard payer.wallet >= transaction.invoice.total else {
             throw FinancialTransactionError.notEnoughMoney
         }
         
