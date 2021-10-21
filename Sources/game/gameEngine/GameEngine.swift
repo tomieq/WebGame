@@ -46,9 +46,10 @@ class GameEngine {
         self.gameMapManager = GameMapManager(self.gameMap)
         self.gameMapManager.loadMapFrom(path: "maps/roadMap1")
         
+        MapStorageSync(mapManager: self.gameMapManager, dataStore: self.dataStore).syncMapWithDataStore()
+        
         self.propertyValuer = PropertyValuer(mapManager: self.gameMapManager, dataStore: self.dataStore)
         self.realEstateAgent = RealEstateAgent(mapManager: self.gameMapManager, propertyValuer: self.propertyValuer, centralBank: self.centralbank)
-        self.realEstateAgent.syncMapWithDataStore()
         
         self.constructionServices = ConstructionServices(mapManager: self.gameMapManager, centralBank: self.centralbank, time: self.time)
         

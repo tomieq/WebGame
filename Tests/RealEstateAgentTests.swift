@@ -24,7 +24,7 @@ final class RealEstateAgentTests: XCTestCase {
         let land = Land(address: MapPoint(x: 3, y: 3), ownerUUID: "john")
         dataStore.create(land)
         
-        agent.syncMapWithDataStore()
+        MapStorageSync(mapManager: mapManager, dataStore: dataStore).syncMapWithDataStore()
         
         XCTAssertNil(agent.landSaleOffer(address: MapPoint(x: 3, y: 3), buyerUUID: "random"))
     }
@@ -112,7 +112,7 @@ final class RealEstateAgentTests: XCTestCase {
         let propertyValuer = PropertyValuer(mapManager: mapManager, dataStore: dataStore)
         let agent = RealEstateAgent(mapManager: mapManager, propertyValuer: propertyValuer, centralBank: centralBank, delegate: nil)
         
-        agent.syncMapWithDataStore()
+        MapStorageSync(mapManager: mapManager, dataStore: dataStore).syncMapWithDataStore()
         
         XCTAssertNil(agent.landSaleOffer(address: MapPoint(x: 0, y: 0), buyerUUID: "random"))
     }
@@ -127,7 +127,7 @@ final class RealEstateAgentTests: XCTestCase {
         mapManager.loadMapFrom(content: "b")
         let propertyValuer = PropertyValuer(mapManager: mapManager, dataStore: dataStore)
         let agent = RealEstateAgent(mapManager: mapManager, propertyValuer: propertyValuer, centralBank: centralBank, delegate: nil)
-        agent.syncMapWithDataStore()
+        MapStorageSync(mapManager: mapManager, dataStore: dataStore).syncMapWithDataStore()
         
         let player = Player(uuid: "buyer", login: "tester", wallet: 0)
         dataStore.create(player)
@@ -150,7 +150,7 @@ final class RealEstateAgentTests: XCTestCase {
         mapManager.loadMapFrom(content: "b")
         let propertyValuer = PropertyValuer(mapManager: mapManager, dataStore: dataStore)
         let agent = RealEstateAgent(mapManager: mapManager, propertyValuer: propertyValuer, centralBank: centralBank, delegate: nil)
-        agent.syncMapWithDataStore()
+        MapStorageSync(mapManager: mapManager, dataStore: dataStore).syncMapWithDataStore()
         let address = MapPoint(x: 0, y: 0)
         let player = Player(uuid: "buyer", login: "tester", wallet: 10000000)
         dataStore.create(player)
