@@ -52,6 +52,10 @@ class GameMapManager {
         }
     }
     
+    func occupiedSpaceOnMap() -> Double {
+        return Double(self.map.tiles.count) / Double(self.map.width * self.map.height)
+    }
+    
     private func loadFileIntoString(path: String) -> String {
         return (try? String(contentsOfFile: Resource.absolutePath(forAppResource: path))) ?? ""
     }

@@ -346,10 +346,6 @@ class RealEstateAgent {
         building.monthlyMaintenanceCost = spendings.rounded(toPlaces: 0)
          */
     }
-    
-    private func occupiedSpaceOnMapFactor() -> Double {
-        return Double(self.mapManager.map.tiles.count) / Double(self.mapManager.map.width * self.mapManager.map.height)
-    }
  }
 
 

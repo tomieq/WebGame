@@ -144,4 +144,13 @@ final class GameMapManagerTests: XCTestCase {
         XCTAssertEqual(map.getTile(address: MapPoint(x: 1, y: 1))?.type, TileType.street(type: .local(.localXIntersection1)))
         XCTAssertEqual(map.getTile(address: MapPoint(x: 2, y: 1))?.type, TileType.street(type: .local(.localDeadEndX2)))
     }
+    
+    func test_calculatingOccupiedSpace() {
+        
+        let map = GameMap(width: 10, height: 10, scale: 0.2)
+        let mapManager = GameMapManager(map)
+        let mapContent = "s,s,s,s,s"
+        mapManager.loadMapFrom(content: mapContent)
+        XCTAssertEqual(mapManager.occupiedSpaceOnMap(), 0.05)
+    }
 }
