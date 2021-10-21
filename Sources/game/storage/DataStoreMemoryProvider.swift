@@ -48,9 +48,12 @@ class DataStoreMemoryProvider: DataStoreProvider {
         }
     }
     
+    private let cashSemaphore = DispatchSemaphore(value: 1)
     @discardableResult func create(_ transaction: CashFlow) -> String {
         let managedObject = CashFlowManagedObject(transaction)
+        self.cashSemaphore.wait()
         self.transactions.append(managedObject)
+        self.cashSemaphore.signal()
         return managedObject.uuid
     }
     
