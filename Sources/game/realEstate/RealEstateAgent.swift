@@ -65,6 +65,31 @@ class RealEstateAgent {
         }
     }
 
+    func registerSellOffer(address: MapPoint, netValue: Double) throws {
+        guard self.mapManager.map.isAddressOnMap(address) else {
+            throw RegisterOfferError.propertyDoesNotExist
+        }
+        guard let propertyType = self.mapManager.map.getTile(address: address)?.propertyType else {
+            throw RegisterOfferError.propertyDoesNotExist
+        }
+        let property: Property?
+        switch propertyType {
+            
+        case .land:
+            let land: Land? = self.dataStore.find(address: address)
+            property = land
+        case .road:
+            let road: Road? = self.dataStore.find(address: address)
+            property = road
+        case .residentialBuilding:
+            let building: ResidentialBuilding? = self.dataStore.find(address: address)
+            property = building
+        }
+        guard let property = property else {
+            throw RegisterOfferError.propertyDoesNotExist
+        }
+    }
+    
     func landSaleOffer(address: MapPoint, buyerUUID: String) -> SaleOffer? {
         let tile = self.mapManager.map.getTile(address: address)
         guard tile == nil else {
@@ -237,4 +262,8 @@ class RealEstateAgent {
 enum BuyPropertyError: Error, Equatable {
     case propertyNotForSale
     case financialTransactionProblem(FinancialTransactionError)
+}
+
+enum RegisterOfferError: Error {
+    case propertyDoesNotExist
 }

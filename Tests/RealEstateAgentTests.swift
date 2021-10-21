@@ -11,6 +11,52 @@ import XCTest
 
 final class RealEstateAgentTests: XCTestCase {
     
+    func test_registerOfferOutsideMap() {
+        let dataStore = DataStoreMemoryProvider()
+        let taxRates = TaxRates()
+        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
+        let map = GameMap(width: 10, height: 10, scale: 0.2)
+        let mapManager = GameMapManager(map)
+        let propertyValuer = PropertyValuer(mapManager: mapManager, dataStore: dataStore)
+        let agent = RealEstateAgent(mapManager: mapManager, propertyValuer: propertyValuer, centralBank: centralBank, delegate: nil)
+
+        XCTAssertThrowsError(try agent.registerSellOffer(address: MapPoint(x: 30, y: 30), netValue: 3000)){ error in
+            XCTAssertEqual(error as? RegisterOfferError, .propertyDoesNotExist)
+        }
+    }
+    
+    func test_registerOfferOnNonExistingProperty() {
+        let dataStore = DataStoreMemoryProvider()
+        let taxRates = TaxRates()
+        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
+        let map = GameMap(width: 10, height: 10, scale: 0.2)
+        let mapManager = GameMapManager(map)
+        let propertyValuer = PropertyValuer(mapManager: mapManager, dataStore: dataStore)
+        let agent = RealEstateAgent(mapManager: mapManager, propertyValuer: propertyValuer, centralBank: centralBank, delegate: nil)
+        
+        XCTAssertThrowsError(try agent.registerSellOffer(address: MapPoint(x: 5, y: 5), netValue: 3000)){ error in
+            XCTAssertEqual(error as? RegisterOfferError, .propertyDoesNotExist)
+        }
+    }
+    
+    func test_registerLandOffer_verifyExists() {
+        let dataStore = DataStoreMemoryProvider()
+        let taxRates = TaxRates()
+        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
+        let map = GameMap(width: 10, height: 10, scale: 0.2)
+        let mapManager = GameMapManager(map)
+        let propertyValuer = PropertyValuer(mapManager: mapManager, dataStore: dataStore)
+        let agent = RealEstateAgent(mapManager: mapManager, propertyValuer: propertyValuer, centralBank: centralBank, delegate: nil)
+
+        let address = MapPoint(x: 5, y: 5)
+        let land = Land(address: address)
+        dataStore.create(land)
+        map.setTiles([GameMapTile(address: address, type: .soldLand)])
+        
+        XCTAssertNoThrow(try agent.registerSellOffer(address: address, netValue: 3000))
+        //let offer = agent.getOffer(address: address)
+        //XCTAssertNotNil(offer)
+    }
     
     func test_landSaleOffer_notForSale() {
         let dataStore = DataStoreMemoryProvider()
