@@ -152,4 +152,33 @@ final class CentralBankTests: XCTestCase {
         XCTAssertEqual(dataStore.find(uuid: "payer")?.wallet, 800)
         XCTAssertEqual(dataStore.find(uuid: "receiver")?.wallet, 100)
     }
+    
+    func test_multipleTransfers() {
+        let dataStore = DataStoreMemoryProvider()
+        let payer = Player(uuid: "payer", login: "user1", wallet: 190000)
+        let receiver = Player(uuid: "receiver", login: "user2", wallet: 0)
+        dataStore.create(payer)
+        dataStore.create(receiver)
+        
+        let taxRates = TaxRates()
+        taxRates.incomeTax = 0
+        
+        let iterations = 1000
+
+        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
+        let expectations = (0...iterations-1).map { _ in XCTestExpectation(description: "Financial transaction") }
+        
+        for i in 0...iterations-1 {
+            let queue = DispatchQueue(label: "queue\(i)", qos: .background, attributes: .concurrent)
+            queue.async {
+                let invoice = Invoice(title: "money transfer", netValue: 100, taxRate: 0.1)
+                let financialTransaction = FinancialTransaction(payerID: "payer", recipientID: "receiver", invoice: invoice)
+                try? centralBank.process(financialTransaction)
+                expectations[i].fulfill()
+            }
+        }
+        wait(for: expectations, timeout: 1)
+        let rich: Player? = dataStore.find(uuid: "receiver")
+        XCTAssertEqual(rich?.wallet, iterations.double * 100)
+    }
 }

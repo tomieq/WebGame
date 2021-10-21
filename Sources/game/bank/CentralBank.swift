@@ -30,29 +30,39 @@ enum FinancialTransactionError: Error, Equatable {
 class CentralBank {
     let dataStore: DataStoreProvider
     let taxRates: TaxRates
+    private let semaphore = DispatchSemaphore(value: 1)
     
     init(dataStore: DataStoreProvider, taxRates: TaxRates) {
         self.dataStore = dataStore
         self.taxRates = taxRates
     }
-
+    
     func process(_ transaction: FinancialTransaction) throws {
+
         Logger.info("CentralBank", "New transaction \(transaction.toJSONString() ?? "")")
         
-        guard transaction.invoice.total > 0 else { throw FinancialTransactionError.negativeTransactionValue }
-
+        guard transaction.invoice.total > 0 else {
+            self.semaphore.signal()
+            throw FinancialTransactionError.negativeTransactionValue
+            
+        }
+        // let's block user's wallets so it won't be modified by anyone else
+        self.semaphore.wait()
         guard let payer = self.dataStore.find(uuid: transaction.payerID) else {
+            self.semaphore.signal()
             Logger.error("CentralBank", "Transaction rejected. Payer not found (\(transaction.payerID)")
             throw FinancialTransactionError.payerNotFound
         }
         guard let recipient = self.dataStore.find(uuid: transaction.recipientID) else {
+            self.semaphore.signal()
             Logger.error("CentralBank", "Transaction rejected. Recipient not found (\(transaction.recipientID)")
             throw FinancialTransactionError.recipientNotFound
         }
+        
         let government: Player? = self.dataStore.find(uuid: SystemPlayer.government.uuid)
         
-        guard payer.wallet > transaction.invoice.total else {
         guard payer.wallet >= transaction.invoice.total else {
+            self.semaphore.signal()
             throw FinancialTransactionError.notEnoughMoney
         }
         
@@ -85,6 +95,7 @@ class CentralBank {
                 }
             }
         }
+        self.semaphore.signal()
     }
     
     func refundIncomeTax(receiverID: String, transaction: FinancialTransaction, costs: Double) {
