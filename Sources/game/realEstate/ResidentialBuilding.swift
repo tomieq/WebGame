@@ -27,14 +27,14 @@ struct ResidentialBuilding: Property, Codable {
         return self.numberOfFlatsPerStorey * self.storeyAmount
     }
     
-    init(land: Land, storeyAmount: Int, constructionFinishMonth: Int? = nil) {
+    init(land: Land, storeyAmount: Int, constructionFinishMonth: Int? = nil, investmentsNetValue: Double = 0) {
         self.uuid = land.uuid
         self.address = land.address
         self.name = "\(land.name) Apartments"
         self.ownerUUID = land.ownerUUID
         self.purchaseNetValue = land.purchaseNetValue
         self.storeyAmount = storeyAmount
-        self.investmentsNetValue = (land.investmentsNetValue /*+ ConstructionPriceList.makeResidentialBuildingCost(storey: self.storeyAmount)*/).rounded(toPlaces: 0)
+        self.investmentsNetValue = (land.investmentsNetValue + investmentsNetValue).rounded(toPlaces: 0)
         self.condition = 100.0
         self.isUnderConstruction = constructionFinishMonth == nil ? false : true
         self.accountantID = land.accountantID

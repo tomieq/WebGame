@@ -26,6 +26,7 @@ class LandManagedObject: Codable {
         self.x = land.address.x
         self.y = land.address.y
         self.name = land.name
+        self.purchaseNetValue = land.purchaseNetValue
         self.investmentsNetValue = land.investmentsNetValue
         self.isUnderConstruction = land.isUnderConstruction
         self.constructionFinishMonth = land.constructionFinishMonth

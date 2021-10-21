@@ -314,7 +314,8 @@ final class RealEstateAgentTests: XCTestCase {
         let mapManager = GameMapManager(map)
         let agent = RealEstateAgent(mapManager: mapManager, centralBank: centralBank, delegate: nil)
 
-        XCTAssertNotNil(agent.landSaleOffer(address: MapPoint(x: 3, y: 3), buyerUUID: "random"))
+        let offer = agent.landSaleOffer(address: MapPoint(x: 3, y: 3), buyerUUID: "random")
+        XCTAssertNotNil(offer)
     }
     
     func test_buyLandProperty_notEnoughMoney() {

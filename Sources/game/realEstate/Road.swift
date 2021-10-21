@@ -20,13 +20,13 @@ struct Road: Property, Codable {
     let constructionFinishMonth: Int?
     let accountantID: String?
     
-    init(land: Land, constructionFinishMonth: Int? = nil) {
+    init(land: Land, constructionFinishMonth: Int? = nil, investmentsNetValue: Double = 0) {
         self.uuid = land.uuid
         self.address = land.address
         self.name = land.name
         self.ownerUUID = land.ownerUUID
         self.purchaseNetValue = land.purchaseNetValue
-        self.investmentsNetValue = (land.investmentsNetValue /*+ ConstructionPriceList.makeRoadCost()*/).rounded(toPlaces: 0)
+        self.investmentsNetValue = (land.investmentsNetValue + investmentsNetValue).rounded(toPlaces: 0)
         self.isUnderConstruction = constructionFinishMonth == nil ? false: true
         self.constructionFinishMonth = constructionFinishMonth
         self.accountantID = nil

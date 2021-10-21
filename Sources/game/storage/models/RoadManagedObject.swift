@@ -26,6 +26,7 @@ class RoadManagedObject: Codable {
         self.x = road.address.x
         self.y = road.address.y
         self.name = road.name
+        self.purchaseNetValue = road.purchaseNetValue
         self.investmentsNetValue = road.investmentsNetValue
         self.isUnderConstruction = road.isUnderConstruction
         self.constructionFinishMonth = road.constructionFinishMonth
