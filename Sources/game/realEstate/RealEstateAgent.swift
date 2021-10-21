@@ -134,7 +134,16 @@ class RealEstateAgent {
         guard let building: ResidentialBuilding = self.dataStore.find(address: address) else {
             return nil
         }
-        guard let price = self.propertyValuer.estimateValue(address) else {
+        var price: Double?
+        if building.ownerUUID == SystemPlayer.government.uuid {
+            price = self.propertyValuer.estimateValue(address)
+        } else {
+            guard let advert: SaleAdvert = self.dataStore.find(address: address) else {
+                return nil
+            }
+            price = advert.netPrice
+        }
+        guard let price = price else {
             return nil
         }
         let commission = self.priceList.realEstateSellResidentialBuildingCommisionFee + price * self.priceList.realEstateSellPropertyCommisionRate
@@ -211,8 +220,11 @@ class RealEstateAgent {
         } catch let error as FinancialTransactionError {
             throw BuyPropertyError.financialTransactionProblem(error)
         }
-        
-        let mutation = ResidentialBuildingMutation(uuid: building.uuid, attributes: [.ownerUUID(buyerUUID), .purchaseNetValue(offer.saleInvoice.netValue)])
+        var modifications: [ResidentialBuildingMutation.Attribute] = []
+        modifications.append(.ownerUUID(buyerUUID))
+        modifications.append(.purchaseNetValue(offer.saleInvoice.netValue))
+        modifications.append(.investmentsNetValue(0))
+        let mutation = ResidentialBuildingMutation(uuid: building.uuid, attributes: modifications)
         self.dataStore.update(mutation)
         
         self.delegate?.notifyWalletChange(playerUUID: buyerUUID)

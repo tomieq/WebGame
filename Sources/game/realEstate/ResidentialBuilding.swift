@@ -65,5 +65,6 @@ struct ResidentialBuildingMutation {
         case constructionFinishMonth(Int)
         case ownerUUID(String)
         case purchaseNetValue(Double)
+        case investmentsNetValue(Double)
     }
 }

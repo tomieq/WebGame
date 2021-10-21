@@ -228,7 +228,6 @@ class DataStoreMemoryProvider: DataStoreProvider {
 
             for attribute in mutation.attributes {
                 switch attribute {
-                    
                 case .isUnderConstruction(let value):
                     building.isUnderConstruction = value
                 case .constructionFinishMonth(let value):
@@ -237,6 +236,8 @@ class DataStoreMemoryProvider: DataStoreProvider {
                     building.ownerUUID = value
                 case .purchaseNetValue(let value):
                     building.purchaseNetValue = value
+                case .investmentsNetValue(let value):
+                    building.investmentsNetValue = value
                 }
             }
         }
