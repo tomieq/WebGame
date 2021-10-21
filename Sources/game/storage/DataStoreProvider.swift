@@ -13,11 +13,13 @@ protocol DataStoreProvider {
     @discardableResult func create(_ transaction: Land) -> String
     @discardableResult func create(_ transaction: Road) -> String
     @discardableResult func create(_ transaction: ResidentialBuilding) -> String
+    @discardableResult func create(_ advert: SaleAdvert) -> String
     
     func find(uuid: String) -> Player?
     func find(address: MapPoint) -> Land?
     func find(address: MapPoint) -> Road?
     func find(address: MapPoint) -> ResidentialBuilding?
+    func find(address: MapPoint) -> SaleAdvert?
     func getFinancialTransactions(userID: String) -> [CashFlow]
     
     func getAll() -> [Land]

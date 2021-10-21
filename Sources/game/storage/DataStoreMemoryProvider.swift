@@ -13,12 +13,14 @@ class DataStoreMemoryProvider: DataStoreProvider {
     private var lands: [LandManagedObject]
     private var roads: [RoadManagedObject]
     private var buildings: [ResidentialBuildingManagedObject]
+    private var adverts: [SaleAdvertManagedObject]
     
     private var playerQueue = DispatchQueue(label: "DataStore.Player.queue", attributes: .concurrent)
     private var cashQueue = DispatchQueue(label: "DataStore.CashFlow.queue", attributes: .concurrent)
     private var landQueue = DispatchQueue(label: "DataStore.Land.queue", attributes: .concurrent)
     private var roadQueue = DispatchQueue(label: "DataStore.Road.queue", attributes: .concurrent)
     private var residentialBuildingQueue = DispatchQueue(label: "DataStore.ResidentialBuilding.queue", attributes: .concurrent)
+    private var queue = DispatchQueue(label: "DataStore.Other.queue", attributes: .concurrent)
 
     init() {
         self.players = []
@@ -26,6 +28,7 @@ class DataStoreMemoryProvider: DataStoreProvider {
         self.lands = []
         self.roads = []
         self.buildings = []
+        self.adverts = []
     }
     
     @discardableResult
@@ -123,6 +126,8 @@ class DataStoreMemoryProvider: DataStoreProvider {
                     land.ownerUUID = value
                 case .purchaseNetValue(let value):
                     land.purchaseNetValue = value
+                case .investments(let value):
+                    land.investmentsNetValue = value
                 }
             }
         }
@@ -234,6 +239,22 @@ class DataStoreMemoryProvider: DataStoreProvider {
                     building.purchaseNetValue = value
                 }
             }
+        }
+    }
+    
+    
+    @discardableResult
+    func create(_ advert: SaleAdvert) -> String {
+        return queue.sync(flags: .barrier) {
+            let managedObject = SaleAdvertManagedObject(advert)
+            self.adverts.append(managedObject)
+            return managedObject.uuid
+        }
+    }
+    
+    func find(address: MapPoint) -> SaleAdvert? {
+        return queue.sync {
+            return self.adverts.first{ $0.x == address.x && $0.y == address.y }.map{ SaleAdvert($0) }
         }
     }
 }

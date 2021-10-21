@@ -58,5 +58,6 @@ struct LandMutation {
         case constructionFinishMonth(Int)
         case ownerUUID(String)
         case purchaseNetValue(Double)
+        case investments(Double)
     }
 }

@@ -47,7 +47,7 @@ struct Road: Property, Codable {
 
 struct RoadMutation {
     let uuid: String
-    let attributes: [LandMutation.Attribute]
+    let attributes: [RoadMutation.Attribute]
     
     enum Attribute {
         case isUnderConstruction(Bool)

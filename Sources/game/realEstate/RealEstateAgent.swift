@@ -65,7 +65,7 @@ class RealEstateAgent {
         }
     }
 
-    func registerSellOffer(address: MapPoint, netValue: Double) throws {
+    func registerSaleOffer(address: MapPoint, netValue: Double) throws {
         guard self.mapManager.map.isAddressOnMap(address) else {
             throw RegisterOfferError.propertyDoesNotExist
         }
@@ -88,23 +88,43 @@ class RealEstateAgent {
         guard let property = property else {
             throw RegisterOfferError.propertyDoesNotExist
         }
+        
+        let advert = SaleAdvert(address: property.address, netPrice: netValue)
+        self.dataStore.create(advert)
     }
     
     func landSaleOffer(address: MapPoint, buyerUUID: String) -> SaleOffer? {
+        
+        // if it is no one's land, it's on sale by government
+        // if it is private sale the offer is in the advert list
         let tile = self.mapManager.map.getTile(address: address)
-        guard tile == nil else {
+        
+        var land: Land?
+        var price: Double?
+        var name = "\(RandomNameGenerator.randomAdjective.capitalized) \(RandomNameGenerator.randomNoun.capitalized)"
+        
+        if tile == nil {
+            price = self.propertyValuer.estimateValue(address)
+        } else {
+            guard let advert: SaleAdvert = self.dataStore.find(address: address),
+                  let existingLand: Land = self.dataStore.find(address: address) else {
+                return nil
+            }
+            land = existingLand
+            name = existingLand.name
+            price = advert.netPrice
+        }
+        guard let price = price else {
             return nil
         }
-        guard let price = self.propertyValuer.estimateValue(address) else {
-            return nil
-        }
+        
         let commission = self.priceList.realEstateSellLandPropertyCommisionFee + price * self.priceList.realEstateSellPropertyCommisionRate
-        let name = "\(RandomNameGenerator.randomAdjective.capitalized) \(RandomNameGenerator.randomNoun.capitalized)"
+        
         let saleInvoice = Invoice(title: "Purchase land \(name)", netValue: price, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
         let commissionInvoice = Invoice(title: "Commission for purchase land \(name)", grossValue: commission, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
-        let land = Land(address: address, name: name, ownerUUID: buyerUUID, purchaseNetValue: saleInvoice.netValue)
+        let property = land ?? Land(address: address, name: name, ownerUUID: buyerUUID, purchaseNetValue: saleInvoice.netValue)
         
-        return SaleOffer(saleInvoice: saleInvoice, commissionInvoice: commissionInvoice, property: land)
+        return SaleOffer(saleInvoice: saleInvoice, commissionInvoice: commissionInvoice, property: property)
     }
     
     func residentialBuildingSaleOffer(address: MapPoint, buyerUUID: String) -> SaleOffer? {
@@ -133,10 +153,10 @@ class RealEstateAgent {
         guard let land = offer.property as? Land else {
             throw BuyPropertyError.propertyNotForSale
         }
-        let governmentID = SystemPlayer.government.uuid
+        let sellerID = land.ownerUUID ?? SystemPlayer.government.uuid
         let realEstateAgentID = SystemPlayer.realEstateAgency.uuid
         // process the transaction
-        var transaction = FinancialTransaction(payerID: buyerUUID, recipientID: governmentID , invoice: offer.saleInvoice)
+        var transaction = FinancialTransaction(payerID: buyerUUID, recipientID: sellerID , invoice: offer.saleInvoice)
         do {
              try self.centralBank.process(transaction)
         } catch let error as FinancialTransactionError {
@@ -148,7 +168,16 @@ class RealEstateAgent {
         } catch let error as FinancialTransactionError {
             throw BuyPropertyError.financialTransactionProblem(error)
         }
-        self.dataStore.create(land)
+        if land.uuid.isEmpty {
+            self.dataStore.create(land)
+        } else {
+            var modifications: [LandMutation.Attribute] = []
+            modifications.append(.purchaseNetValue(offer.saleInvoice.netValue))
+            modifications.append(.ownerUUID(buyerUUID))
+            modifications.append(.investments(0))
+            let mutation = LandMutation(uuid: land.uuid, attributes: modifications)
+            self.dataStore.update(mutation)
+        }
 
         self.mapManager.map.replaceTile(tile: land.mapTile)
         
