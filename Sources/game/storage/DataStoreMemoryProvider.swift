@@ -13,6 +13,12 @@ class DataStoreMemoryProvider: DataStoreProvider {
     private var lands: [LandManagedObject]
     private var roads: [RoadManagedObject]
     private var buildings: [ResidentialBuildingManagedObject]
+    
+    private var playerQueue = DispatchQueue(label: "DataStore.Player.queue", attributes: .concurrent)
+    private var cashQueue = DispatchQueue(label: "DataStore.CashFlow.queue", attributes: .concurrent)
+    private var landQueue = DispatchQueue(label: "DataStore.Land.queue", attributes: .concurrent)
+    private var roadQueue = DispatchQueue(label: "DataStore.Road.queue", attributes: .concurrent)
+    private var residentialBuildingQueue = DispatchQueue(label: "DataStore.ResidentialBuilding.queue", attributes: .concurrent)
 
     init() {
         self.players = []
@@ -24,161 +30,209 @@ class DataStoreMemoryProvider: DataStoreProvider {
     
     @discardableResult
     func create(_ player: Player) -> String {
-        let managedPlayer = PlayerManagedObject(player)
-        self.players.append(managedPlayer)
-        return managedPlayer.uuid
+        
+        return playerQueue.sync(flags: .barrier) {
+            let managedPlayer = PlayerManagedObject(player)
+            self.players.append(managedPlayer)
+            return managedPlayer.uuid
+        }
     }
     
     func find(uuid: String) -> Player? {
-        return self.players.first { $0.uuid == uuid }.map{ Player($0) }
+        return playerQueue.sync {
+            self.players.first { $0.uuid == uuid }.map{ Player($0) }
+        }
+        
     }
     
     func removePlayer(id: String) {
-        self.players.removeAll{ $0.uuid == id}
+        playerQueue.sync(flags: .barrier) {
+            self.players.removeAll{ $0.uuid == id}
+        }
     }
 
     func update(_ mutation: PlayerMutation) {
-        guard let managedPlayer = (self.players.first{ $0.uuid == mutation.id }) else { return }
-        for attribute in mutation.attributes {
-            switch attribute {
-                
-            case .wallet(let value):
-                managedPlayer.wallet = value
+        playerQueue.sync(flags: .barrier) {
+            guard let managedPlayer = (self.players.first{ $0.uuid == mutation.id }) else { return }
+            for attribute in mutation.attributes {
+                switch attribute {
+                case .wallet(let value):
+                    managedPlayer.wallet = value
+                }
             }
         }
     }
     
-    private let cashSemaphore = DispatchSemaphore(value: 1)
     @discardableResult func create(_ transaction: CashFlow) -> String {
-        let managedObject = CashFlowManagedObject(transaction)
-        self.cashSemaphore.wait()
-        self.transactions.append(managedObject)
-        self.cashSemaphore.signal()
-        return managedObject.uuid
+        
+        return cashQueue.sync(flags: .barrier) {
+            let managedObject = CashFlowManagedObject(transaction)
+            self.transactions.append(managedObject)
+            return managedObject.uuid
+        }
+        
     }
     
     func getFinancialTransactions(userID: String) -> [CashFlow] {
-        self.transactions.filter{ $0.playerID == userID }.sorted { $0.id > $1.id }.map{ CashFlow($0)}
+        return cashQueue.sync {
+            self.transactions.filter{ $0.playerID == userID }.sorted { $0.id > $1.id }.map{ CashFlow($0)}
+        }
     }
-    
     
     @discardableResult
     func create(_ land: Land) -> String {
-        let managedObject = LandManagedObject(land)
-        self.lands.append(managedObject)
-        return managedObject.uuid
+        return landQueue.sync(flags: .barrier) {
+            let managedObject = LandManagedObject(land)
+            self.lands.append(managedObject)
+            return managedObject.uuid
+        }
+        
     }
     
     func find(address: MapPoint) -> Land? {
-        return self.lands.first{ $0.x == address.x && $0.y == address.y }.map { Land($0) }
+        return landQueue.sync {
+            self.lands.first{ $0.x == address.x && $0.y == address.y }.map { Land($0) }
+        }
     }
     
     func getAll() -> [Land] {
-        return self.lands.map { Land($0) }
+        return landQueue.sync {
+            self.lands.map { Land($0) }
+        }
     }
     
     func removeLand(uuid: String) {
-        self.lands.removeAll{ $0.uuid == uuid }
+        landQueue.sync(flags: .barrier) {
+            self.lands.removeAll{ $0.uuid == uuid }
+        }
     }
     
     
     func update(_ mutation: LandMutation) {
-        guard let land = (self.lands.first{ $0.uuid == mutation.uuid }) else { return }
-        for attribute in mutation.attributes {
-            switch attribute {
-                
-            case .isUnderConstruction(let value):
-                land.isUnderConstruction = value
-            case .constructionFinishMonth(let value):
-                land.constructionFinishMonth = value
-            case .ownerUUID(let value):
-                land.ownerUUID = value
-            case .purchaseNetValue(let value):
-                land.purchaseNetValue = value
+        landQueue.sync(flags: .barrier) {
+            guard let land = (self.lands.first{ $0.uuid == mutation.uuid }) else { return }
+
+            for attribute in mutation.attributes {
+                switch attribute {
+                    
+                case .isUnderConstruction(let value):
+                    land.isUnderConstruction = value
+                case .constructionFinishMonth(let value):
+                    land.constructionFinishMonth = value
+                case .ownerUUID(let value):
+                    land.ownerUUID = value
+                case .purchaseNetValue(let value):
+                    land.purchaseNetValue = value
+                }
             }
         }
     }
     
+    
     @discardableResult
     func create(_ road: Road) -> String {
-        let managedObject = RoadManagedObject(road)
-        self.roads.append(managedObject)
-        return managedObject.uuid
+        return roadQueue.sync(flags: .barrier) {
+            let managedObject = RoadManagedObject(road)
+            self.roads.append(managedObject)
+            return managedObject.uuid
+        }
     }
     
     func find(address: MapPoint) -> Road? {
-        return self.roads.first{ $0.x == address.x && $0.y == address.y }.map { Road($0) }
+        return roadQueue.sync {
+            self.roads.first{ $0.x == address.x && $0.y == address.y }.map { Road($0) }
+        }
     }
     
     func getAll() -> [Road] {
-        return self.roads.map { Road($0) }
+        return roadQueue.sync {
+            self.roads.map { Road($0) }
+        }
     }
     
     func getUnderConstruction() -> [Road] {
-        return self.roads.filter{ $0.isUnderConstruction }.map { Road($0) }
+        return roadQueue.sync {
+            self.roads.filter{ $0.isUnderConstruction }.map { Road($0) }
+        }
     }
     
     func removeRoad(uuid: String) {
-        self.roads.removeAll{ $0.uuid == uuid }
+        roadQueue.sync(flags: .barrier) {
+            self.roads.removeAll{ $0.uuid == uuid }
+        }
     }
     
     
     func update(_ mutation: RoadMutation) {
-        guard let land = (self.roads.first{ $0.uuid == mutation.uuid }) else { return }
-        for attribute in mutation.attributes {
-            switch attribute {
-                
-            case .isUnderConstruction(let value):
-                land.isUnderConstruction = value
-            case .constructionFinishMonth(let value):
-                land.constructionFinishMonth = value
-            case .ownerUUID(let value):
-                land.ownerUUID = value
-            case .purchaseNetValue(let value):
-                land.purchaseNetValue = value
+        roadQueue.sync(flags: .barrier) {
+            guard let road = (self.roads.first{ $0.uuid == mutation.uuid }) else { return }
+
+            for attribute in mutation.attributes {
+                switch attribute {
+                    
+                case .isUnderConstruction(let value):
+                    road.isUnderConstruction = value
+                case .constructionFinishMonth(let value):
+                    road.constructionFinishMonth = value
+                case .ownerUUID(let value):
+                    road.ownerUUID = value
+                case .purchaseNetValue(let value):
+                    road.purchaseNetValue = value
+                }
             }
+        }
+    }
+
+    @discardableResult
+    func create(_ building: ResidentialBuilding) -> String {
+        return residentialBuildingQueue.sync(flags: .barrier) {
+            let managedObject = ResidentialBuildingManagedObject(building)
+            self.buildings.append(managedObject)
+            return managedObject.uuid
+        }
+    }
+    
+    func find(address: MapPoint) -> ResidentialBuilding? {
+        return residentialBuildingQueue.sync {
+            return self.buildings.first{ $0.x == address.x && $0.y == address.y }.map { ResidentialBuilding($0) }
+        }
+    }
+    
+    func getAll() -> [ResidentialBuilding] {
+        return residentialBuildingQueue.sync {
+            self.buildings.map { ResidentialBuilding($0) }
+        }
+    }
+    
+    func getUnderConstruction() -> [ResidentialBuilding] {
+        return residentialBuildingQueue.sync {
+            self.buildings.filter{ $0.isUnderConstruction }.map { ResidentialBuilding($0) }
+        }
+    }
+    
+    func removeResidentialBuilding(uuid: String) {
+        residentialBuildingQueue.sync(flags: .barrier) {
+            self.buildings.removeAll{ $0.uuid == uuid }
         }
     }
     
     
-    
-    @discardableResult
-    func create(_ building: ResidentialBuilding) -> String {
-        let managedObject = ResidentialBuildingManagedObject(building)
-        self.buildings.append(managedObject)
-        return managedObject.uuid
-    }
-    
-    func find(address: MapPoint) -> ResidentialBuilding? {
-        return self.buildings.first{ $0.x == address.x && $0.y == address.y }.map { ResidentialBuilding($0) }
-    }
-    
-    func getAll() -> [ResidentialBuilding] {
-        return self.buildings.map { ResidentialBuilding($0) }
-    }
-    
-    func getUnderConstruction() -> [ResidentialBuilding] {
-        return self.buildings.filter{ $0.isUnderConstruction }.map { ResidentialBuilding($0) }
-    }
-    
-    func removeResidentialBuilding(uuid: String) {
-        self.buildings.removeAll{ $0.uuid == uuid }
-    }
-    
-    
     func update(_ mutation: ResidentialBuildingMutation) {
-        guard let building = (self.buildings.first{ $0.uuid == mutation.uuid }) else { return }
-        for attribute in mutation.attributes {
-            switch attribute {
-                
-            case .isUnderConstruction(let value):
-                building.isUnderConstruction = value
-            case .constructionFinishMonth(let value):
-                building.constructionFinishMonth = value
-            case .ownerUUID(let value):
-                building.ownerUUID = value
-            case .purchaseNetValue(let value):
-                building.purchaseNetValue = value
+        residentialBuildingQueue.sync(flags: .barrier) {
+            guard let building = (self.buildings.first{ $0.uuid == mutation.uuid }) else { return }
+
+            for attribute in mutation.attributes {
+                switch attribute {
+                    
+                case .isUnderConstruction(let value):
+                    building.isUnderConstruction = value
+                case .constructionFinishMonth(let value):
+                    building.constructionFinishMonth = value
+                case .ownerUUID(let value):
+                    building.ownerUUID = value
+                case .purchaseNetValue(let value):
+                    building.purchaseNetValue = value
+                }
             }
         }
     }
