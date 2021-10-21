@@ -87,6 +87,23 @@ final class CentralBankTests: XCTestCase {
         }
     }
     
+    func test_moneyTransferWalletValues() {
+        let dataStore = DataStoreMemoryProvider()
+        let payer = Player(uuid: "payer", login: "user1", wallet: 100)
+        let receiver = Player(uuid: "receiver", login: "user2", wallet: 0)
+        dataStore.create(payer)
+        dataStore.create(receiver)
+        
+        let taxRates = TaxRates()
+        taxRates.incomeTax = 0
+        
+        let invoice = Invoice(title: "money transfer", netValue: 100, taxRate: 0)
+        let financialTransaction = FinancialTransaction(payerID: "payer", recipientID: "receiver", invoice: invoice)
+        XCTAssertNoThrow(try CentralBank(dataStore: dataStore, taxRates: taxRates).process(financialTransaction))
+        XCTAssertEqual(dataStore.find(uuid: "payer")?.wallet, 0)
+        XCTAssertEqual(dataStore.find(uuid: "receiver")?.wallet, 100)
+    }
+    
     func test_valueOfIncomeTax() {
         let dataStore = DataStoreMemoryProvider()
         let payer = Player(uuid: "payer", login: "user1", wallet: 900)
