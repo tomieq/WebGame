@@ -186,6 +186,8 @@ final class CentralBankTests: XCTestCase {
         let dataStore = DataStoreMemoryProvider()
         let payer = Player(uuid: "payer", login: "user1", wallet: 0)
         dataStore.create(payer)
+        let receiver = Player(uuid: "receiver", login: "receiver", wallet: 0)
+        dataStore.create(receiver)
         
         let taxRates = TaxRates()
         taxRates.incomeTax = 0.2
@@ -196,7 +198,7 @@ final class CentralBankTests: XCTestCase {
         let transaction = FinancialTransaction(payerID: "payer", recipientID: "receiver", invoice: invoice)
         centralBank.refundIncomeTax(transaction: transaction, costs: 100)
         
-        let player: Player? = dataStore.find(uuid: "payer")
+        let player: Player? = dataStore.find(uuid: "receiver")
         XCTAssertEqual(player?.wallet, 20)
     }
     
@@ -204,6 +206,8 @@ final class CentralBankTests: XCTestCase {
         let dataStore = DataStoreMemoryProvider()
         let payer = Player(uuid: "payer", login: "user1", wallet: 0)
         dataStore.create(payer)
+        let receiver = Player(uuid: "receiver", login: "receiver", wallet: 0)
+        dataStore.create(receiver)
         
         let taxRates = TaxRates()
         taxRates.incomeTax = 0.2
@@ -214,7 +218,7 @@ final class CentralBankTests: XCTestCase {
         let transaction = FinancialTransaction(payerID: "payer", recipientID: "receiver", invoice: invoice)
         centralBank.refundIncomeTax(transaction: transaction, costs: 500)
         
-        let player: Player? = dataStore.find(uuid: "payer")
+        let player: Player? = dataStore.find(uuid: "receiver")
         XCTAssertEqual(player?.wallet, 100)
     }
 }

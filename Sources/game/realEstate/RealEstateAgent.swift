@@ -165,21 +165,22 @@ class RealEstateAgent {
         let sellerID = land.ownerUUID ?? SystemPlayer.government.uuid
         let realEstateAgentID = SystemPlayer.realEstateAgency.uuid
         // process the transaction
-        var transaction = FinancialTransaction(payerID: buyerUUID, recipientID: sellerID , invoice: offer.saleInvoice)
+        let saleTransaction = FinancialTransaction(payerID: buyerUUID, recipientID: sellerID , invoice: offer.saleInvoice)
         do {
-             try self.centralBank.process(transaction)
+             try self.centralBank.process(saleTransaction)
         } catch let error as FinancialTransactionError {
             throw BuyPropertyError.financialTransactionProblem(error)
         }
-        transaction = FinancialTransaction(payerID: buyerUUID, recipientID: realEstateAgentID, invoice: offer.commissionInvoice)
+        let feeTransaction = FinancialTransaction(payerID: buyerUUID, recipientID: realEstateAgentID, invoice: offer.commissionInvoice)
         do {
-             try self.centralBank.process(transaction)
+             try self.centralBank.process(feeTransaction)
         } catch let error as FinancialTransactionError {
             throw BuyPropertyError.financialTransactionProblem(error)
         }
         if land.uuid.isEmpty {
             self.dataStore.create(land)
         } else {
+            self.centralBank.refundIncomeTax(transaction: saleTransaction, costs: land.investmentsNetValue)
             var modifications: [LandMutation.Attribute] = []
             modifications.append(.purchaseNetValue(offer.saleInvoice.netValue))
             modifications.append(.ownerUUID(buyerUUID))
@@ -208,18 +209,19 @@ class RealEstateAgent {
         let recipientID = building.ownerUUID ?? SystemPlayer.government.uuid
         let realEstateAgentID = SystemPlayer.realEstateAgency.uuid
         // process the transaction
-        var transaction = FinancialTransaction(payerID: buyerUUID, recipientID: recipientID , invoice: offer.saleInvoice)
+        let saleTransaction = FinancialTransaction(payerID: buyerUUID, recipientID: recipientID , invoice: offer.saleInvoice)
         do {
-             try self.centralBank.process(transaction)
+             try self.centralBank.process(saleTransaction)
         } catch let error as FinancialTransactionError {
             throw BuyPropertyError.financialTransactionProblem(error)
         }
-        transaction = FinancialTransaction(payerID: buyerUUID, recipientID: realEstateAgentID, invoice: offer.commissionInvoice)
+        let feeTransaction = FinancialTransaction(payerID: buyerUUID, recipientID: realEstateAgentID, invoice: offer.commissionInvoice)
         do {
-             try self.centralBank.process(transaction)
+             try self.centralBank.process(feeTransaction)
         } catch let error as FinancialTransactionError {
             throw BuyPropertyError.financialTransactionProblem(error)
         }
+        self.centralBank.refundIncomeTax(transaction: saleTransaction, costs: building.investmentsNetValue)
         var modifications: [ResidentialBuildingMutation.Attribute] = []
         modifications.append(.ownerUUID(buyerUUID))
         modifications.append(.purchaseNetValue(offer.saleInvoice.netValue))
