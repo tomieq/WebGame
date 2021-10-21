@@ -75,6 +75,12 @@ struct GameMapTile {
     let type: TileType
 }
 
+enum GameMapPropertyType {
+    case land
+    case road
+    case residentialBuilding
+}
+
 extension GameMapTile {
     func isStreet() -> Bool {
         if case .street(_) = self.type {
@@ -112,5 +118,24 @@ extension GameMapTile {
             return true
         }
         return false
+    }
+    
+    var propertyType: GameMapPropertyType? {
+        switch self.type {
+            
+        case .soldLand:
+            return .land
+        case .street(_):
+            return .road
+        case .streetUnderConstruction:
+            return .road
+        case .building(_):
+            return .residentialBuilding
+        case .buildingUnderConstruction(_):
+            return .residentialBuilding
+        default:
+            return nil
+        }
+        
     }
 }

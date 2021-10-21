@@ -7,13 +7,6 @@
 
 import Foundation
 
-enum PropertyType {
-    case land
-    case road
-    case residentialBuilding
-    case flat
-}
-
 protocol RealEstateAgentDelegate {
     func notifyWalletChange(playerUUID: String)
     func notifyEveryone(_ notification: UINotification)
