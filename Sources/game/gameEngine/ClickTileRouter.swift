@@ -85,11 +85,11 @@ extension ClickTileAction {
             ]
         case .buyLand:
             return [
-                .openWindow(OpenWindow(title: "Sale offer", width: 300, height: 250, initUrl: "/openSaleOffer.js?type=land&\(point.asQueryParams)", address: point))
+                .openWindow(OpenWindow(title: "Sale offer", width: 300, height: 270, initUrl: "/openSaleOffer.js?\(point.asQueryParams)", address: point))
             ]
         case .buyResidentialBuilding:
             return [
-                .openWindow(OpenWindow(title: "Sale offer", width: 300, height: 250, initUrl: "/openSaleOffer.js?type=building&\(point.asQueryParams)", address: point))
+                .openWindow(OpenWindow(title: "Sale offer", width: 300, height: 270, initUrl: "/openSaleOffer.js?\(point.asQueryParams)", address: point))
             ]
         case .landManager:
             return [

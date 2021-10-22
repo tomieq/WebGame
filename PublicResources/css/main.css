@@ -123,3 +123,9 @@ hr.orange {
 .float-right {
     float: right;
 }
+
+input[type=text] {
+    border: 1px solid #5B9AAD;
+    background-color: #30323C;
+    color: white;
+}

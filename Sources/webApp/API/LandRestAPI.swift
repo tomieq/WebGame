@@ -52,7 +52,7 @@ class LandRestAPI: RestAPI {
                 return .ok(.text("Property at \(address.description) is not yours!"))
             }
             
-            let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManager.html"))
+            let template = Template(raw: ResourceCache.shared.getAppResource("templates/landManager.html"))
             var data = [String:String]()
             
             let propertyHasAccountant = land.accountantID != nil
@@ -70,13 +70,15 @@ class LandRestAPI: RestAPI {
             data["monthlyIncomeTax"] = ""//incomeTax.money
             data["monthlyCosts"] = ""//property.monthlyMaintenanceCost.money
             data["balance"] = ""//(property.monthlyIncome - property.monthlyMaintenanceCost - incomeTax).money
-            data["purchasePrice"] = land.purchaseNetValue.money
+            data["purchasePrice"] = land.purchaseNetValue.rounded(toPlaces: 0).money
             data["investmentsValue"] = land.investmentsNetValue.money
+            data["publishOfferJS"] = JSCode.runScripts(windowIndex, paths: ["/openPublishSaleOffer.js?\(address.asQueryParams)"]).js
             let estimatedValue = 0.0//self.gameEngine.realEstateAgent.estimateValue(property.address)
             data["estimatedValue"] = estimatedValue.money
 
             data["tileUrl"] = TileType.soldLand.image.path
-            template.assign(variables: ["actions": self.landPropertyActions(land: land, windowIndex: windowIndex)])
+            
+            self.landPropertyActions(template: template, land: land, windowIndex: windowIndex)
             
             template.assign(variables: data)
             return .ok(.html(template.output()))
@@ -84,9 +86,7 @@ class LandRestAPI: RestAPI {
     }
     
     
-    private func landPropertyActions(land: Land, windowIndex: String) -> String {
-
-        let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManagerLand.html"))
+    private func landPropertyActions(template: Template, land: Land, windowIndex: String) {
         
         if self.gameEngine.gameMapManager.map.hasDirectAccessToRoad(address: land.address) {
 
@@ -98,6 +98,7 @@ class LandRestAPI: RestAPI {
             buildRoadData["investmentTax"] = roadOffer.invoice.tax.money
             buildRoadData["investmentTotal"] = roadOffer.invoice.total.money
             buildRoadData["investmentDuration"] = "\(roadOffer.duration) months"
+            buildRoadData["taxRate"] = (roadOffer.invoice.taxRate * 100).rounded(toPlaces: 0).string
             buildRoadData["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/startInvestment.js?type=road&\(land.address.asQueryParams)"]).js
             buildRoadData["actionTitle"] = "Start investment"
             template.assign(variables: buildRoadData, inNest: "investment")
@@ -112,6 +113,7 @@ class LandRestAPI: RestAPI {
                 buildHouseData["investmentCost"] = offer.invoice.netValue.money
                 buildHouseData["investmentTax"] = offer.invoice.tax.money
                 buildHouseData["investmentTotal"] = offer.invoice.total.money
+                buildHouseData["taxRate"] = (offer.invoice.taxRate * 100).rounded(toPlaces: 0).string
                 buildHouseData["investmentDuration"] = "\(offer.duration) months"
                 buildHouseData["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/startInvestment.js?type=apartment&\(land.address.asQueryParams)&storey=\(storey)"]).js
                 buildHouseData["actionTitle"] = "Start investment"
@@ -122,6 +124,5 @@ class LandRestAPI: RestAPI {
             let info = "This property has no access to the public road, so the investment options are very narrow."
             template.assign(variables: ["text": info], inNest: "info")
         }
-        return template.output()
     }
 }

@@ -1,0 +1,120 @@
+<div style="margin: 20px;">
+
+<div class="blue-border" style="width: 100px; text-align: center; float: right;">
+    <img src="{tileUrl}" style="width: 70px; height: auto;"/>
+    <br><span class="text-orange" style="font-size: 0.8em;">{type}</span>
+</div>
+<p>
+<table class="detailsTable" style="width: 400px; margin: 5px; float: left">
+<tbody>
+<tr>
+    <td>Property name</td>
+    <td style="text-align: right;"><strong>{name}</strong></td>
+</tr>
+
+<tr>
+    <td>Type</td>
+    <td style="text-align: right;">{type}</td>
+</tr>
+<tr>
+    <td colspan=2><hr class="orange" /></td>
+</tr>
+[START montlyPartialCost]
+<tr>
+    <td>{title}</td>
+    <td style="text-align: right;">{money}</td>
+</tr>
+[END montlyPartialCost]
+<tr>
+    <td>Monthly total costs</td>
+    <td style="text-align: right;">{monthlyCosts}</td>
+</tr>
+<tr><td colspan=2><hr/></td></tr>
+<tr>
+    <td>Monthly gross income</td>
+    <td style="text-align: right;">{monthlyIncome}</td>
+</tr>
+[START amortization]
+<tr>
+    <td>Monthly net income</td>
+    <td style="text-align: right;">{monthlyIncomeAmortizated}</td>
+</tr>
+[END amortization]
+<tr>
+    <td>Monthly income tax ({taxRate}%)</td>
+    <td style="text-align: right;">{monthlyIncomeTax}</td>
+</tr>
+<tr><td colspan=2><hr/></td></tr>
+<tr>
+    <td>Monthly net balance</td>
+    <td style="text-align: right;"><strong>{balance}</strong></td>
+</tr>
+</tbody>
+</table>
+
+<table class="detailsTable" style="width: 400px; margin: 5px; float: left">
+    <tbody>
+        <tr>
+            <td>Purchase price </td>
+            <td style="text-align: right;">{purchasePrice} (excl. tax)</td>
+        </tr>
+
+        <tr>
+            <td>Investments</td>
+            <td style="text-align: right;">{investmentsValue} (excl. tax)</td>
+        </tr>
+        <tr>
+            <td colspan=2><hr /></td>
+        </tr>
+        <tr>
+            <td>Real Estate Market</td>
+            <td style="text-align: right;"><button class="btn btn-sm" onclick="{publishOfferJS}">Sell property</button></td>
+        </tr>
+    </tbody>
+</table>
+<div style="clear: both;"></div>
+</p>
+
+
+    [START info]
+    <p>
+        {text}
+    </p>
+    [END info]
+    [START investment]
+    <div class="lightBorder" style="width: 250px; padding:10px; margin: 5px; float: left">
+        <div class="centered" style="font-weight: bold;">{name}</div>
+        <table style="width: 100%; font-size: 0.9em;">
+        <tbody>
+        <tr>
+            <td>Build costs:</td>
+            <td style="text-align: right;">{investmentCost}</td>
+        </tr>
+        <tr>
+            <td>Value added tax ({taxRate}%)</td>
+            <td style="text-align: right;">{investmentTax}</td>
+        </tr>
+        <tr>
+            <td>Total costs</td>
+            <td style="text-align: right;">{investmentTotal}</td>
+        </tr>
+        <tr>
+            <td>Build time</td>
+            <td style="text-align: right;">{investmentDuration}</td>
+        </tr>
+        <tr>
+            <td>Potential income/profit</td>
+            <td class="light hand" style="text-align: right;">Check</td>
+        </tr>
+        </tbody>
+        </table>
+        <br>
+        <div class="centered" style="margin-top: 15px;"><button class="btn" onclick="{actionJS}">{actionTitle}</button></div>
+    </div>
+    [END investment]
+
+    <div style="clear: both; margin-top:10px;"></div>
+</div>
+
+
+

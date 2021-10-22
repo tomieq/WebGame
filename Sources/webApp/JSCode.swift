@@ -31,6 +31,7 @@ enum JSCode {
     case centerWindowHorizontally(String)
     case centerWindowVertically(String)
     case centerWindow(String)
+    case positionWindow(String, MapPoint)
     case closeWindow(String)
     case runScripts(String, paths: [String])
     case loadHtml(String, htmlPath: String)
@@ -68,6 +69,8 @@ extension JSCode {
             return "centerWindowVertically(\(windowIndex));"
         case .centerWindow(let windowIndex):
             return "centerWindow(\(windowIndex));"
+        case .positionWindow(let windowIndex, let address):
+            return "positionWindow(\(windowIndex), \(address.x), \(address.y));"
         case .closeWindow(let windowIndex):
              return "closeWindow(\(windowIndex));";
         case .loadHtml(let windowIndex, let htmlPath):

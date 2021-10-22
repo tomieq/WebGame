@@ -123,4 +123,19 @@ function getWindowIndexByData(key, value) {
     return foundWindowIndex;
 }
 
+function positionWindow(windowIndex, mapX, mapY) {
+    if (mapX >= 0 && mapY >= 0) {
+        var coordinates = calculator.getCanvasCoordinates(new MapPoint(mapX, mapY));
+        var appWindow = getWindow(windowIndex);
+        coordinates.x += calculator.tileWidth/2;
+        coordinates.y -= calculator.tileHeight;
+        coordinates.x *=  calculator.canvasScale/2;
+        coordinates.y *=  calculator.canvasScale/2;
+        coordinates.x -= appWindow.width()/2;
+        coordinates.y -= appWindow.height();
+        coordinates.y -= $(window).scrollTop();
+        coordinates.x -= $(window).scrollLeft();
+        osPositionWindow(windowIndex, coordinates.x, coordinates.y);
+    }
+}
 
