@@ -88,9 +88,32 @@ class RealEstateAgent {
         guard let property = property else {
             throw RegisterOfferError.propertyDoesNotExist
         }
-        
+        Logger.info("RealEstateAgent", "Registered new SaleOffer @\(address.description) \(property.type) \(property.name) \(netValue.money)")
         let advert = SaleAdvert(address: property.address, netPrice: netValue)
         self.dataStore.create(advert)
+    }
+    
+    func getAllSaleOffers(buyerUUID: String) -> [SaleOffer] {
+        let adverts: [SaleAdvert] = self.dataStore.getAll()
+        var offers: [SaleOffer] = []
+        for advert in adverts {
+            if let tile = self.mapManager.map.getTile(address: advert.address), let propertyType = tile.propertyType {
+                
+                switch propertyType {
+                case .land:
+                    if let offer = self.landSaleOffer(address: advert.address, buyerUUID: buyerUUID) {
+                        offers.append(offer)
+                    }
+                case .road:
+                    break
+                case .residentialBuilding:
+                    if let offer = self.residentialBuildingSaleOffer(address: advert.address, buyerUUID: buyerUUID) {
+                        offers.append(offer)
+                    }
+                }
+            }
+        }
+        return offers
     }
     
     func landSaleOffer(address: MapPoint, buyerUUID: String) -> SaleOffer? {

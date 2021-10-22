@@ -30,7 +30,7 @@ final class RealEstateAgentTests: XCTestCase {
     func test_registerLandOffer_advertExists() {
         let agent = self.makeAgent()
 
-        let address = MapPoint(x: 5, y: 5)
+        let address = MapPoint(x: 5, y: 3)
         let land = Land(address: address, ownerUUID: "john")
         agent.dataStore.create(land)
         agent.mapManager.map.setTiles([GameMapTile(address: address, type: .soldLand)])
@@ -39,6 +39,7 @@ final class RealEstateAgentTests: XCTestCase {
         let advert: SaleAdvert? = agent.dataStore.find(address: address)
         XCTAssertNotNil(advert)
         XCTAssertEqual(advert?.netPrice, 3000)
+        XCTAssertEqual(advert?.address, address)
     }
     
     func test_registerLandOffer_properOfferNetValue() {
@@ -186,7 +187,7 @@ final class RealEstateAgentTests: XCTestCase {
         XCTAssertEqual(advert?.netPrice, 900)
     }
     
-    func test_residentialBuildingSaleOffer_fromGovernment_notEnoughMoney() {
+    func test_buyResidentialBuilding_fromGovernment_notEnoughMoney() {
         
         let agent = self.makeAgent()
         agent.mapManager.loadMapFrom(content: "b")
@@ -202,7 +203,7 @@ final class RealEstateAgentTests: XCTestCase {
         }
     }
     
-    func test_residentialBuildingSaleOffer_fromGovernment() {
+    func test_buyResidentialBuilding_fromGovernment() {
         
         let agent = self.makeAgent()
         agent.mapManager.loadMapFrom(content: "b")
@@ -220,7 +221,7 @@ final class RealEstateAgentTests: XCTestCase {
         XCTAssertEqual(soldBuilding?.investmentsNetValue, 0.0)
     }
     
-    func test_residentialBuildingSaleOffer_fromOtherUser() {
+    func test_buyResidentialBuilding_fromOtherUser() {
         
         let agent = self.makeAgent()
         agent.mapManager.loadMapFrom(content: "b")
@@ -241,6 +242,27 @@ final class RealEstateAgentTests: XCTestCase {
         XCTAssertEqual(soldBuilding?.ownerUUID, "buyer")
         XCTAssertEqual(soldBuilding?.purchaseNetValue, 887)
         XCTAssertEqual(soldBuilding?.investmentsNetValue, 0)
+    }
+    
+    func test_getAllRegisteredSaleOffers() {
+    func test_getAllRegisteredLandSaleOffers() {
+        let agent = self.makeAgent()
+
+        for i in (1...5){
+            let address = MapPoint(x: i, y: i)
+            let land = Land(address: address, ownerUUID: "john")
+            agent.dataStore.create(land)
+            agent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
+            XCTAssertEqual(agent.mapManager.map.getTile(address: address)?.propertyType, .land)
+            XCTAssertNoThrow(try agent.registerSaleOffer(address: address, netValue: 3000))
+        }
+        let offers = agent.getAllSaleOffers(buyerUUID: "buyer")
+        XCTAssertEqual(offers.count, 5)
+        let offerAddresses = offers.map{ $0.property.address }
+        (1...5).forEach { i in
+            let address = MapPoint(x: i, y: i)
+            XCTAssertTrue(offerAddresses.contains(address))
+        }
     }
     
     private func makeAgent() -> RealEstateAgent {
