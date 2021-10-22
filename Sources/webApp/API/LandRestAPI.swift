@@ -62,6 +62,17 @@ class LandRestAPI: RestAPI {
             if propertyHasAccountant {
                 template.assign(variables: ["monthlyIncomeAmortizated":incomeForTaxCalculation.money], inNest: "amortization")
             }
+            
+            if let offer = self.gameEngine.realEstateAgent.saleOffer(address: address, buyerUUID: "check") {
+                var data = [String:String]()
+                data["price"] = offer.saleInvoice.netValue.money
+                template.assign(variables: data, inNest: "forSale")
+            } else {
+                var data = [String:String]()
+                data["publishOfferJS"] = JSCode.runScripts(windowIndex, paths: ["/openPublishSaleOffer.js?\(address.asQueryParams)"]).js
+                template.assign(variables: data, inNest: "notForSale")
+            }
+            
             let incomeTax = incomeForTaxCalculation * self.gameEngine.taxRates.incomeTax
             data["name"] = land.name
             data["type"] = land.type
@@ -72,7 +83,7 @@ class LandRestAPI: RestAPI {
             data["balance"] = ""//(property.monthlyIncome - property.monthlyMaintenanceCost - incomeTax).money
             data["purchasePrice"] = land.purchaseNetValue.rounded(toPlaces: 0).money
             data["investmentsValue"] = land.investmentsNetValue.money
-            data["publishOfferJS"] = JSCode.runScripts(windowIndex, paths: ["/openPublishSaleOffer.js?\(address.asQueryParams)"]).js
+            
             let estimatedValue = 0.0//self.gameEngine.realEstateAgent.estimateValue(property.address)
             data["estimatedValue"] = estimatedValue.money
 
