@@ -146,11 +146,11 @@ final class RealEstateAgentTests: XCTestCase {
         agent.dataStore.create(seller)
         let buyer = Player(uuid: "buyer", login: "buyer", wallet: 3000)
         agent.dataStore.create(buyer)
-        let land = Land(address: address, ownerUUID: "seller", purchaseNetValue: 30)
+        let land = Land(address: address, ownerUUID: "seller", purchaseNetValue: 600)
         let landID = agent.dataStore.create(land)
         agent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
         
-        agent.dataStore.update(LandMutation(uuid: landID, attributes: [.investments(1000)]))
+        agent.dataStore.update(LandMutation(uuid: landID, attributes: [.investments(400)]))
         
         let government = Player(uuid: SystemPlayer.government.uuid, login: "Big Uncle", wallet: 0)
         agent.dataStore.create(government)

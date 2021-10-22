@@ -180,7 +180,8 @@ class RealEstateAgent {
         if land.uuid.isEmpty {
             self.dataStore.create(land)
         } else {
-            self.centralBank.refundIncomeTax(transaction: saleTransaction, costs: land.investmentsNetValue)
+            let costs = land.investmentsNetValue + (land.purchaseNetValue ?? 0.0)
+            self.centralBank.refundIncomeTax(transaction: saleTransaction, costs: costs)
             var modifications: [LandMutation.Attribute] = []
             modifications.append(.purchaseNetValue(offer.saleInvoice.netValue))
             modifications.append(.ownerUUID(buyerUUID))
@@ -221,7 +222,8 @@ class RealEstateAgent {
         } catch let error as FinancialTransactionError {
             throw BuyPropertyError.financialTransactionProblem(error)
         }
-        self.centralBank.refundIncomeTax(transaction: saleTransaction, costs: building.investmentsNetValue)
+        let costs = building.investmentsNetValue + (building.purchaseNetValue ?? 0.0)
+        self.centralBank.refundIncomeTax(transaction: saleTransaction, costs: costs)
         var modifications: [ResidentialBuildingMutation.Attribute] = []
         modifications.append(.ownerUUID(buyerUUID))
         modifications.append(.purchaseNetValue(offer.saleInvoice.netValue))
