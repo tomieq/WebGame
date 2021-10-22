@@ -135,7 +135,7 @@ class RealEstateAgent {
             return nil
         }
         var price: Double?
-        if building.ownerUUID == SystemPlayer.government.uuid {
+        if building.ownerUUID == SystemPlayer.government.uuid || building.ownerUUID == nil {
             price = self.propertyValuer.estimateValue(address)
         } else {
             guard let advert: SaleAdvert = self.dataStore.find(address: address) else {
