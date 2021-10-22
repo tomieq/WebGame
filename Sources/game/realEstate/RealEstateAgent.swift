@@ -41,6 +41,9 @@ class RealEstateAgent {
         if self.getProperty(address: tile.address)?.ownerUUID == SystemPlayer.government.uuid {
             return true
         }
+        if let _: SaleAdvert = self.dataStore.find(address: address) {
+            return true
+        }
         return false
     }
 
@@ -116,6 +119,23 @@ class RealEstateAgent {
         return offers
     }
     
+    func saleOffer(address: MapPoint, buyerUUID: String) -> SaleOffer? {
+        guard let tile = self.mapManager.map.getTile(address: address) else {
+            return self.landSaleOffer(address: address, buyerUUID: buyerUUID)
+        }
+        guard let propertyType = tile.propertyType else {
+            return nil
+        }
+        switch propertyType {
+        case .land:
+            return self.landSaleOffer(address: address, buyerUUID: buyerUUID)
+        case .road:
+            return nil
+        case .residentialBuilding:
+            return self.residentialBuildingSaleOffer(address: address, buyerUUID: buyerUUID)
+        }
+    }
+
     func landSaleOffer(address: MapPoint, buyerUUID: String) -> SaleOffer? {
         
         // if it is no one's land, it's on sale by government
@@ -177,7 +197,11 @@ class RealEstateAgent {
     }
 
     func buyProperty(address: MapPoint, buyerUUID: String) throws {
-        guard let tile = self.mapManager.map.getTile(address: address), let propertyType = tile.propertyType else {
+        guard let tile = self.mapManager.map.getTile(address: address) else {
+            try self.buyLandProperty(address: address, buyerUUID: buyerUUID)
+            return 
+        }
+        guard let propertyType = tile.propertyType else {
             throw BuyPropertyError.propertyNotForSale
         }
         switch propertyType {

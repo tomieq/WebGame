@@ -118,6 +118,21 @@ final class RealEstateAgentTests: XCTestCase {
         XCTAssertEqual(land?.ownerUUID, "buyer")
     }
     
+    func test_buyLandProperty_fromGovernmentWrapped_success() {
+        
+        let agent = self.makeAgent()
+        agent.propertyValuer.valueFactors.baseLandValue = 400
+        
+        let address = MapPoint(x: 3, y: 3)
+        let player = Player(uuid: "buyer", login: "tester", wallet: 1000)
+        agent.dataStore.create(player)
+        
+        XCTAssertNoThrow(try agent.buyProperty(address: address, buyerUUID: "buyer"))
+        
+        let land: Land? = agent.dataStore.find(address: address)
+        XCTAssertEqual(land?.ownerUUID, "buyer")
+    }
+    
     func test_buyLandProperty_fromOtherUser_success() {
         
         let agent = self.makeAgent()
@@ -299,6 +314,65 @@ final class RealEstateAgentTests: XCTestCase {
             XCTAssertTrue(offerAddresses.contains(address))
         }
     }
+    
+    func test_isForSale_unownedLand() {
+        let agent = self.makeAgent()
+        XCTAssertEqual(agent.isForSale(address: MapPoint(x: 1, y: 1)), true)
+    }
+    
+    func test_isForSale_somebodysLandWithoutAdvert() {
+        let agent = self.makeAgent()
+        let address = MapPoint(x: 1, y: 1)
+        let land = Land(address: address, ownerUUID: "owner")
+        agent.dataStore.create(land)
+        agent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
+        
+        XCTAssertEqual(agent.isForSale(address: address), false)
+    }
+
+    func test_isForSale_somebodysLandWitAdvert() {
+        let agent = self.makeAgent()
+        let address = MapPoint(x: 1, y: 1)
+        let land = Land(address: address, ownerUUID: "owner")
+        agent.dataStore.create(land)
+        agent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
+        
+        XCTAssertNoThrow(try agent.registerSaleOffer(address: address, netValue: 1000))
+        XCTAssertEqual(agent.isForSale(address: address), true)
+    }
+    
+    func test_isForSale_governmentsResidentialBuilding() {
+        let agent = self.makeAgent()
+        let address = MapPoint(x: 1, y: 1)
+        let building = ResidentialBuilding(land: Land(address: address), storeyAmount: 4)
+        agent.dataStore.create(building)
+        agent.mapManager.loadMapFrom(content: "\n,b,b")
+        
+        XCTAssertEqual(agent.isForSale(address: address), true)
+    }
+    
+    func test_isForSale_somebodysResidentialBuildingWithoutAdvert() {
+        let agent = self.makeAgent()
+        let address = MapPoint(x: 1, y: 1)
+        let building = ResidentialBuilding(land: Land(address: address, ownerUUID: "owner"), storeyAmount: 4)
+        agent.dataStore.create(building)
+        agent.mapManager.loadMapFrom(content: "\n,b,b")
+        
+        XCTAssertEqual(agent.isForSale(address: address), false)
+    }
+    
+    func test_isForSale_somebodysResidentialBuildingWithAdvert() {
+        let agent = self.makeAgent()
+        let address = MapPoint(x: 1, y: 1)
+        let building = ResidentialBuilding(land: Land(address: address, ownerUUID: "owner"), storeyAmount: 4)
+        agent.dataStore.create(building)
+        agent.mapManager.loadMapFrom(content: "\n,b,b")
+        
+        XCTAssertNoThrow(try agent.registerSaleOffer(address: address, netValue: 10000))
+        
+        XCTAssertEqual(agent.isForSale(address: address), true)
+    }
+    
     
     private func makeAgent() -> RealEstateAgent {
         
