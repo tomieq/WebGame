@@ -35,8 +35,8 @@ class GameEngine {
         
         let government = Player(uuid: SystemPlayer.government.uuid, login: SystemPlayer.government.login, wallet: 0)
         let realEstateAgent = Player(uuid: SystemPlayer.realEstateAgency.uuid, login: SystemPlayer.realEstateAgency.login, wallet: 0)
-        let user1 = Player(uuid: "p1", login: "Mike Wachlewsky", wallet: 2000000)
-        let user2 = Player(uuid: "p2", login: "Richard Smith", wallet: 2000000)
+        let user1 = Player(uuid: "p1", login: "Mike Wachlewsky", wallet: 10000000)
+        let user2 = Player(uuid: "p2", login: "Richard Smith", wallet: 10000000)
         self.dataStore.create(government)
         self.dataStore.create(realEstateAgent)
         self.dataStore.create(user1)
@@ -63,6 +63,7 @@ class GameEngine {
         self.realEstateAgent.delegate = self
         self.constructionServices.delegate = self
         
+        self.setupDevParams()
 
         GameEventBus.gameEvents.asObservable().bind { [weak self] gameEvent in
             switch gameEvent.action {
@@ -128,6 +129,12 @@ class GameEngine {
                 break
             }
         }.disposed(by: self.disposeBag)
+    }
+    
+    private func setupDevParams() {
+        self.constructionServices.constructionDuration.road = 1
+        self.constructionServices.constructionDuration.residentialBuilding = 1
+        self.constructionServices.constructionDuration.residentialBuildingPerStorey = 0
     }
 }
 
