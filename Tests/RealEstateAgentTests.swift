@@ -86,6 +86,23 @@ final class RealEstateAgentTests: XCTestCase {
         }
     }
     
+    
+    func test_buyLandProperty_ownSaleOffer() {
+        let agent = self.makeAgent()
+        
+        let address = MapPoint(x: 3, y: 3)
+        let seller = Player(uuid: "seller", login: "seller", wallet: 0)
+        agent.dataStore.create(seller)
+        let land = Land(address: address, ownerUUID: "seller", purchaseNetValue: 100)
+        agent.dataStore.create(land)
+        agent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
+        
+        XCTAssertNoThrow(try agent.registerSaleOffer(address: address, netValue: 660))
+        XCTAssertThrowsError(try agent.buyLandProperty(address: address, buyerUUID: "seller")){ error in
+            XCTAssertEqual(error as? BuyPropertyError, .tryingBuyOwnProperty)
+        }
+    }
+    
     func test_buyLandProperty_fromGovernment_success() {
         
         let agent = self.makeAgent()
@@ -244,7 +261,25 @@ final class RealEstateAgentTests: XCTestCase {
         XCTAssertEqual(soldBuilding?.investmentsNetValue, 0)
     }
     
-    func test_getAllRegisteredSaleOffers() {
+    func test_buyResidentialBuilding_ownSaleOffer() {
+        
+        let agent = self.makeAgent()
+        agent.mapManager.loadMapFrom(content: "b")
+        
+        let address = MapPoint(x: 0, y: 0)
+        let building = ResidentialBuilding(land: Land(address: address, ownerUUID: "seller", purchaseNetValue: 200), storeyAmount: 4)
+        agent.dataStore.create(building)
+        
+        let seller = Player(uuid: "seller", login: "seller", wallet: 0)
+        agent.dataStore.create(seller)
+
+        XCTAssertNoThrow(try agent.registerSaleOffer(address: address, netValue: 887))
+        XCTAssertThrowsError(try agent.buyResidentialBuilding(address: address, buyerUUID: "seller")){ error in
+            XCTAssertEqual(error as? BuyPropertyError, .tryingBuyOwnProperty)
+        }
+        
+    }
+    
     func test_getAllRegisteredLandSaleOffers() {
         let agent = self.makeAgent()
 

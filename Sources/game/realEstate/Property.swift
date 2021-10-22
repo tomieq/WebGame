@@ -11,11 +11,11 @@ protocol Property {
     var uuid: String { get }
     var type: String { get }
     var name: String { get }
-    var ownerUUID: String? { get }
+    var ownerUUID: String { get }
     var address: MapPoint { get }
-    var purchaseNetValue: Double? { get }
+    var purchaseNetValue: Double { get }
     var investmentsNetValue: Double { get }
     var isUnderConstruction: Bool { get }
-    var constructionFinishMonth: Int? { get }
+    var constructionFinishMonth: Int { get }
     var accountantID: String? { get }
 }

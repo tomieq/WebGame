@@ -10,14 +10,14 @@ import Foundation
 class ResidentialBuildingManagedObject: Codable {
     
     let uuid: String
-    var ownerUUID: String?
+    var ownerUUID: String
     let x: Int
     let y: Int
     let name: String
-    var purchaseNetValue: Double?
+    var purchaseNetValue: Double
     var investmentsNetValue: Double
     var isUnderConstruction: Bool
-    var constructionFinishMonth: Int?
+    var constructionFinishMonth: Int
     var accountantID: String?
     var condition: Double
     let storeyAmount: Int
@@ -28,6 +28,7 @@ class ResidentialBuildingManagedObject: Codable {
         self.x = building.address.x
         self.y = building.address.y
         self.name = building.name
+        self.purchaseNetValue = building.purchaseNetValue
         self.investmentsNetValue = building.investmentsNetValue
         self.isUnderConstruction = building.isUnderConstruction
         self.constructionFinishMonth = building.constructionFinishMonth

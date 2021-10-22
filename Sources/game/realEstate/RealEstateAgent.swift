@@ -145,7 +145,7 @@ class RealEstateAgent {
         
         let saleInvoice = Invoice(title: "Purchase land \(name)", netValue: price, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
         let commissionInvoice = Invoice(title: "Commission for purchase land \(name)", grossValue: commission, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
-        let property = land ?? Land(address: address, name: name, ownerUUID: buyerUUID, purchaseNetValue: saleInvoice.netValue)
+        let property = land ?? Land(address: address, name: name, purchaseNetValue: saleInvoice.netValue)
         
         return SaleOffer(saleInvoice: saleInvoice, commissionInvoice: commissionInvoice, property: property)
     }
@@ -158,7 +158,7 @@ class RealEstateAgent {
             return nil
         }
         var price: Double?
-        if building.ownerUUID == SystemPlayer.government.uuid || building.ownerUUID == nil {
+        if building.ownerUUID == SystemPlayer.government.uuid {
             price = self.propertyValuer.estimateValue(address)
         } else {
             guard let advert: SaleAdvert = self.dataStore.find(address: address) else {
@@ -201,7 +201,7 @@ class RealEstateAgent {
             Logger.error("RealEstateAgent", "buyLandProperty:land not found")
             throw BuyPropertyError.propertyNotForSale
         }
-        let sellerID = land.ownerUUID ?? SystemPlayer.government.uuid
+        let sellerID = land.ownerUUID
         guard sellerID != buyerUUID else {
             Logger.error("RealEstateAgent", "buyLandProperty:seller the same as buyer")
             throw BuyPropertyError.tryingBuyOwnProperty
@@ -224,9 +224,10 @@ class RealEstateAgent {
             throw BuyPropertyError.financialTransactionProblem(error)
         }
         if land.uuid.isEmpty {
-            self.dataStore.create(land)
+            let landUUID = self.dataStore.create(land)
+            self.dataStore.update(LandMutation(uuid: landUUID, attributes: [.ownerUUID(buyerUUID)]))
         } else {
-            let costs = land.investmentsNetValue + (land.purchaseNetValue ?? 0.0)
+            let costs = land.investmentsNetValue + land.purchaseNetValue
             self.centralBank.refundIncomeTax(transaction: saleTransaction, costs: costs)
             var modifications: [LandMutation.Attribute] = []
             modifications.append(.purchaseNetValue(offer.saleInvoice.netValue))
@@ -255,7 +256,7 @@ class RealEstateAgent {
             Logger.error("RealEstateAgent", "buyResidentialBuilding:building not found")
             throw BuyPropertyError.propertyNotForSale
         }
-        let sellerID = building.ownerUUID ?? SystemPlayer.government.uuid
+        let sellerID = building.ownerUUID
         guard sellerID != buyerUUID else {
             Logger.error("RealEstateAgent", "buyResidentialBuilding:seller the same as buyer")
             throw BuyPropertyError.tryingBuyOwnProperty
@@ -277,7 +278,7 @@ class RealEstateAgent {
             Logger.error("RealEstateAgent", "buyResidentialBuilding:commission invoice transaction problem")
             throw BuyPropertyError.financialTransactionProblem(error)
         }
-        let costs = building.investmentsNetValue + (building.purchaseNetValue ?? 0.0)
+        let costs = building.investmentsNetValue + building.purchaseNetValue
         self.centralBank.refundIncomeTax(transaction: saleTransaction, costs: costs)
         var modifications: [ResidentialBuildingMutation.Attribute] = []
         modifications.append(.ownerUUID(buyerUUID))

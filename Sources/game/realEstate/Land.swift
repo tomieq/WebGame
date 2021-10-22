@@ -10,13 +10,13 @@ import Foundation
 struct Land: Property {
     
     let uuid: String
-    let ownerUUID: String?
+    let ownerUUID: String
     let address: MapPoint
     let name: String
-    let purchaseNetValue: Double?
+    let purchaseNetValue: Double
     let investmentsNetValue: Double
     let isUnderConstruction: Bool
-    let constructionFinishMonth: Int?
+    let constructionFinishMonth: Int
     let accountantID: String?
 
     var type: String { return "Land property" }
@@ -24,14 +24,14 @@ struct Land: Property {
         return GameMapTile(address: address, type: .soldLand)
     }
     
-    init(address: MapPoint, name: String? = nil, ownerUUID: String? = nil, purchaseNetValue: Double? = nil) {
+    init(address: MapPoint, name: String? = nil, ownerUUID: String = SystemPlayer.government.uuid, purchaseNetValue: Double = 0) {
         self.uuid = ""
         self.ownerUUID = ownerUUID
         self.address = address
         self.name = name ?? "\(RandomNameGenerator.randomAdjective.capitalized) \(RandomNameGenerator.randomNoun.capitalized)"
         self.investmentsNetValue = 0
         self.isUnderConstruction = false
-        self.constructionFinishMonth = nil
+        self.constructionFinishMonth = 0
         self.accountantID = nil
         self.purchaseNetValue = purchaseNetValue
     }

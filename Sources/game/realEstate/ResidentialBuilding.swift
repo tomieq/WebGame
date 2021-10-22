@@ -11,16 +11,16 @@ struct ResidentialBuilding: Property, Codable {
     
     let uuid: String
     var type: String { return "\(self.storeyAmount)-storey Residential Building" }
-    let ownerUUID: String?
+    let ownerUUID: String
     let address: MapPoint
     let name: String
-    let purchaseNetValue: Double?
+    let purchaseNetValue: Double
     let investmentsNetValue: Double
     let condition: Double
     let numberOfFlatsPerStorey = 4
     let storeyAmount: Int
     let isUnderConstruction: Bool
-    let constructionFinishMonth: Int?
+    let constructionFinishMonth: Int
     let accountantID: String?
     
     var numberOfFlats: Int {
@@ -38,7 +38,7 @@ struct ResidentialBuilding: Property, Codable {
         self.condition = 100.0
         self.isUnderConstruction = constructionFinishMonth == nil ? false : true
         self.accountantID = land.accountantID
-        self.constructionFinishMonth = constructionFinishMonth
+        self.constructionFinishMonth = constructionFinishMonth ?? 0
     }
     
     init(_ managedObject: ResidentialBuildingManagedObject) {

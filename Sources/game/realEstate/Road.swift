@@ -11,13 +11,13 @@ struct Road: Property, Codable {
     
     let uuid: String
     var type: String { return "Public street" }
-    let ownerUUID: String?
+    let ownerUUID: String
     let address: MapPoint
     let name: String
-    let purchaseNetValue: Double?
+    let purchaseNetValue: Double
     let investmentsNetValue: Double
     let isUnderConstruction: Bool
-    let constructionFinishMonth: Int?
+    let constructionFinishMonth: Int
     let accountantID: String?
     
     init(land: Land, constructionFinishMonth: Int? = nil, investmentsNetValue: Double = 0) {
@@ -28,7 +28,7 @@ struct Road: Property, Codable {
         self.purchaseNetValue = land.purchaseNetValue
         self.investmentsNetValue = (land.investmentsNetValue + investmentsNetValue).rounded(toPlaces: 0)
         self.isUnderConstruction = constructionFinishMonth == nil ? false: true
-        self.constructionFinishMonth = constructionFinishMonth
+        self.constructionFinishMonth = constructionFinishMonth ?? 0
         self.accountantID = nil
     }
     

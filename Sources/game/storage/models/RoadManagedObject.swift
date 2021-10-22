@@ -10,14 +10,14 @@ import Foundation
 class RoadManagedObject: Codable {
     
     let uuid: String
-    var ownerUUID: String?
+    var ownerUUID: String
     let x: Int
     let y: Int
     let name: String
-    var purchaseNetValue: Double?
+    var purchaseNetValue: Double
     var investmentsNetValue: Double
     var isUnderConstruction: Bool
-    var constructionFinishMonth: Int?
+    var constructionFinishMonth: Int
     var accountantID: String?
     
     init(_ road: Road) {

@@ -34,9 +34,8 @@ class RoadRestAPI: RestAPI {
             
             var ownerName = "Government"
             if let road: Road = self.dataStore.find(address: address) {
-                if let ownerUUID = road.ownerUUID,
-                    ownerUUID != SystemPlayer.government.uuid,
-                    let owner: Player = self.dataStore.find(uuid: ownerUUID) {
+                if road.ownerUUID != SystemPlayer.government.uuid,
+                    let owner: Player = self.dataStore.find(uuid: road.ownerUUID) {
                     ownerName = owner.login
                 }
             }
@@ -72,19 +71,23 @@ class RoadRestAPI: RestAPI {
                 return .badRequest(.html("Invalid request! Missing address."))
             }
             
-            var ownerName = SystemPlayer.government.login
-            if let road: Road = self.dataStore.find(address: address) {
-                if let ownerUUID = road.ownerUUID,
-                    ownerUUID != SystemPlayer.government.uuid,
-                    let owner: Player = self.dataStore.find(uuid: ownerUUID) {
-                    ownerName = owner.login
-                }
+            guard let playerSessionID = request.queryParam("playerSessionID"),
+                  let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                      return .badRequest(.html("Invalid request! Missing sessionID."))
+            }
+            
+            guard let road: Road = self.dataStore.find(address: address),
+                  road.ownerUUID == session.playerUUID else {
+                      return .badRequest(.html("You are not allowed to manage this road"))
             }
 
-            let template = Template(raw: ResourceCache.shared.getAppResource("templates/roadInfo.html"))
+            let template = Template(raw: ResourceCache.shared.getAppResource("templates/roadManager.html"))
             var data = [String:String]()
-            data["owner"] = ownerName
             data["tileUrl"] = TileType.street(type: .local(.localX)).image.path
+            data["name"] = road.name
+            data["type"] = road.type
+            data["purchasePrice"] = road.purchaseNetValue.money
+            data["investmentsValue"] = road.investmentsNetValue.money
             template.assign(variables: data)
             return .ok(.html(template.output()))
         }

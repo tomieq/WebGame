@@ -147,9 +147,7 @@ class PropertyManagerRestAPI {
             guard let property = self.gameEngine.realEstateAgent.getProperty(address: address) else {
                 return .badRequest(.html("Property at \(address.description) not found!"))
             }
-            guard let ownerID = property.ownerUUID else {
-                return .badRequest(.html("Property at \(address.description) has no owner!"))
-            }
+            let ownerID = property.ownerUUID
             let owner = self.dataStore.find(uuid: ownerID)
             
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyInfo.html"))
@@ -204,7 +202,8 @@ class PropertyManagerRestAPI {
             guard let land: Land = self.dataStore.find(address: address) else {
                 return .ok(.text("Property at \(address.description) not found!"))
             }
-            guard let ownerID = land.ownerUUID, session.playerUUID == ownerID else {
+            let ownerID = land.ownerUUID
+            guard session.playerUUID == ownerID else {
                 return .ok(.text("Property at \(address.description) is not yours!"))
             }
             
@@ -226,7 +225,7 @@ class PropertyManagerRestAPI {
             data["monthlyIncomeTax"] = ""//incomeTax.money
             data["monthlyCosts"] = ""//property.monthlyMaintenanceCost.money
             data["balance"] = ""//(property.monthlyIncome - property.monthlyMaintenanceCost - incomeTax).money
-            data["purchasePrice"] = land.purchaseNetValue?.money ?? ""
+            data["purchasePrice"] = land.purchaseNetValue.money
             data["investmentsValue"] = land.investmentsNetValue.money
             let estimatedValue = 0.0//self.gameEngine.realEstateAgent.estimateValue(property.address)
             data["estimatedValue"] = estimatedValue.money
@@ -253,9 +252,7 @@ class PropertyManagerRestAPI {
             guard let land: Land = self.dataStore.find(address: address) else {
                 return .ok(.text("Property at \(address.description) not found!"))
             }
-            guard let ownerID = land.ownerUUID, session.playerUUID == ownerID else {
-                return .ok(.text("Property at \(address.description) is not yours!"))
-            }
+            let ownerID = land.ownerUUID
             
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManager.html"))
             var data = [String:String]()
@@ -534,7 +531,8 @@ class PropertyManagerRestAPI {
     
     private func buildingActions(building: ResidentialBuilding, windowIndex: String, session: PlayerSession) -> String {
 
-        if building.isUnderConstruction, let constructionFinishMonth = building.constructionFinishMonth {
+        if building.isUnderConstruction {
+            let constructionFinishMonth = building.constructionFinishMonth
             return "Building is under construction. Your investment will finish on \(GameDate(monthIteration: constructionFinishMonth).text)"
         }
         
