@@ -75,6 +75,11 @@ class RealEstateAgent {
         guard let propertyType = self.mapManager.map.getTile(address: address)?.propertyType else {
             throw RegisterOfferError.propertyDoesNotExist
         }
+        let exists: SaleAdvert? = self.dataStore.find(address: address)
+        guard exists == nil else {
+            throw RegisterOfferError.advertAlreadyExists
+        }
+
         let property: Property?
         switch propertyType {
             
@@ -392,4 +397,5 @@ enum BuyPropertyError: Error, Equatable {
 
 enum RegisterOfferError: Error {
     case propertyDoesNotExist
+    case advertAlreadyExists
 }

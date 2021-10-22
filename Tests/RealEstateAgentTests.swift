@@ -27,6 +27,20 @@ final class RealEstateAgentTests: XCTestCase {
         }
     }
     
+    func test_registerOffer_twice() {
+        let agent = self.makeAgent()
+
+        let address = MapPoint(x: 5, y: 3)
+        let land = Land(address: address, ownerUUID: "john")
+        agent.dataStore.create(land)
+        agent.mapManager.map.setTiles([GameMapTile(address: address, type: .soldLand)])
+        
+        XCTAssertNoThrow(try agent.registerSaleOffer(address: address, netValue: 3000))
+        XCTAssertThrowsError(try agent.registerSaleOffer(address: address, netValue: 3000)){ error in
+            XCTAssertEqual(error as? RegisterOfferError, .advertAlreadyExists)
+        }
+    }
+    
     func test_registerLandOffer_advertExists() {
         let agent = self.makeAgent()
 
@@ -351,7 +365,6 @@ final class RealEstateAgentTests: XCTestCase {
         
         XCTAssertEqual(agent.isForSale(address: address), true)
     }
-    
     
     private func makeAgent() -> RealEstateAgent {
         
