@@ -136,7 +136,7 @@ class RealEstateAgent {
         }
     }
 
-    func landSaleOffer(address: MapPoint, buyerUUID: String) -> SaleOffer? {
+    private func landSaleOffer(address: MapPoint, buyerUUID: String) -> SaleOffer? {
         
         // if it is no one's land, it's on sale by government
         // if it is private sale the offer is in the advert list
@@ -170,7 +170,7 @@ class RealEstateAgent {
         return SaleOffer(saleInvoice: saleInvoice, commissionInvoice: commissionInvoice, property: property)
     }
     
-    func residentialBuildingSaleOffer(address: MapPoint, buyerUUID: String) -> SaleOffer? {
+    private func residentialBuildingSaleOffer(address: MapPoint, buyerUUID: String) -> SaleOffer? {
         guard let tile = self.mapManager.map.getTile(address: address), tile.isBuilding() else {
             return nil
         }
@@ -199,7 +199,7 @@ class RealEstateAgent {
     func buyProperty(address: MapPoint, buyerUUID: String) throws {
         guard let tile = self.mapManager.map.getTile(address: address) else {
             try self.buyLandProperty(address: address, buyerUUID: buyerUUID)
-            return 
+            return
         }
         guard let propertyType = tile.propertyType else {
             throw BuyPropertyError.propertyNotForSale
@@ -214,7 +214,7 @@ class RealEstateAgent {
         }
     }
     
-    func buyLandProperty(address: MapPoint, buyerUUID: String) throws {
+    private func buyLandProperty(address: MapPoint, buyerUUID: String) throws {
         
         guard let offer = self.landSaleOffer(address: address, buyerUUID: buyerUUID) else {
             Logger.error("RealEstateAgent", "buyLandProperty:offer not found")
@@ -269,7 +269,7 @@ class RealEstateAgent {
         self.delegate?.notifyEveryone(UINotification(text: "New transaction on the market. Player \(playerName) has just bought property `\(land.name)`", level: .info, duration: 10))
     }
     
-    func buyResidentialBuilding(address: MapPoint, buyerUUID: String) throws {
+    private func buyResidentialBuilding(address: MapPoint, buyerUUID: String) throws {
         
         guard let offer = self.residentialBuildingSaleOffer(address: address, buyerUUID: buyerUUID) else {
             Logger.error("RealEstateAgent", "buyResidentialBuilding:offer not found")
