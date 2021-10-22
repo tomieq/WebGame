@@ -19,7 +19,7 @@ class ConstructionPriceList {
 }
 
 class ConstructionDuration {
-    var road: Int = 1
+    var road: Int = 3
     var residentialBuilding = 9
     var residentialBuildingPerStorey = 1
     
