@@ -22,10 +22,12 @@ class ClickTileRouter {
     
     let map: GameMap
     let dataStore: DataStoreProvider
+    let agent: RealEstateAgent
     
-    init(map: GameMap, dataStore: DataStoreProvider) {
-        self.map = map
-        self.dataStore = dataStore
+    init(agent: RealEstateAgent) {
+        self.map = agent.mapManager.map
+        self.dataStore = agent.dataStore
+        self.agent = agent
     }
     
     func action(address: MapPoint, playerUUID: String?) -> ClickTileAction {
@@ -41,6 +43,8 @@ class ClickTileRouter {
             if let land: Land = self.dataStore.find(address: address) {
                 if land.ownerUUID == playerUUID {
                     return .landManager
+                } else if self.agent.isForSale(address: address) {
+                    return .buyLand
                 } else {
                     return .landInfo
                 }

@@ -207,7 +207,7 @@ class PropertyManagerRestAPI {
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManager.html"))
             var data = [String:String]()
             
-            let propertyHasAccountant = land.accountantID != nil
+            let propertyHasAccountant = building.accountantID != nil
             /*
             let incomeForTaxCalculation = propertyHasAccountant ? max(0, property.monthlyIncome - property.monthlyMaintenanceCost) : property.monthlyIncome
 

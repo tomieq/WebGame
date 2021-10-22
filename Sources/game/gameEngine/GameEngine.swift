@@ -58,7 +58,7 @@ class GameEngine {
         self.websocketHandler = WebsocketHandler()
         self.gameClock = GameClock(realEstateAgent: self.realEstateAgent, time: self.time)
         
-        self.clickRouter = ClickTileRouter(map: self.gameMap, dataStore: self.dataStore)
+        self.clickRouter = ClickTileRouter(agent: self.realEstateAgent)
         
         self.realEstateAgent.delegate = self
         self.constructionServices.delegate = self
