@@ -176,6 +176,28 @@ final class RealEstateAgentTests: XCTestCase {
         XCTAssertEqual(updatedSeller?.wallet, 1900)
     }
     
+    func test_buyLandProperty_fromOtherUser_advertDeleted() {
+        
+        let agent = self.makeAgent()
+        agent.centralBank.taxRates.incomeTax = 0.1
+        
+        let address = MapPoint(x: 3, y: 3)
+        let seller = Player(uuid: "seller", login: "seller", wallet: 0)
+        agent.dataStore.create(seller)
+        let buyer = Player(uuid: "buyer", login: "buyer", wallet: 3000)
+        agent.dataStore.create(buyer)
+        let land = Land(address: address, ownerUUID: "seller", purchaseNetValue: 600)
+        let landID = agent.dataStore.create(land)
+        agent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
+        
+        agent.dataStore.update(LandMutation(uuid: landID, attributes: [.investments(400)]))
+        
+        XCTAssertNoThrow(try agent.registerSaleOffer(address: address, netValue: 2000))
+        XCTAssertNoThrow(try agent.buyProperty(address: address, buyerUUID: "buyer"))
+        
+        XCTAssertNil(agent.saleOffer(address: address, buyerUUID: "buyer"))
+    }
+    
     func test_residentialBuildingSaleOffer_notForSale() {
         let agent = self.makeAgent()
         agent.mapManager.loadMapFrom(content: "b")

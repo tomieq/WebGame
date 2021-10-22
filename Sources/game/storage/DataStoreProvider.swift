@@ -39,4 +39,5 @@ protocol DataStoreProvider {
     func removeLand(uuid: String)
     func removeRoad(uuid: String)
     func removeResidentialBuilding(uuid: String)
+    func removeSaleAdvert(address: MapPoint)
 }

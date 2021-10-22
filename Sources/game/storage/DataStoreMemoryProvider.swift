@@ -263,4 +263,10 @@ class DataStoreMemoryProvider: DataStoreProvider {
             self.adverts.map { SaleAdvert($0) }
         }
     }
+    
+    func removeSaleAdvert(address: MapPoint) {
+        queue.sync(flags: .barrier) {
+            self.adverts.removeAll{ $0.x == address.x && $0.y == address.y }
+        }
+    }
 }

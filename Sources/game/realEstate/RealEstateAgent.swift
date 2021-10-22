@@ -217,6 +217,7 @@ class RealEstateAgent {
         case .residentialBuilding:
             try self.buyResidentialBuilding(address: address, buyerUUID: buyerUUID)
         }
+        self.dataStore.removeSaleAdvert(address: address)
     }
     
     private func buyLandProperty(address: MapPoint, buyerUUID: String) throws {
