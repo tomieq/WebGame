@@ -176,28 +176,51 @@ class RealEstateAgent {
         return SaleOffer(saleInvoice: saleInvoice, commissionInvoice: commissionInvoice, property: building)
     }
 
+    func buyProperty(address: MapPoint, buyerUUID: String) throws {
+        guard let tile = self.mapManager.map.getTile(address: address), let propertyType = tile.propertyType else {
+            throw BuyPropertyError.propertyNotForSale
+        }
+        switch propertyType {
+        case .land:
+            try self.buyLandProperty(address: address, buyerUUID: buyerUUID)
+        case .road:
+            throw BuyPropertyError.propertyNotForSale
+        case .residentialBuilding:
+            try self.buyResidentialBuilding(address: address, buyerUUID: buyerUUID)
+        }
+    }
+    
     func buyLandProperty(address: MapPoint, buyerUUID: String) throws {
         
         guard let offer = self.landSaleOffer(address: address, buyerUUID: buyerUUID) else {
+            Logger.error("RealEstateAgent", "buyLandProperty:offer not found")
             throw BuyPropertyError.propertyNotForSale
         }
        
         guard let land = offer.property as? Land else {
+            Logger.error("RealEstateAgent", "buyLandProperty:land not found")
             throw BuyPropertyError.propertyNotForSale
         }
         let sellerID = land.ownerUUID ?? SystemPlayer.government.uuid
+        guard sellerID != buyerUUID else {
+            Logger.error("RealEstateAgent", "buyLandProperty:seller the same as buyer")
+            throw BuyPropertyError.tryingBuyOwnProperty
+        }
+        Logger.info("RealEstateAgent", "New land sale transaction. @\(address.description)")
         let realEstateAgentID = SystemPlayer.realEstateAgency.uuid
         // process the transaction
         let saleTransaction = FinancialTransaction(payerID: buyerUUID, recipientID: sellerID , invoice: offer.saleInvoice)
         do {
              try self.centralBank.process(saleTransaction)
         } catch let error as FinancialTransactionError {
+            Logger.error("RealEstateAgent", "buyLandProperty:sale invoice transaction problem")
             throw BuyPropertyError.financialTransactionProblem(error)
         }
         let feeTransaction = FinancialTransaction(payerID: buyerUUID, recipientID: realEstateAgentID, invoice: offer.commissionInvoice)
         do {
              try self.centralBank.process(feeTransaction)
         } catch let error as FinancialTransactionError {
+            Logger.error("RealEstateAgent", "buyLandProperty:commission invoice transaction problem")
             throw BuyPropertyError.financialTransactionProblem(error)
         }
         if land.uuid.isEmpty {
@@ -224,25 +247,34 @@ class RealEstateAgent {
     func buyResidentialBuilding(address: MapPoint, buyerUUID: String) throws {
         
         guard let offer = self.residentialBuildingSaleOffer(address: address, buyerUUID: buyerUUID) else {
+            Logger.error("RealEstateAgent", "buyResidentialBuilding:offer not found")
             throw BuyPropertyError.propertyNotForSale
         }
        
         guard let building = offer.property as? ResidentialBuilding else {
+            Logger.error("RealEstateAgent", "buyResidentialBuilding:building not found")
             throw BuyPropertyError.propertyNotForSale
         }
-        let recipientID = building.ownerUUID ?? SystemPlayer.government.uuid
+        let sellerID = building.ownerUUID ?? SystemPlayer.government.uuid
+        guard sellerID != buyerUUID else {
+            Logger.error("RealEstateAgent", "buyResidentialBuilding:seller the same as buyer")
+            throw BuyPropertyError.tryingBuyOwnProperty
+        }
+        Logger.info("RealEstateAgent", "New residentialBuilding sale transaction. @\(address.description)")
         let realEstateAgentID = SystemPlayer.realEstateAgency.uuid
         // process the transaction
-        let saleTransaction = FinancialTransaction(payerID: buyerUUID, recipientID: recipientID , invoice: offer.saleInvoice)
+        let saleTransaction = FinancialTransaction(payerID: buyerUUID, recipientID: sellerID , invoice: offer.saleInvoice)
         do {
              try self.centralBank.process(saleTransaction)
         } catch let error as FinancialTransactionError {
+            Logger.error("RealEstateAgent", "buyResidentialBuilding:sale invoice transaction problem")
             throw BuyPropertyError.financialTransactionProblem(error)
         }
         let feeTransaction = FinancialTransaction(payerID: buyerUUID, recipientID: realEstateAgentID, invoice: offer.commissionInvoice)
         do {
              try self.centralBank.process(feeTransaction)
         } catch let error as FinancialTransactionError {
+            Logger.error("RealEstateAgent", "buyResidentialBuilding:commission invoice transaction problem")
             throw BuyPropertyError.financialTransactionProblem(error)
         }
         let costs = building.investmentsNetValue + (building.purchaseNetValue ?? 0.0)
@@ -329,6 +361,7 @@ class RealEstateAgent {
 
 enum BuyPropertyError: Error, Equatable {
     case propertyNotForSale
+    case tryingBuyOwnProperty
     case financialTransactionProblem(FinancialTransactionError)
 }
 
