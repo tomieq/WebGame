@@ -25,6 +25,7 @@ protocol DataStoreProvider {
     func getAll() -> [Land]
     func getAll() -> [Road]
     func getAll() -> [ResidentialBuilding]
+    func getAll() -> [SaleAdvert]
     
     func getUnderConstruction() -> [Road]
     func getUnderConstruction() -> [ResidentialBuilding]

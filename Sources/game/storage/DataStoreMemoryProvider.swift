@@ -257,4 +257,10 @@ class DataStoreMemoryProvider: DataStoreProvider {
             return self.adverts.first{ $0.x == address.x && $0.y == address.y }.map{ SaleAdvert($0) }
         }
     }
+    
+    func getAll() -> [SaleAdvert] {
+        return queue.sync {
+            self.adverts.map { SaleAdvert($0) }
+        }
+    }
 }
