@@ -142,7 +142,7 @@ class RealEstateAgentRestAPI: RestAPI {
             var data = [String:String]()
             data["name"] = property.name
             data["type"] = property.type
-            data["price"] = property.purchaseNetValue.string
+            data["price"] = Int(property.purchaseNetValue).string
             data["windowIndex"] = windowIndex
             data["tileUrl"] = self.gameEngine.gameMap.getTile(address: address)?.type.image.path ?? ""
             data["submitUrl"] = "/publishSaleOffer.js?\(address.asQueryParams)"
@@ -171,7 +171,22 @@ class RealEstateAgentRestAPI: RestAPI {
             } catch {
                 return JSCode.showError(txt: "Problem with adding sale offer", duration: 10).response
             }
-            
+            return js.response
+        }
+        
+        // MARK: cancelSaleOffer.js
+        server.GET["/cancelSaleOffer.js"] = { request, _ in
+            request.disableKeepAlive = true
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
+            }
+            guard let address = request.mapPoint else {
+                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
+            }
+            let js = JSResponse()
+            self.gameEngine.realEstateAgent.cancelSaleOffer(address: address)
+            js.add(.showSuccess(txt: "Sale offer cancelled successfully", duration: 5))
+            js.add(.loadHtml(windowIndex, htmlPath: "/landManager.html?\(address.asQueryParams)"))
             return js.response
         }
     }

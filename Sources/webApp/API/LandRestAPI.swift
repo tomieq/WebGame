@@ -66,6 +66,7 @@ class LandRestAPI: RestAPI {
             if let offer = self.gameEngine.realEstateAgent.saleOffer(address: address, buyerUUID: "check") {
                 var data = [String:String]()
                 data["price"] = offer.saleInvoice.netValue.money
+                data["cancelOfferJS"] = JSCode.runScripts(windowIndex, paths: ["/cancelSaleOffer.js?\(address.asQueryParams)"]).js
                 template.assign(variables: data, inNest: "forSale")
             } else {
                 var data = [String:String]()

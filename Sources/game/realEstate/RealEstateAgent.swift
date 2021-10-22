@@ -101,6 +101,10 @@ class RealEstateAgent {
         self.dataStore.create(advert)
     }
     
+    func cancelSaleOffer(address: MapPoint) {
+        self.dataStore.removeSaleAdvert(address: address)
+    }
+    
     func getAllSaleOffers(buyerUUID: String) -> [SaleOffer] {
         let adverts: [SaleAdvert] = self.dataStore.getAll()
         var offers: [SaleOffer] = []
