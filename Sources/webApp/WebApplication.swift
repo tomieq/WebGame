@@ -42,14 +42,12 @@ public class WebApplication {
                 return Template.htmlNode(type: "canvas", attributes: ["id":canvasName,"style":"z-index:\(zIndex);"])
             }.joined(separator: "\n")
             
-            let now = GameDate(monthIteration: Storage.shared.monthIteration)
-            
             var data = [String:String]()
             data["openBankTransactions"] = JSCode.openWindow(name: "Bank operations", path: "js/openBankTransactions.js", width: 500, height: 0.8, singletonID: "bankTransactions").js
             data["openWalletBalance"] = JSCode.openWindow(name: "Montly wallet balance", path: "js/openWalletBalance.js", width: 800, height: 400, singletonID: "walletBalance").js
             data["body"] = html
             data["money"] = player.wallet.money
-            data["gameDate"] = now.text
+            data["gameDate"] = self.gameEngine.time.text
             data["playerSessionID"] = playerSession.id
             template.assign(variables: data)
             return template.asResponse()
@@ -111,7 +109,7 @@ public class WebApplication {
             for transaction in self.dataStore.getFinancialTransactions(userID: session.playerUUID) {
                 var data = [String:String]()
                 data["number"] = transaction.uuid
-                data["date"] = GameDate(monthIteration: transaction.month).text
+                data["date"] = GameTime(transaction.month).text
                 data["title"] = transaction.title
                 template.assign(variables: data)
                 if transaction.amount > 0 {

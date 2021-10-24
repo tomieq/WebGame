@@ -30,11 +30,13 @@ enum FinancialTransactionError: Error, Equatable {
 class CentralBank {
     let dataStore: DataStoreProvider
     let taxRates: TaxRates
+    let time: GameTime
     private let semaphore = DispatchSemaphore(value: 1)
     
-    init(dataStore: DataStoreProvider, taxRates: TaxRates) {
+    init(dataStore: DataStoreProvider, taxRates: TaxRates, time: GameTime) {
         self.dataStore = dataStore
         self.taxRates = taxRates
+        self.time = time
     }
     
     func process(_ transaction: FinancialTransaction) throws {
@@ -139,10 +141,8 @@ class CentralBank {
     }
     
     private func archive(playerID: String, title: String, amount: Double) {
-
-        let monthIteration = Storage.shared.monthIteration
         
-        let archive = CashFlow(month: monthIteration, title: title, playerID: playerID, amount: amount)
+        let archive = CashFlow(month: self.time.month, title: title, playerID: playerID, amount: amount)
         self.dataStore.create(archive)
     }
 }

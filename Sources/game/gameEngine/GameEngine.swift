@@ -28,10 +28,9 @@ class GameEngine {
     
     init(dataStore: DataStoreProvider) {
         self.time = GameTime()
-        self.time.month = Storage.shared.monthIteration
         self.dataStore = dataStore
         self.taxRates = TaxRates()
-        self.centralbank = CentralBank(dataStore: self.dataStore, taxRates: self.taxRates)
+        self.centralbank = CentralBank(dataStore: self.dataStore, taxRates: self.taxRates, time: self.time)
         
         let government = Player(uuid: SystemPlayer.government.uuid, login: SystemPlayer.government.login, wallet: 0)
         let realEstateAgent = Player(uuid: SystemPlayer.realEstateAgency.uuid, login: SystemPlayer.realEstateAgency.login, wallet: 0)

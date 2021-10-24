@@ -80,7 +80,7 @@ final class ClickTileRouterTests: XCTestCase {
     private func makeRouter() -> ClickTileRouter {
         let dataStore = DataStoreMemoryProvider()
         let taxRates = TaxRates()
-        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
+        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates, time: GameTime())
         let map = GameMap(width: 10, height: 10, scale: 0.2)
         let mapManager = GameMapManager(map)
         let propertyValuer = PropertyValuer(mapManager: mapManager, dataStore: dataStore)

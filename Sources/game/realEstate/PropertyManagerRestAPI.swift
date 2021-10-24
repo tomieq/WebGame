@@ -340,7 +340,7 @@ class PropertyManagerRestAPI {
 
         if building.isUnderConstruction {
             let constructionFinishMonth = building.constructionFinishMonth
-            return "Building is under construction. Your investment will finish on \(GameDate(monthIteration: constructionFinishMonth).text)"
+            return "Building is under construction. Your investment will finish on \(GameTime(constructionFinishMonth).text)"
         }
         
         let detailsDivID = "buildingDetails\(windowIndex)"

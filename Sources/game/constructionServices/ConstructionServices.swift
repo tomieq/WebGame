@@ -23,7 +23,7 @@ enum ConstructionServicesError: Error, Equatable {
 
 class ConstructionServices {
     
-    let currentTime: GameTime
+    let time: GameTime
     let mapManager: GameMapManager
     let centralBank: CentralBank
     let priceList: ConstructionPriceList
@@ -32,7 +32,7 @@ class ConstructionServices {
     let dataStore: DataStoreProvider
     
     init(mapManager: GameMapManager, centralBank: CentralBank, time: GameTime, delegate: ConstructionServicesDelegate? = nil) {
-        self.currentTime = time
+        self.time = time
         self.mapManager = mapManager
         self.dataStore = centralBank.dataStore
         self.centralBank = centralBank
@@ -78,7 +78,7 @@ class ConstructionServices {
 
         self.dataStore.removeLand(uuid: land.uuid)
 
-        let constructionFinishMonth = self.currentTime.month + offer.duration
+        let constructionFinishMonth = self.time.month + offer.duration
         let investmentsNetValue = offer.invoice.netValue
         let road = Road(land: land, constructionFinishMonth: constructionFinishMonth, investmentsNetValue: investmentsNetValue)
         self.dataStore.create(road)
@@ -104,7 +104,7 @@ class ConstructionServices {
         
         let offer = residentialBuildingOffer(landName: land.name, storeyAmount: storeyAmount)
         
-        let constructionFinishMonth = self.currentTime.month + offer.duration
+        let constructionFinishMonth = self.time.month + offer.duration
         let investmentsNetValue = offer.invoice.netValue
         let building = ResidentialBuilding(land: land, storeyAmount: storeyAmount, constructionFinishMonth: constructionFinishMonth, investmentsNetValue: investmentsNetValue)
         self.dataStore.create(building)
@@ -127,12 +127,12 @@ class ConstructionServices {
     }
     
     func finishInvestments() {
-        Logger.info("ConstructionServices", "Finish all constructions for \(self.currentTime.month)")
+        Logger.info("ConstructionServices", "Finish all constructions for \(self.time.month)")
         var updateMap = false
         
         let roads: [Road] = self.dataStore.getUnderConstruction()
         for road in roads {
-            if road.constructionFinishMonth == self.currentTime.month {
+            if road.constructionFinishMonth == self.time.month {
                 let mutation = RoadMutation(uuid: road.uuid, attributes: [.isUnderConstruction(false)])
                 self.dataStore.update(mutation)
                 
@@ -143,7 +143,7 @@ class ConstructionServices {
         
         let buildings: [ResidentialBuilding] = self.dataStore.getUnderConstruction()
         for building in buildings {
-            if building.constructionFinishMonth == self.currentTime.month {
+            if building.constructionFinishMonth == self.time.month {
                 
                 self.dataStore.update(ResidentialBuildingMutation(uuid: building.uuid, attributes: [.isUnderConstruction(false)]))
                 

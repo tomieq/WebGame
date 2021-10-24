@@ -21,15 +21,13 @@ class GameClock {
         self.dataStore = realEstateAgent.dataStore
         
         Observable<Int>.interval(.seconds(33), scheduler: MainScheduler.instance).bind { [weak self] _ in
+            guard let `self` = self else { return }
             Logger.info("GameClock", "End of the month")
-            self?.time.nextMonth()
-            self?.endTheMonth()
-            self?.pruneBankTransactionArchive()
-            Storage.shared.monthIteration += 1
+            self.time.nextMonth()
+            self.endTheMonth()
             
             
-            let now = GameDate(monthIteration: Storage.shared.monthIteration)
-            let updateDateEvent = GameEvent(playerSession: nil, action: .updateGameDate(now.text))
+            let updateDateEvent = GameEvent(playerSession: nil, action: .updateGameDate(self.time.text))
             GameEventBus.gameEvents.onNext(updateDateEvent)
         }.disposed(by: self.disposeBag)
     }
@@ -100,21 +98,5 @@ class GameClock {
         //let currentMonth = Storage.shared.monthIteration
         //let borderMonth = currentMonth - 12
         //Storage.shared.transactionArchive = Storage.shared.transactionArchive.filter { $0.month > borderMonth }
-    }
-}
-
-struct GameDate {
-    let monthIteration: Int
-    let month: Int
-    let year: Int
-    
-    var text: String {
-        return "\(month)/\(year)"
-    }
-    
-    init(monthIteration: Int) {
-        self.monthIteration = monthIteration
-        self.month = monthIteration % 12 + 1
-        self.year = 2000 + (monthIteration - self.month + 1)/12
     }
 }

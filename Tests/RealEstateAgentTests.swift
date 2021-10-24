@@ -474,7 +474,8 @@ final class RealEstateAgentTests: XCTestCase {
         
         let dataStore = DataStoreMemoryProvider()
         let taxRates = TaxRates()
-        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates)
+        let time = GameTime()
+        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates, time: time)
         let map = GameMap(width: 10, height: 10, scale: 0.2)
         let mapManager = GameMapManager(map)
         let propertyValuer = PropertyValuer(mapManager: mapManager, dataStore: dataStore)
