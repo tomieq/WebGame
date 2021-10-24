@@ -58,12 +58,13 @@ class RealEstateAgentRestAPI: RestAPI {
                     template.assign(variables: ["value": offer.saleInvoice.netValue.money, "name": seller.login], inNest: "privateOffer")
                 }
             }
-            data["value"] = offer.saleInvoice.netValue.money
+            let netValue = offer.saleInvoice.netValue
+            data["value"] = netValue.money
             data["tax"] = offer.saleInvoice.tax.money
             data["taxRate"] = (offer.saleInvoice.taxRate * 100).rounded(toPlaces: 1).string
             data["transactionFee"] = offer.commissionInvoice.total.money
             data["total"] = (offer.saleInvoice.total + offer.commissionInvoice.total).money
-            data["buyScript"] = JSCode.runScripts(windowIndex, paths: ["/buyProperty.js?\(address.asQueryParams)"]).js
+            data["buyScript"] = JSCode.runScripts(windowIndex, paths: ["/buyProperty.js?\(address.asQueryParams)&netValue=\(netValue)"]).js
             template.assign(variables: data)
             return .ok(.html(template.output()))
         }
@@ -84,11 +85,19 @@ class RealEstateAgentRestAPI: RestAPI {
                     code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
                     return code.response
             }
+            var netValue: Double? = nil
+            if let netValueString = request.queryParam("netValue") {
+                netValue = Double(netValueString)
+            }
             do {
-                try self.gameEngine.realEstateAgent.buyProperty(address: address, buyerUUID: session.playerUUID)
+                try self.gameEngine.realEstateAgent.buyProperty(address: address, buyerUUID: session.playerUUID, netPrice: netValue)
             } catch BuyPropertyError.propertyNotForSale {
                 code.add(.closeWindow(windowIndex))
                 code.add(.showError(txt: "This property is not for sale any more.", duration: 10))
+                return code.response
+            } catch BuyPropertyError.saleOfferHasChanged {
+                code.add(.showWarning(txt: "Sale offer has changed!", duration: 10))
+                code.add(.loadHtml(windowIndex, htmlPath: "saleOffer.html?\(address.asQueryParams)"))
                 return code.response
             } catch BuyPropertyError.financialTransactionProblem(let reason) {
                 return JSCode.showError(txt: reason.description, duration: 10).response
