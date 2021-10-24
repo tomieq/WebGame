@@ -151,7 +151,7 @@ class RealEstateAgentRestAPI: RestAPI {
             var data = [String:String]()
             data["name"] = property.name
             data["type"] = property.type
-            data["price"] = Int(property.purchaseNetValue).string
+            data["price"] = property.purchaseNetValue.moneyFormat
             data["windowIndex"] = windowIndex
             data["tileUrl"] = self.gameEngine.gameMap.getTile(address: address)?.type.image.path ?? ""
             data["submitUrl"] = "/publishSaleOffer.js?\(address.asQueryParams)"

@@ -25,7 +25,7 @@
     <td colspan=2>
     Real Estate Market is the place where you can publish sell offers.
     If you want to sell your property fast, set attractive price.
-    Government might buy your property almost immediately if your price will be below the estimated market value.
+    There are investors who will buy anything when the price is fair.
     </td>
     
 </tr>
@@ -40,19 +40,15 @@
 <table style="width: 400px; margin: 5px; float: left">
     <tbody>
         <tr>
-            <td colspan=2 style="text-align: center;"><button class="btn btn-sm" onclick="publishOffer{windowIndex}();">Publish offer</button></td>
+            <td colspan=2 style="text-align: center;"><button class="btn btn-sm" onclick="publishOffer({windowIndex}, '{submitUrl}');">Publish offer</button></td>
         </tr>
     </tbody>
 </table>
 </div>
 
 <script>
-function publishOffer{windowIndex}() {
-    var price = $("#price{windowIndex}").val();
-    if(isNaN(price) || isNaN(parseFloat(price))){
-        uiShowError("Please provide valid price", 5000);
-    } else {
-        runScripts({windowIndex}, ["{submitUrl}&price="+price]);
-    }
-}
+$("#price{windowIndex}").on('keyup', function(){
+    var n = numberWithSpaces($(this).val());
+    $(this).val(n);
+});
 </script>
