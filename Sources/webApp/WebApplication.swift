@@ -23,6 +23,7 @@ public class WebApplication {
         var api: [RestAPI] = []
         api.append(RoadRestAPI(server, gameEngine: self.gameEngine))
         api.append(LandRestAPI(server, gameEngine: self.gameEngine))
+        api.append(RealEstateAgentRestAPI(server, gameEngine: self.gameEngine))
         self.api = api
 
         server.GET["/"] = { request, responseHeaders in

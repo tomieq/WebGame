@@ -24,12 +24,12 @@ struct Land: Property {
         return GameMapTile(address: address, type: .soldLand)
     }
     
-    init(address: MapPoint, name: String? = nil, ownerUUID: String = SystemPlayer.government.uuid, purchaseNetValue: Double = 0) {
+    init(address: MapPoint, name: String? = nil, ownerUUID: String = SystemPlayer.government.uuid, purchaseNetValue: Double = 0, investmentsNetValue: Double = 0) {
         self.uuid = ""
         self.ownerUUID = ownerUUID
         self.address = address
         self.name = name ?? "\(RandomNameGenerator.randomAdjective.capitalized) \(RandomNameGenerator.randomNoun.capitalized)"
-        self.investmentsNetValue = 0
+        self.investmentsNetValue = investmentsNetValue
         self.isUnderConstruction = false
         self.constructionFinishMonth = 0
         self.accountantID = nil

@@ -182,7 +182,7 @@ class RealEstateAgent {
         
         let saleInvoice = Invoice(title: "Purchase land \(name)", netValue: price, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
         let commissionInvoice = Invoice(title: "Commission for purchase land \(name)", grossValue: commission, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
-        let property = land ?? Land(address: address, name: name, purchaseNetValue: saleInvoice.netValue)
+        let property = land ?? Land(address: address, name: name, purchaseNetValue: saleInvoice.netValue, investmentsNetValue: commissionInvoice.total)
         
         return SaleOffer(saleInvoice: saleInvoice, commissionInvoice: commissionInvoice, property: property)
     }
@@ -271,14 +271,14 @@ class RealEstateAgent {
         }
         if land.uuid.isEmpty {
             let landUUID = self.dataStore.create(land)
-            self.dataStore.update(LandMutation(uuid: landUUID, attributes: [.ownerUUID(buyerUUID)]))
+            self.dataStore.update(LandMutation(uuid: landUUID, attributes: [.ownerUUID(buyerUUID), .investments(offer.commissionInvoice.total)]))
         } else {
             let costs = land.investmentsNetValue + land.purchaseNetValue
             self.centralBank.refundIncomeTax(transaction: saleTransaction, costs: costs)
             var modifications: [LandMutation.Attribute] = []
             modifications.append(.purchaseNetValue(offer.saleInvoice.netValue))
             modifications.append(.ownerUUID(buyerUUID))
-            modifications.append(.investments(0))
+            modifications.append(.investments(offer.commissionInvoice.total))
             let mutation = LandMutation(uuid: land.uuid, attributes: modifications)
             self.dataStore.update(mutation)
         }
@@ -334,7 +334,7 @@ class RealEstateAgent {
         var modifications: [ResidentialBuildingMutation.Attribute] = []
         modifications.append(.ownerUUID(buyerUUID))
         modifications.append(.purchaseNetValue(offer.saleInvoice.netValue))
-        modifications.append(.investmentsNetValue(0))
+        modifications.append(.investmentsNetValue(offer.commissionInvoice.total))
         let mutation = ResidentialBuildingMutation(uuid: building.uuid, attributes: modifications)
         self.dataStore.update(mutation)
         

@@ -223,11 +223,9 @@ final class RealEstateAgentTests: XCTestCase {
         agent.dataStore.create(seller)
         let buyer = Player(uuid: "buyer", login: "buyer", wallet: 3000)
         agent.dataStore.create(buyer)
-        let land = Land(address: address, ownerUUID: "seller", purchaseNetValue: 600)
-        let landID = agent.dataStore.create(land)
+        let land = Land(address: address, ownerUUID: "seller", purchaseNetValue: 600, investmentsNetValue: 400)
+        agent.dataStore.create(land)
         agent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
-        
-        agent.dataStore.update(LandMutation(uuid: landID, attributes: [.investments(400)]))
         
         XCTAssertNoThrow(try agent.registerSaleOffer(address: address, netValue: 2000))
         XCTAssertNoThrow(try agent.buyProperty(address: address, buyerUUID: "buyer"))
@@ -321,11 +319,12 @@ final class RealEstateAgentTests: XCTestCase {
         let player = Player(uuid: "buyer", login: "tester", wallet: 10000000)
         agent.dataStore.create(player)
         
+        let offer = agent.saleOffer(address: address, buyerUUID: "buyer")
         XCTAssertNoThrow(try agent.buyProperty(address: address, buyerUUID: "buyer"))
         
         let soldBuilding: ResidentialBuilding? = agent.dataStore.find(address: address)
         XCTAssertEqual(soldBuilding?.ownerUUID, "buyer")
-        XCTAssertEqual(soldBuilding?.investmentsNetValue, 0.0)
+        XCTAssertEqual(soldBuilding?.investmentsNetValue, offer?.commissionInvoice.total)
     }
     
     func test_buyResidentialBuilding_fromOtherUser_offerProceMismatch() {
@@ -365,12 +364,13 @@ final class RealEstateAgentTests: XCTestCase {
         agent.dataStore.create(buyer)
 
         XCTAssertNoThrow(try agent.registerSaleOffer(address: address, netValue: 887))
+        let offer = agent.saleOffer(address: address, buyerUUID: "buyer")
         XCTAssertNoThrow(try agent.buyProperty(address: address, buyerUUID: "buyer"))
         
         let soldBuilding: ResidentialBuilding? = agent.dataStore.find(address: address)
         XCTAssertEqual(soldBuilding?.ownerUUID, "buyer")
         XCTAssertEqual(soldBuilding?.purchaseNetValue, 887)
-        XCTAssertEqual(soldBuilding?.investmentsNetValue, 0)
+        XCTAssertEqual(soldBuilding?.investmentsNetValue, offer?.commissionInvoice.total)
     }
     
     func test_buyResidentialBuilding_ownSaleOffer() {
