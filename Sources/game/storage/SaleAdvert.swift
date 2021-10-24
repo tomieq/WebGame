@@ -25,3 +25,12 @@ struct SaleAdvert {
         self.address = MapPoint(x: managedObject.x, y: managedObject.y)
     }
 }
+
+struct SaleAdvertMutation {
+    let address: MapPoint
+    let attributes: [SaleAdvertMutation.Attribute]
+    
+    enum Attribute {
+        case netPrice(Double)
+    }
+}

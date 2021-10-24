@@ -70,6 +70,47 @@ final class RealEstateAgentTests: XCTestCase {
         XCTAssertEqual(offer?.saleInvoice.netValue, 3000)
     }
     
+    func test_updateSaleOffer_advertDoesNotExist() {
+        
+        let agent = self.makeAgent()
+        agent.centralBank.taxRates.incomeTax = 0.1
+        
+        let address = MapPoint(x: 3, y: 3)
+        let seller = Player(uuid: "seller", login: "seller", wallet: 0)
+        agent.dataStore.create(seller)
+        let buyer = Player(uuid: "buyer", login: "buyer", wallet: 3000)
+        agent.dataStore.create(buyer)
+        let land = Land(address: address, ownerUUID: "seller", purchaseNetValue: 600)
+        agent.dataStore.create(land)
+        agent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
+        
+        XCTAssertThrowsError(try agent.updateSaleOffer(address: address, netValue: 2500)){ error in
+            XCTAssertEqual(error as? UpdateOfferError, .offerDoesNotExist)
+        }
+    }
+    
+    func test_updateSaleOffer() {
+        
+        let agent = self.makeAgent()
+        agent.centralBank.taxRates.incomeTax = 0.1
+        
+        let address = MapPoint(x: 3, y: 3)
+        let seller = Player(uuid: "seller", login: "seller", wallet: 0)
+        agent.dataStore.create(seller)
+        let buyer = Player(uuid: "buyer", login: "buyer", wallet: 3000)
+        agent.dataStore.create(buyer)
+        let land = Land(address: address, ownerUUID: "seller", purchaseNetValue: 600)
+        agent.dataStore.create(land)
+        agent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
+        
+        XCTAssertNoThrow(try agent.registerSaleOffer(address: address, netValue: 2000))
+        XCTAssertNoThrow(try agent.updateSaleOffer(address: address, netValue: 2500))
+        
+        let offer = agent.saleOffer(address: address, buyerUUID: "buyer")
+        XCTAssertNotNil(offer)
+        XCTAssertEqual(offer?.saleInvoice.netValue, 2500)
+    }
+    
     func test_landSaleOffer_notForSale() {
         let agent = self.makeAgent()
         let address = MapPoint(x: 3, y: 3)

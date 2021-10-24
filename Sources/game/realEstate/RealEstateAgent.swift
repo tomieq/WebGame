@@ -101,6 +101,14 @@ class RealEstateAgent {
         self.dataStore.create(advert)
     }
     
+    func updateSaleOffer(address: MapPoint, netValue: Double) throws {
+        guard let advert: SaleAdvert = self.dataStore.find(address: address) else {
+            throw UpdateOfferError.offerDoesNotExist
+        }
+        let mutation = SaleAdvertMutation(address: address, attributes: [.netPrice(netValue)])
+        self.dataStore.update(mutation)
+    }
+    
     func cancelSaleOffer(address: MapPoint) {
         self.dataStore.removeSaleAdvert(address: address)
     }
@@ -413,4 +421,8 @@ enum BuyPropertyError: Error, Equatable {
 enum RegisterOfferError: Error {
     case propertyDoesNotExist
     case advertAlreadyExists
+}
+
+enum UpdateOfferError: Error {
+    case offerDoesNotExist
 }

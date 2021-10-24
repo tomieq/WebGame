@@ -264,6 +264,19 @@ class DataStoreMemoryProvider: DataStoreProvider {
         }
     }
     
+    
+    func update(_ mutation: SaleAdvertMutation) {
+        queue.sync(flags: .barrier) {
+            guard let advert = (self.adverts.first{ $0.x == mutation.address.x && $0.y == mutation.address.y }) else { return }
+            for attribute in mutation.attributes {
+                switch attribute {
+                case .netPrice(let value):
+                    advert.netPrice = value
+                }
+            }
+        }
+    }
+    
     func removeSaleAdvert(address: MapPoint) {
         queue.sync(flags: .barrier) {
             self.adverts.removeAll{ $0.x == address.x && $0.y == address.y }

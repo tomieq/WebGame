@@ -12,7 +12,7 @@ class SaleAdvertManagedObject {
     let uuid: String
     let x: Int
     let y: Int
-    let netPrice: Double
+    var netPrice: Double
     
     init(_ advert: SaleAdvert) {
         self.uuid = UUID().uuidString
