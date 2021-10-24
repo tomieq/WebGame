@@ -205,7 +205,7 @@ class RealEstateAgent {
         return SaleOffer(saleInvoice: saleInvoice, commissionInvoice: commissionInvoice, property: building)
     }
 
-    func buyProperty(address: MapPoint, buyerUUID: String) throws {
+    func buyProperty(address: MapPoint, buyerUUID: String, netPrice: Double? = nil) throws {
         guard let tile = self.mapManager.map.getTile(address: address) else {
             try self.buyLandProperty(address: address, buyerUUID: buyerUUID)
             return
@@ -215,22 +215,26 @@ class RealEstateAgent {
         }
         switch propertyType {
         case .land:
-            try self.buyLandProperty(address: address, buyerUUID: buyerUUID)
+            try self.buyLandProperty(address: address, buyerUUID: buyerUUID, netPrice: netPrice)
         case .road:
             throw BuyPropertyError.propertyNotForSale
         case .residentialBuilding:
-            try self.buyResidentialBuilding(address: address, buyerUUID: buyerUUID)
+            try self.buyResidentialBuilding(address: address, buyerUUID: buyerUUID, netPrice: netPrice)
         }
         self.dataStore.removeSaleAdvert(address: address)
     }
     
-    private func buyLandProperty(address: MapPoint, buyerUUID: String) throws {
+    private func buyLandProperty(address: MapPoint, buyerUUID: String, netPrice: Double? = nil) throws {
         
         guard let offer = self.landSaleOffer(address: address, buyerUUID: buyerUUID) else {
             Logger.error("RealEstateAgent", "buyLandProperty:offer not found")
             throw BuyPropertyError.propertyNotForSale
         }
-       
+        if let netPrice = netPrice {
+            guard offer.saleInvoice.netValue == netPrice else {
+                throw BuyPropertyError.saleOfferHasChanged
+            }
+        }
         guard let land = offer.property as? Land else {
             Logger.error("RealEstateAgent", "buyLandProperty:land not found")
             throw BuyPropertyError.propertyNotForSale
@@ -279,13 +283,18 @@ class RealEstateAgent {
         self.delegate?.notifyEveryone(UINotification(text: "New transaction on the market. Player \(playerName) has just bought property `\(land.name)`", level: .info, duration: 10))
     }
     
-    private func buyResidentialBuilding(address: MapPoint, buyerUUID: String) throws {
+    private func buyResidentialBuilding(address: MapPoint, buyerUUID: String, netPrice: Double? = nil) throws {
         
         guard let offer = self.residentialBuildingSaleOffer(address: address, buyerUUID: buyerUUID) else {
             Logger.error("RealEstateAgent", "buyResidentialBuilding:offer not found")
             throw BuyPropertyError.propertyNotForSale
         }
-       
+        
+        if let netPrice = netPrice {
+            guard offer.saleInvoice.netValue == netPrice else {
+                throw BuyPropertyError.saleOfferHasChanged
+            }
+        }
         guard let building = offer.property as? ResidentialBuilding else {
             Logger.error("RealEstateAgent", "buyResidentialBuilding:building not found")
             throw BuyPropertyError.propertyNotForSale
@@ -397,6 +406,7 @@ class RealEstateAgent {
 enum BuyPropertyError: Error, Equatable {
     case propertyNotForSale
     case tryingBuyOwnProperty
+    case saleOfferHasChanged
     case financialTransactionProblem(FinancialTransactionError)
 }
 
