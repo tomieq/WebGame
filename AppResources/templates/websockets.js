@@ -92,7 +92,10 @@ class WebSocketHandler {
                 updateWallet(json["payload"]);
                 break;
             case "updateGameDate":
-                updateGameDate(json["payload"]);
+                var payload = json["payload"];
+                var text = payload["text"];
+                var secondsLeft = payload["secondsLeft"];
+                updateGameDate(text, secondsLeft);
                 break;
             case "notification":
                 var payload = json["payload"];

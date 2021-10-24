@@ -12,23 +12,34 @@ import RxCocoa
 class GameClock {
     let realEstateAgent: RealEstateAgent
     let time: GameTime
+    let secondsPerMonth: Int
+    private var secondsCounter: Int
     private let dataStore: DataStoreProvider
     private let disposeBag = DisposeBag()
     
-    init(realEstateAgent: RealEstateAgent, time: GameTime) {
+    var secondsLeft: Int {
+        self.secondsPerMonth - self.secondsCounter
+    }
+    
+    init(realEstateAgent: RealEstateAgent, time: GameTime, secondsPerMonth: Int) {
         self.time = time
         self.realEstateAgent = realEstateAgent
         self.dataStore = realEstateAgent.dataStore
+        self.secondsPerMonth = secondsPerMonth
+        self.secondsCounter = 0
         
-        Observable<Int>.interval(.seconds(33), scheduler: MainScheduler.instance).bind { [weak self] _ in
+        Observable<Int>.interval(.seconds(1), scheduler: MainScheduler.instance).bind { [weak self] number in
             guard let `self` = self else { return }
-            Logger.info("GameClock", "End of the month")
-            self.time.nextMonth()
-            self.endTheMonth()
+            self.secondsCounter += 1
             
-            
-            let updateDateEvent = GameEvent(playerSession: nil, action: .updateGameDate(self.time.text))
-            GameEventBus.gameEvents.onNext(updateDateEvent)
+            if self.secondsCounter == self.secondsPerMonth {
+                self.secondsCounter = 0
+                
+                Logger.info("GameClock", "End of the month")
+                self.time.nextMonth()
+                let updateDateEvent = GameEvent(playerSession: nil, action: .updateGameDate(self.time.text, self.secondsLeft))
+                GameEventBus.gameEvents.onNext(updateDateEvent)
+            }
         }.disposed(by: self.disposeBag)
     }
     

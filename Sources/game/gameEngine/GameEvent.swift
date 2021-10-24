@@ -18,7 +18,7 @@ enum GameEventAction {
     case tileClicked(MapPoint)
     case reloadMap
     case updateWallet(String)
-    case updateGameDate(String)
+    case updateGameDate(String, Int)
     case vehicleTravelStarted(VehicleTravelStarted)
     case vehicleTravelFinished(VehicleTravelFinished)
     case notification(UINotification)

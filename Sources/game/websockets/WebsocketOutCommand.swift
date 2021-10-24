@@ -14,7 +14,7 @@ enum WebsocketOutCommand {
     case openWindow(OpenWindow)
     case notification(UINotification)
     case updateWallet(String)
-    case updateGameDate(String)
+    case updateGameDate(UIGameDate)
     
     var type: String {
         switch self {

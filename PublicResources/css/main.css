@@ -35,7 +35,7 @@ canvas {
     position: fixed;
     top: 0px;
     left: 50%;
-    width: 110px;
+    width: 260px;
     padding-top: 5px;
     padding-bottom: 5px;
     margin-left: -55px;
@@ -44,6 +44,10 @@ canvas {
     z-index: 6;
     color: #FF8000;
     box-shadow: 0px 0px 10px #141414;
+}
+
+.dateCounter {
+    opacity: 0.5;
 }
 
 hr {

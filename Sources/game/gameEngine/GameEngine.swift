@@ -55,7 +55,7 @@ class GameEngine {
         self.streetNavi = StreetNavi(gameMap: self.gameMap)
         self.gameTraffic = GameTraffic(streetNavi: self.streetNavi)
         self.websocketHandler = WebsocketHandler()
-        self.gameClock = GameClock(realEstateAgent: self.realEstateAgent, time: self.time)
+        self.gameClock = GameClock(realEstateAgent: self.realEstateAgent, time: self.time, secondsPerMonth: 60*10)
         
         self.clickRouter = ClickTileRouter(agent: self.realEstateAgent)
         
@@ -69,6 +69,9 @@ class GameEngine {
             case .userConnected:
                 if let session = gameEvent.playerSession, let player = self?.dataStore.find(uuid: session.playerUUID) {
                     self?.websocketHandler.sendTo(playerSessionID: session.id, command: .updateWallet(player.wallet.money))
+                    if let text = self?.gameClock.time.text, let secondsLeft = self?.gameClock.secondsLeft {
+                        self?.websocketHandler.sendToAll(command: .updateGameDate(UIGameDate(text: text, secondsLeft: secondsLeft)))
+                    }
                 }
             case .userDisconnected:
                 if let session = gameEvent.playerSession {
@@ -79,9 +82,9 @@ class GameEngine {
                 self?.websocketHandler.sendToAll(command: .reloadMap)
             case .updateWallet(let wallet):
                 self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, command: .updateWallet(wallet))
-            case .updateGameDate(let date):
+            case .updateGameDate(let date, let secondsLeft):
                 self?.constructionServices.finishInvestments()
-                self?.websocketHandler.sendToAll(command: .updateGameDate(date))
+                self?.websocketHandler.sendToAll(command: .updateGameDate(UIGameDate(text: date, secondsLeft: secondsLeft)))
             case .tileClicked(let point):
 
                 let playerUUID = gameEvent.playerSession?.playerUUID
