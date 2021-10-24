@@ -52,6 +52,7 @@ class PropertyManagerRestAPI {
             data["type"] = property.type
             data["name"] = property.name
             data["owner"] = owner?.login ?? "nil"
+            data["tileUrl"] = self.gameEngine.gameMap.getTile(address: address)?.type.image.path
             template.assign(variables: data)
             return .ok(.html(template.output()))
         }
