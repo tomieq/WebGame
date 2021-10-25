@@ -21,10 +21,11 @@ class ReloadMapCoordinator {
     }
     
     func flush() {
-        self.blocked = false
         if self.waitingReload {
             self.action?()
+            self.waitingReload = false
         }
+        self.blocked = false
     }
     
     func reloadMap() {
