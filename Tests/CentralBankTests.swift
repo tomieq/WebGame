@@ -23,7 +23,7 @@ final class CentralBankTests: XCTestCase {
         centralBank.dataStore.create(receiver)
         
         let invoice = Invoice(title: "money transfer", grossValue: 30, taxRate: 0)
-        let financialTransaction = FinancialTransaction(payerID: "payer2", recipientID: "receiver2", invoice: invoice)
+        let financialTransaction = FinancialTransaction(payerUUID: "payer2", recipientUUID: "receiver2", invoice: invoice)
         
         XCTAssertNoThrow(try centralBank.process(financialTransaction))
         XCTAssertEqual(centralBank.dataStore.find(uuid: "payer2")?.wallet, 70)
@@ -34,7 +34,7 @@ final class CentralBankTests: XCTestCase {
         let centralBank = self.makeCentralBank()
         
         let invoice = Invoice(title: "money transfer", grossValue: 30, taxRate: 0)
-        let financialTransaction = FinancialTransaction(payerID: "payer2", recipientID: "receiver", invoice: invoice)
+        let financialTransaction = FinancialTransaction(payerUUID: "payer2", recipientUUID: "receiver", invoice: invoice)
         
         XCTAssertThrowsError(try centralBank.process(financialTransaction)){ error in
             XCTAssertEqual(error as? FinancialTransactionError, .payerNotFound)
@@ -45,7 +45,7 @@ final class CentralBankTests: XCTestCase {
         let centralBank = self.makeCentralBank()
         
         let invoice = Invoice(title: "money transfer", grossValue: 30, taxRate: 0)
-        let financialTransaction = FinancialTransaction(payerID: "payer", recipientID: "receiver2", invoice: invoice)
+        let financialTransaction = FinancialTransaction(payerUUID: "payer", recipientUUID: "receiver2", invoice: invoice)
         
         XCTAssertThrowsError(try centralBank.process(financialTransaction)){ error in
             XCTAssertEqual(error as? FinancialTransactionError, .recipientNotFound)
@@ -56,7 +56,7 @@ final class CentralBankTests: XCTestCase {
         let centralBank = self.makeCentralBank()
         
         let invoice = Invoice(title: "money transfer", grossValue: 150, taxRate: 0)
-        let financialTransaction = FinancialTransaction(payerID: "payer", recipientID: "receiver", invoice: invoice)
+        let financialTransaction = FinancialTransaction(payerUUID: "payer", recipientUUID: "receiver", invoice: invoice)
         
         XCTAssertThrowsError(try centralBank.process(financialTransaction)){ error in
             XCTAssertEqual(error as? FinancialTransactionError, .notEnoughMoney)
@@ -67,7 +67,7 @@ final class CentralBankTests: XCTestCase {
         let centralBank = self.makeCentralBank()
         
         let invoice = Invoice(title: "money transfer", grossValue: -90, taxRate: 0)
-        let financialTransaction = FinancialTransaction(payerID: "payer", recipientID: "receiver", invoice: invoice)
+        let financialTransaction = FinancialTransaction(payerUUID: "payer", recipientUUID: "receiver", invoice: invoice)
         
         XCTAssertThrowsError(try centralBank.process(financialTransaction)){ error in
             XCTAssertEqual(error as? FinancialTransactionError, .negativeTransactionValue)
@@ -84,7 +84,7 @@ final class CentralBankTests: XCTestCase {
         centralBank.dataStore.create(receiver)
         
         let invoice = Invoice(title: "money transfer", netValue: 100, taxRate: 0)
-        let financialTransaction = FinancialTransaction(payerID: "payer2", recipientID: "receiver2", invoice: invoice)
+        let financialTransaction = FinancialTransaction(payerUUID: "payer2", recipientUUID: "receiver2", invoice: invoice)
         XCTAssertNoThrow(try centralBank.process(financialTransaction))
         XCTAssertEqual(centralBank.dataStore.find(uuid: "payer2")?.wallet, 0)
         XCTAssertEqual(centralBank.dataStore.find(uuid: "receiver2")?.wallet, 100)
@@ -101,7 +101,7 @@ final class CentralBankTests: XCTestCase {
         centralBank.dataStore.create(receiver)
         
         let invoice = Invoice(title: "money transfer", netValue: 100, taxRate: 0.1)
-        let financialTransaction = FinancialTransaction(payerID: "payer2", recipientID: "receiver2", invoice: invoice)
+        let financialTransaction = FinancialTransaction(payerUUID: "payer2", recipientUUID: "receiver2", invoice: invoice)
         XCTAssertNoThrow(try centralBank.process(financialTransaction))
         XCTAssertEqual(centralBank.dataStore.find(uuid: "receiver2")?.wallet, 150)
     }
@@ -116,7 +116,7 @@ final class CentralBankTests: XCTestCase {
         centralBank.dataStore.create(receiver)
         
         let invoice = Invoice(title: "money transfer", netValue: 100, taxRate: 0.5)
-        let financialTransaction = FinancialTransaction(payerID: "payer2", recipientID: "receiver2", invoice: invoice)
+        let financialTransaction = FinancialTransaction(payerUUID: "payer2", recipientUUID: "receiver2", invoice: invoice)
         XCTAssertNoThrow(try centralBank.process(financialTransaction))
         XCTAssertEqual(centralBank.dataStore.find(uuid: "payer2")?.wallet, 750)
     }
@@ -131,7 +131,7 @@ final class CentralBankTests: XCTestCase {
         centralBank.dataStore.create(receiver)
         
         let invoice = Invoice(title: "money transfer", grossValue: 100, taxRate: 0.1)
-        let financialTransaction = FinancialTransaction(payerID: "payer2", recipientID: "receiver2", invoice: invoice)
+        let financialTransaction = FinancialTransaction(payerUUID: "payer2", recipientUUID: "receiver2", invoice: invoice)
         XCTAssertNoThrow(try centralBank.process(financialTransaction))
         XCTAssertEqual(centralBank.dataStore.find(uuid: "payer2")?.wallet, 800)
         XCTAssertEqual(centralBank.dataStore.find(uuid: "receiver2")?.wallet, 100)
@@ -154,7 +154,7 @@ final class CentralBankTests: XCTestCase {
             let queue = DispatchQueue(label: "queue\(i)", qos: .background, attributes: .concurrent)
             queue.async {
                 let invoice = Invoice(title: "money transfer", netValue: 100, taxRate: 0.1)
-                let financialTransaction = FinancialTransaction(payerID: "payer2", recipientID: "receiver2", invoice: invoice)
+                let financialTransaction = FinancialTransaction(payerUUID: "payer2", recipientUUID: "receiver2", invoice: invoice)
                 try? centralBank.process(financialTransaction)
                 expectations[i].fulfill()
             }
@@ -169,7 +169,7 @@ final class CentralBankTests: XCTestCase {
         centralBank.taxRates.incomeTax = 0.2
         
         let invoice = Invoice(title: "sell", netValue: 100, taxRate: 0.08)
-        let transaction = FinancialTransaction(payerID: "payer", recipientID: "receiver", invoice: invoice)
+        let transaction = FinancialTransaction(payerUUID: "payer", recipientUUID: "receiver", invoice: invoice)
         centralBank.refundIncomeTax(transaction: transaction, costs: 100)
         
         let player: Player? = centralBank.dataStore.find(uuid: "receiver")
@@ -182,7 +182,7 @@ final class CentralBankTests: XCTestCase {
         
         
         let invoice = Invoice(title: "sell", netValue: 1000, taxRate: 0.08)
-        let transaction = FinancialTransaction(payerID: "payer", recipientID: "receiver", invoice: invoice)
+        let transaction = FinancialTransaction(payerUUID: "payer", recipientUUID: "receiver", invoice: invoice)
         centralBank.refundIncomeTax(transaction: transaction, costs: 500)
         
         let player: Player? = centralBank.dataStore.find(uuid: "receiver")

@@ -8,13 +8,13 @@
 import Foundation
 
 struct FinancialTransaction: Codable {
-    let payerID: String
-    let recipientID: String
+    let payerUUID: String
+    let recipientUUID: String
     let invoice: Invoice
     
-    init(payerID: String, recipientID: String, invoice: Invoice) {
-        self.payerID = payerID
-        self.recipientID = recipientID
+    init(payerUUID: String, recipientUUID: String, invoice: Invoice) {
+        self.payerUUID = payerUUID
+        self.recipientUUID = recipientUUID
         self.invoice = invoice
     }
 }
