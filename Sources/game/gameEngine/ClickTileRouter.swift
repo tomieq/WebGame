@@ -73,31 +73,31 @@ extension ClickTileAction {
             
         case .roadInfo:
             return  [
-                .openWindow(OpenWindow(title: "Road info", width: 400, height: 250, initUrl: "/openRoadInfo.js?\(point.asQueryParams)", address: point))
+                .openWindow(OpenWindow(title: "Road info", width: 400, height: 250, initUrl: RestEndpoint.openRoadInfo.append(point), address: point))
             ]
         case .roadManager:
             return  [
-                .openWindow(OpenWindow(title: "Road manager", width: 0.7, height: 250, initUrl: "/openRoadManager.js?\(point.asQueryParams)", address: point))
+                .openWindow(OpenWindow(title: "Road manager", width: 0.7, height: 250, initUrl: RestEndpoint.openRoadManager.base.append(point), address: point))
             ]
         case .landInfo:
             return [
-                .openWindow(OpenWindow(title: "Property info", width: 400, height: 200, initUrl: "/openPropertyInfo.js?\(point.asQueryParams)", address: point))
+                .openWindow(OpenWindow(title: "Property info", width: 400, height: 200, initUrl: RestEndpoint.openPropertyInfo.base.append(point), address: point))
             ]
         case .buyLand:
             return [
-                .openWindow(OpenWindow(title: "Sale offer", width: 300, height: 270, initUrl: "/openSaleOffer.js?\(point.asQueryParams)", address: point))
+                .openWindow(OpenWindow(title: "Sale offer", width: 300, height: 270, initUrl: RestEndpoint.openSaleOffer.append(point), address: point))
             ]
         case .buyResidentialBuilding:
             return [
-                .openWindow(OpenWindow(title: "Sale offer", width: 300, height: 270, initUrl: "/openSaleOffer.js?\(point.asQueryParams)", address: point))
+                .openWindow(OpenWindow(title: "Sale offer", width: 300, height: 270, initUrl: RestEndpoint.openSaleOffer.append(point), address: point))
             ]
         case .landManager:
             return [
-                .openWindow(OpenWindow(title: "Loading", width: 0.7, height: 100, initUrl: "/openLandManager.js?\(point.asQueryParams)", address: nil))
+                .openWindow(OpenWindow(title: "Loading", width: 0.7, height: 100, initUrl: RestEndpoint.openLandManager.append(point), address: point))
             ]
         case .residentialBuildingManager:
             return [
-                .openWindow(OpenWindow(title: "Loading", width: 0.7, height: 100, initUrl: "/openPropertyManager.js?type=building&\(point.asQueryParams)", address: nil))
+                .openWindow(OpenWindow(title: "Loading", width: 0.7, height: 100, initUrl: "/openPropertyManager.js?type=building&\(point.asQueryParams)", address: point))
             ]
         case .noAction:
             return []

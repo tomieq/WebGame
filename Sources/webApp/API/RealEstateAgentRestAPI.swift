@@ -10,8 +10,8 @@ import Foundation
 class RealEstateAgentRestAPI: RestAPI {
     override func setupEndpoints() {
 
-        // MARK: openSaleOffer.js
-        server.GET["/openSaleOffer.js"] = { request, _ in
+        // MARK: openSaleOffer
+        server.GET[.openSaleOffer] = { request, _ in
             request.disableKeepAlive = true
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
@@ -108,8 +108,8 @@ class RealEstateAgentRestAPI: RestAPI {
             return code.response
         }
         
-        // MARK: openPublishSaleOffer.js
-        server.GET["/openPublishSaleOffer.js"] = { request, _ in
+        // MARK: openPublishSaleOffer
+        server.GET[.openPublishSaleOffer] = { request, _ in
             request.disableKeepAlive = true
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
@@ -159,7 +159,7 @@ class RealEstateAgentRestAPI: RestAPI {
             return .ok(.html(template.output()))
         }
         
-        // MARK: openPublishSaleOffer.js
+        // MARK: publishSaleOffer.js
         server.GET["/publishSaleOffer.js"] = { request, _ in
             request.disableKeepAlive = true
             guard let windowIndex = request.queryParam("windowIndex") else {

@@ -12,8 +12,8 @@ class LandRestAPI: RestAPI {
     override func setupEndpoints() {
         
         
-        // MARK: openLandManager.js
-        server.GET["/openLandManager.js"] = { request, _ in
+        // MARK: openLandManager
+        server.GET[.openLandManager] = { request, _ in
             request.disableKeepAlive = true
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response

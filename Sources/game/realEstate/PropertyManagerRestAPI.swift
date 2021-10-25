@@ -18,8 +18,8 @@ class PropertyManagerRestAPI {
         self.gameEngine = gameEngine
         self.dataStore = gameEngine.dataStore
         
-        
-        server.GET["/openPropertyInfo.js"] = { request, _ in
+        // MARK: openPropertyInfo
+        server.GET[.openPropertyInfo] = { request, _ in
             request.disableKeepAlive = true
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response

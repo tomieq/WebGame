@@ -9,8 +9,8 @@ import Foundation
 
 class RoadRestAPI: RestAPI {
     override func setupEndpoints() {
-        // MARK: openRoadInfo.js
-        self.server.GET["/openRoadInfo.js"] = { request, _ in
+        // MARK: openRoadInfo
+        self.server.GET[.openRoadInfo] = { request, _ in
             request.disableKeepAlive = true
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
@@ -48,8 +48,8 @@ class RoadRestAPI: RestAPI {
             return .ok(.html(template.output()))
         }
 
-        // MARK: openRoadManager.js
-        self.server.GET["/openRoadManager.js"] = { request, _ in
+        // MARK: openRoadManager
+        self.server.GET[.openRoadManager] = { request, _ in
             request.disableKeepAlive = true
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
