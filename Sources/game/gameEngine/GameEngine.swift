@@ -25,6 +25,7 @@ class GameEngine {
     let gameClock: GameClock
     let clickRouter: ClickTileRouter
     let reloadMapCoordinator: ReloadMapCoordinator
+    let syncWalletCoordinator: SyncWalletCoordinator
     let disposeBag = DisposeBag()
     
     init(dataStore: DataStoreProvider) {
@@ -61,6 +62,7 @@ class GameEngine {
         self.clickRouter = ClickTileRouter(agent: self.realEstateAgent)
         
         self.reloadMapCoordinator = ReloadMapCoordinator()
+        self.syncWalletCoordinator = SyncWalletCoordinator()
         
         self.realEstateAgent.delegate = self
         self.constructionServices.delegate = self
@@ -71,6 +73,14 @@ class GameEngine {
            self?.gameTraffic.mapReloaded()
            self?.websocketHandler.sendToAll(command: .reloadMap)
        }
+        
+        self.syncWalletCoordinator.setSyncWalletChange { [weak self] playerUUID in
+            if let player = self?.dataStore.find(uuid: playerUUID) {
+                for session in PlayerSessionManager.shared.getSessions(playerUUID: playerUUID){
+                    self?.websocketHandler.sendTo(playerSessionID: session.id, command: .updateWallet(player.wallet.money))
+                }
+            }
+        }
 
         self.setupDevParams()
 
@@ -144,14 +154,11 @@ class GameEngine {
 
 
 extension GameEngine: RealEstateAgentDelegate, ConstructionServicesDelegate {
+    
     func syncWalletChange(playerUUID: String) {
-        
-        if let player = self.dataStore.find(uuid: playerUUID) {
-            for session in PlayerSessionManager.shared.getSessions(playerUUID: playerUUID){
-                self.websocketHandler.sendTo(playerSessionID: session.id, command: .updateWallet(player.wallet.money))
-            }
-        }
+        self.syncWalletCoordinator.syncWalletChange(playerUUID: playerUUID)
     }
+    
     func reloadMap() {
         self.reloadMapCoordinator.reloadMap()
     }
@@ -165,8 +172,12 @@ extension GameEngine: RealEstateAgentDelegate, ConstructionServicesDelegate {
 extension GameEngine: GameClockDelegate {
     func nextMonth() {
         self.reloadMapCoordinator.hold()
+        self.syncWalletCoordinator.hold()
+        
         self.constructionServices.finishInvestments()
+        
         self.reloadMapCoordinator.flush()
+        self.syncWalletCoordinator.flush()
         self.websocketHandler.sendToAll(command: .updateGameDate(UIGameDate(text: self.time.text, secondsLeft: self.gameClock.secondsLeft)))
     }
 
