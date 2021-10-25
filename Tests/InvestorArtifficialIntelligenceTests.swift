@@ -10,7 +10,7 @@ import XCTest
 @testable import WebGameLib
 
 
-final class GovernmentEngineTests: XCTestCase {
+final class InvestorArtifficialIntelligenceTests: XCTestCase {
 
     func test_purchaseBargains_oneCheapSaleOffer () {
         let engine = self.makeEngine()
@@ -31,7 +31,7 @@ final class GovernmentEngineTests: XCTestCase {
         engine.purchaseBargains()
         
         let soldLand: Land? = engine.agent.dataStore.find(address: address)
-        XCTAssertEqual(soldLand?.ownerUUID, SystemPlayer.government.uuid)
+        XCTAssertNotEqual(soldLand?.ownerUUID, "john")
     }
     
     func test_purchaseBargains_oneExpensiveSaleOffer () {
@@ -56,7 +56,7 @@ final class GovernmentEngineTests: XCTestCase {
         XCTAssertEqual(soldLand?.ownerUUID, "john")
     }
     
-    private func makeEngine() -> GovernmentEngine {
+    private func makeEngine() -> InvestorArtifficialIntelligence {
         
         let dataStore = DataStoreMemoryProvider()
         let taxRates = TaxRates()
@@ -73,7 +73,7 @@ final class GovernmentEngineTests: XCTestCase {
         let agency = Player(uuid: SystemPlayer.realEstateAgency.uuid, login: "Agency", wallet: 0)
         agent.dataStore.create(agency)
         
-        let engine = GovernmentEngine(agent: agent)
+        let engine = InvestorArtifficialIntelligence(agent: agent)
         return engine
     }
 }

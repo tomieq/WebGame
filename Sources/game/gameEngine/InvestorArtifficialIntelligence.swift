@@ -1,5 +1,5 @@
 //
-//  GovernmentEngine.swift
+//  InvestorArtifficialIntelligence.swift
 //  
 //
 //  Created by Tomasz Kucharski on 22/10/2021.
@@ -7,17 +7,17 @@
 
 import Foundation
 
-class GovernmentEngineParams {
+class InvestorArtifficialIntelligenceParams {
     var instantPurchaseToEstimatedValueFactor: Double = 0.85
 }
 
-class GovernmentEngine {
+class InvestorArtifficialIntelligence {
     let agent: RealEstateAgent
-    let params: GovernmentEngineParams
+    let params: InvestorArtifficialIntelligenceParams
     
     init(agent: RealEstateAgent) {
         self.agent = agent
-        self.params = GovernmentEngineParams()
+        self.params = InvestorArtifficialIntelligenceParams()
     }
     
     func purchaseBargains() {
