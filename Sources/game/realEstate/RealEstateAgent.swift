@@ -166,13 +166,19 @@ class RealEstateAgent {
         if tile == nil {
             price = self.propertyValuer.estimateValue(address)
         } else {
-            guard let advert: SaleAdvert = self.dataStore.find(address: address),
-                  let existingLand: Land = self.dataStore.find(address: address) else {
+            if let existingLand: Land = self.dataStore.find(address: address) {
+                if existingLand.ownerUUID == SystemPlayer.government.uuid {
+                    land = existingLand
+                    name = existingLand.name
+                    price = self.propertyValuer.estimateValue(address)
+                } else if let advert: SaleAdvert = self.dataStore.find(address: address) {
+                    land = existingLand
+                    name = existingLand.name
+                    price = advert.netPrice
+                }
+            } else {
                 return nil
             }
-            land = existingLand
-            name = existingLand.name
-            price = advert.netPrice
         }
         guard let price = price else {
             return nil
