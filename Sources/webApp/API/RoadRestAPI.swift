@@ -88,6 +88,26 @@ class RoadRestAPI: RestAPI {
             data["type"] = road.type
             data["purchasePrice"] = road.purchaseNetValue.money
             data["investmentsValue"] = road.investmentsNetValue.money
+            
+            let monthlyCosts = self.gameEngine.propertyBalanceCalculator.getMontlyCosts(address: address)
+            
+            for cost in monthlyCosts {
+                var data: [String:String] = [:]
+                data["name"] = cost.title
+                data["netValue"] = cost.netValue.money
+                data["taxRate"] = (cost.taxRate * 100).rounded(toPlaces: 0).string
+                data["taxValue"] = cost.tax.money
+                data["total"] = cost.total.money
+                template.assign(variables: data, inNest: "cost")
+            }
+            if monthlyCosts.count > 0 {
+                var data: [String:String] = [:]
+                data["netValue"] = monthlyCosts.map{$0.netValue}.reduce(0, +).money
+                data["taxValue"] = monthlyCosts.map{$0.tax}.reduce(0, +).money
+                data["total"] = monthlyCosts.map{$0.total}.reduce(0, +).money
+                template.assign(variables: data, inNest: "costTotal")
+            }
+            
             template.assign(variables: data)
             return .ok(.html(template.output()))
         }

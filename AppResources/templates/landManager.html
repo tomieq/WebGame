@@ -19,30 +19,49 @@
 <tr>
     <td colspan=2><hr class="orange" /></td>
 </tr>
-[START montlyPartialCost]
 <tr>
-    <td>{title}</td>
-    <td style="text-align: right;">{money}</td>
+    <td colspan=2>
+        Monthly Costs<br/><br/>
+        <table class="priceTable">
+            <theader>
+                <th>Invoice</th>
+                <th>Net value</th>
+                <th>Tax rate</th>
+                <th>Tax value</th>
+                <th>Gross value</th>
+            </theader>
+            <tbody>
+                [START cost]
+                <tr>
+                    <td>{name}</td>
+                    <td>{netValue}</td>
+                    <td>{taxRate}%</td>
+                    <td>{taxValue}</td>
+                    <td>{total}</td>
+                </tr>
+                [END cost]
+                [START costTotal]
+                <tr><td colspan=5><hr/></td></tr>
+                <tr>
+                    <td>Total costs</td>
+                    <td>{netValue}</td>
+                    <td></td>
+                    <td>{taxValue}</td>
+                    <td>{total}</td>
+                </tr>
+                [END costTotal]
+            </tbody>
+        </table>
+    
+    
+    </td>
 </tr>
-[END montlyPartialCost]
 <tr>
-    <td>Monthly total costs</td>
-    <td style="text-align: right;">{monthlyCosts}</td>
+    <td colspan=2><hr class="orange" /></td>
 </tr>
-<tr><td colspan=2><hr/></td></tr>
+
 <tr>
-    <td>Monthly gross income</td>
-    <td style="text-align: right;">{monthlyIncome}</td>
-</tr>
-[START amortization]
-<tr>
-    <td>Monthly net income</td>
-    <td style="text-align: right;">{monthlyIncomeAmortizated}</td>
-</tr>
-[END amortization]
-<tr>
-    <td>Monthly income tax ({taxRate}%)</td>
-    <td style="text-align: right;">{monthlyIncomeTax}</td>
+    <td colspan=2>Monthly income</td>
 </tr>
 <tr><td colspan=2><hr/></td></tr>
 <tr>

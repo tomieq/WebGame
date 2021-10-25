@@ -1,0 +1,94 @@
+<div style="margin: 20px;">
+
+<div class="blue-border" style="width: 100px; text-align: center; float: right;">
+    <img src="{tileUrl}" style="width: 70px; height: auto;"/>
+    <br><span class="text-orange" style="font-size: 0.8em;">{type}</span>
+</div>
+<p>
+<table class="detailsTable" style="width: 400px; margin: 5px; float: left">
+<tbody>
+<tr>
+    <td>Property name</td>
+    <td style="text-align: right;"><strong>{name}</strong></td>
+</tr>
+
+<tr>
+    <td>Type</td>
+    <td style="text-align: right;">{type}</td>
+</tr>
+<tr>
+    <td colspan=2><hr class="orange" /></td>
+</tr>
+
+<tr>
+    <td colspan=2>
+        Monthly Costs<br/><br/>
+        <table class="priceTable">
+            <theader>
+                <th>Invoice</th>
+                <th>Net value</th>
+                <th>Tax rate</th>
+                <th>Tax value</th>
+                <th>Gross value</th>
+            </theader>
+            <tbody>
+                [START cost]
+                <tr>
+                    <td>{name}</td>
+                    <td>{netValue}</td>
+                    <td>{taxRate}%</td>
+                    <td>{taxValue}</td>
+                    <td>{total}</td>
+                </tr>
+                [END cost]
+                [START costTotal]
+                <tr><td colspan=5><hr/></td></tr>
+                <tr>
+                    <td>Total costs</td>
+                    <td>{netValue}</td>
+                    <td></td>
+                    <td>{taxValue}</td>
+                    <td>{total}</td>
+                </tr>
+                [END costTotal]
+            </tbody>
+        </table>
+    
+    
+    </td>
+</tr>
+</tbody>
+</table>
+
+<table class="detailsTable" style="width: 400px; margin: 5px; float: left">
+<tbody>
+<tr>
+    <td>Purchase price </td>
+    <td style="text-align: right;">{purchasePrice} (excl. tax)</td>
+</tr>
+
+<tr>
+    <td>Investments</td>
+    <td style="text-align: right;">{investmentsValue} (excl. tax)</td>
+</tr>
+</tbody>
+</table>
+
+</table>
+
+<table class="detailsTable" style="width: 400px; margin: 5px; float: left">
+<tbody>
+<tr>
+    <td colspan=2>
+        Roads is a special type of property. It does not provide any direct income. Roads increase values of nearby land properties and
+        enable making investments on those lands. When road is already built, it has maintenance costs but not income, so be sure nobody will buy it from you. The only way to get rid of monthly costs is to try give it away to the government.
+    </td>
+</tr>
+</tbody>
+</table>
+<div style="clear: both;"></div>
+</p>
+
+<div style="clear: both; margin-top:10px;"></div>
+</div>
+

@@ -75,16 +75,34 @@ class LandRestAPI: RestAPI {
                 template.assign(variables: data, inNest: "notForSale")
             }
             
-            let incomeTax = incomeForTaxCalculation * self.gameEngine.taxRates.incomeTax
+            let monthlyCosts = self.gameEngine.propertyBalanceCalculator.getMontlyCosts(address: address)
+            
             data["name"] = land.name
             data["type"] = land.type
+            data["purchasePrice"] = land.purchaseNetValue.rounded(toPlaces: 0).money
+            data["investmentsValue"] = land.investmentsNetValue.money
+            
+            for cost in monthlyCosts {
+                var data: [String:String] = [:]
+                data["name"] = cost.title
+                data["netValue"] = cost.netValue.money
+                data["taxRate"] = (cost.taxRate * 100).rounded(toPlaces: 0).string
+                data["taxValue"] = cost.tax.money
+                data["total"] = cost.total.money
+                template.assign(variables: data, inNest: "cost")
+            }
+            if monthlyCosts.count > 0 {
+                var data: [String:String] = [:]
+                data["netValue"] = monthlyCosts.map{$0.netValue}.reduce(0, +).money
+                data["taxValue"] = monthlyCosts.map{$0.tax}.reduce(0, +).money
+                data["total"] = monthlyCosts.map{$0.total}.reduce(0, +).money
+                template.assign(variables: data, inNest: "costTotal")
+            }
             data["monthlyIncome"] = ""//property.monthlyIncome.money
             data["taxRate"] = (self.gameEngine.taxRates.incomeTax*100).string
             data["monthlyIncomeTax"] = ""//incomeTax.money
             data["monthlyCosts"] = ""//property.monthlyMaintenanceCost.money
             data["balance"] = ""//(property.monthlyIncome - property.monthlyMaintenanceCost - incomeTax).money
-            data["purchasePrice"] = land.purchaseNetValue.rounded(toPlaces: 0).money
-            data["investmentsValue"] = land.investmentsNetValue.money
             
             let estimatedValue = 0.0//self.gameEngine.realEstateAgent.estimateValue(property.address)
             data["estimatedValue"] = estimatedValue.money
