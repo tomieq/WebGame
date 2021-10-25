@@ -10,42 +10,47 @@ import Foundation
 class PropertyBalanceCalculator {
     let mapManager: GameMapManager
     let dataStore: DataStoreProvider
-    let monthlyCosts: MonthlyCosts
+    let monthlyCosts: MonthlyCostPriceList
     
     init(mapManager: GameMapManager, dataStore: DataStoreProvider) {
         self.mapManager = mapManager
         self.dataStore = dataStore
-        self.monthlyCosts = MonthlyCosts()
+        self.monthlyCosts = MonthlyCostPriceList()
     }
     
-    func getMontlyCosts(address: MapPoint) -> Double {
+    func getMontlyCosts(address: MapPoint) -> [MonthlyCost] {
         guard let tile = self.mapManager.map.getTile(address: address) else {
-            return self.monthlyCosts.montlyLandCost.rounded(toPlaces: 0)
+            let price = self.monthlyCosts.montlyLandCost.rounded(toPlaces: 0)
+            return [MonthlyCost(name: "Bills", price: price)]
         }
         guard let propertyType = tile.propertyType else {
-            return 0
+            return []
         }
         switch propertyType {
             
         case .land:
-            return self.monthlyCosts.montlyLandCost.rounded(toPlaces: 0)
+            let price = self.monthlyCosts.montlyLandCost.rounded(toPlaces: 0)
+            return [MonthlyCost(name: "Bills", price: price)]
         case .road:
-            return self.monthlyCosts.montlyRoadCost.rounded(toPlaces: 0)
+            let price = self.monthlyCosts.montlyRoadCost.rounded(toPlaces: 0)
+            return [MonthlyCost(name: "Maintenance", price: price)]
         case .residentialBuilding:
+            let bills = self.monthlyCosts.montlyResidentialBuildingCost.rounded(toPlaces: 0)
             switch tile.type {
             case .building(let size):
-                return (self.monthlyCosts.montlyResidentialBuildingCost + self.monthlyCosts.montlyResidentialBuildingCostPerStorey * size.double).rounded(toPlaces: 0)
+                let maintenance = (self.monthlyCosts.montlyResidentialBuildingCostPerStorey * size.double).rounded(toPlaces: 0)
+                return [MonthlyCost(name: "Bills", price: bills), MonthlyCost(name: "Maintenance", price: maintenance)]
             case .buildingUnderConstruction(_):
-                return self.monthlyCosts.montlyResidentialBuildingCost.rounded(toPlaces: 0)
+                return [MonthlyCost(name: "Bills", price: bills)]
             default:
-                return 0
+                return []
             }
         }
     }
 }
 
 
-class MonthlyCosts {
+class MonthlyCostPriceList {
     // montly costs
     public var montlyLandCost: Double = 110.0
     public var montlyRoadCost: Double = 580.0
@@ -56,4 +61,10 @@ class MonthlyCosts {
     public var monthlyBillsForUnrentedApartment: Double = 180.0
     public var monthlyApartmentRentalFee: Double = 2300
     public var monthlyApartmentBuildingOwnerFee: Double = 930
+}
+
+
+struct MonthlyCost {
+    let name: String
+    let price: Double
 }
