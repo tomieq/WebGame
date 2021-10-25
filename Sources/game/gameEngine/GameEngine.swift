@@ -24,6 +24,7 @@ class GameEngine {
     let constructionServices: ConstructionServices
     let gameClock: GameClock
     let clickRouter: ClickTileRouter
+    let reloadMapCoordinator: ReloadMapCoordinator
     let disposeBag = DisposeBag()
     
     init(dataStore: DataStoreProvider) {
@@ -59,10 +60,18 @@ class GameEngine {
         
         self.clickRouter = ClickTileRouter(agent: self.realEstateAgent)
         
+        self.reloadMapCoordinator = ReloadMapCoordinator()
+        
         self.realEstateAgent.delegate = self
         self.constructionServices.delegate = self
         self.gameClock.delegate = self
         
+        self.reloadMapCoordinator.setFlushAction { [weak self] in
+           self?.streetNavi.reload()
+           self?.gameTraffic.mapReloaded()
+           self?.websocketHandler.sendToAll(command: .reloadMap)
+       }
+
         self.setupDevParams()
 
         GameEventBus.gameEvents.asObservable().bind { [weak self] gameEvent in
@@ -144,9 +153,7 @@ extension GameEngine: RealEstateAgentDelegate, ConstructionServicesDelegate {
         }
     }
     func reloadMap() {
-        self.streetNavi.reload()
-        self.gameTraffic.mapReloaded()
-        self.websocketHandler.sendToAll(command: .reloadMap)
+        self.reloadMapCoordinator.reloadMap()
     }
     
     func notifyEveryone(_ notification: UINotification) {
@@ -157,7 +164,9 @@ extension GameEngine: RealEstateAgentDelegate, ConstructionServicesDelegate {
 
 extension GameEngine: GameClockDelegate {
     func nextMonth() {
+        self.reloadMapCoordinator.hold()
         self.constructionServices.finishInvestments()
+        self.reloadMapCoordinator.flush()
         self.websocketHandler.sendToAll(command: .updateGameDate(UIGameDate(text: self.time.text, secondsLeft: self.gameClock.secondsLeft)))
     }
 
