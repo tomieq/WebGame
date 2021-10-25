@@ -42,6 +42,7 @@ enum JSCode {
     case showWarning(txt: String, duration: Int)
     case showSuccess(txt: String, duration: Int)
     case showInfo(txt: String, duration: Int)
+    case clickMap(MapPoint)
     case any(String)
 }
 
@@ -54,7 +55,7 @@ extension JSCode {
             let mapYValue = mapY ?? -1
             return "openWindow('\(name.escaped)', '\(path)', \(width), \(height), \(mapXValue), \(mapYValue), \(singleton))"
         case .setWindowContent(let windowIndex, let content):
-            return "setWindowContent(\(windowIndex), '\(content.escaped)');";
+            return "setWindowContent(\(windowIndex), '\(content.escaped)');"
         case .setWindowTitle(let windowIndex, let title):
             return "setWindowTitle(\(windowIndex), '\(title.escaped)');"
         case .setWindowActive(let windowIndex):
@@ -80,17 +81,19 @@ extension JSCode {
         case .loadHtmlThenRunScripts(let windowIndex, let htmlPath, let scriptPaths):
             return "loadHtmlThenRunScripts(\(windowIndex), '\(htmlPath)', ['\(scriptPaths.joined(separator: "', '"))'], '');";
         case .loadJsAndHtmlThenRunScripts(let windowIndex, let jsFilePaths, let htmlPath, let scriptPaths):
-            return "loadJsAndHtmlThenRunScripts(\(windowIndex), ['\(jsFilePaths.joined(separator: "', '"))'], '\(htmlPath)', ['\(scriptPaths.joined(separator: "', '"))'], '');";
+            return "loadJsAndHtmlThenRunScripts(\(windowIndex), ['\(jsFilePaths.joined(separator: "', '"))'], '\(htmlPath)', ['\(scriptPaths.joined(separator: "', '"))'], '');"
         case .runScripts(let windowIndex, let paths):
             return "runScripts(\(windowIndex), ['\(paths.joined(separator: "', '"))']);"
         case .showError(let txt, let duration):
-            return "uiShowError('\(txt.escaped)', \(duration * 1000));";
+            return "uiShowError('\(txt.escaped)', \(duration * 1000));"
         case .showWarning(let txt, let duration):
-            return "uiShowWarning('\(txt.escaped)', \(duration * 1000));";
+            return "uiShowWarning('\(txt.escaped)', \(duration * 1000));"
         case .showSuccess(let txt, let duration):
-            return "uiShowSuccess(\'\(txt.escaped)', \(duration * 1000));";
+            return "uiShowSuccess(\'\(txt.escaped)', \(duration * 1000));"
         case .showInfo(let txt, let duration):
-            return "uiShowInfo('\(txt.escaped)', \(duration * 1000));";
+            return "uiShowInfo('\(txt.escaped)', \(duration * 1000));"
+        case .clickMap(let address):
+            return "mapClicked(\(address.x), \(address.y));"
         case .any(let code):
             return code
         }

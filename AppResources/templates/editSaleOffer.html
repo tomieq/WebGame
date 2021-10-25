@@ -1,0 +1,52 @@
+<div style="margin: 20px;">
+
+<div class="blue-border" style="width: 100px; text-align: center; float: right;">
+    <img src="{tileUrl}" style="width: 70px; height: auto;"/>
+    <br><span class="text-orange" style="font-size: 0.8em;">{type}</span>
+</div>
+<p>
+<table class="detailsTable" style="width: 400px; margin: 5px; float: left">
+<tbody>
+<tr>
+    <td>Property name</td>
+    <td style="text-align: right;"><strong>{name}</strong></td>
+</tr>
+
+<tr>
+    <td>Type</td>
+    <td style="text-align: right;">{type}</td>
+</tr>
+<tr>
+    <td colspan=2><hr class="orange" /></td>
+</tr>
+
+
+<tr>
+    <td colspan=2>
+    Currently your property is on sale. The offer net price is <strong>{money}</strong>.
+    </td>
+    
+</tr>
+<tr><td colspan=2><hr/></td></tr>
+<tr>
+    <td>Price you want get</td>
+    <td style="text-align: right;">$ <input type="text" value="{price}" id="price{windowIndex}" size=10 /></td>
+</tr>
+</tbody>
+</table>
+
+<table style="width: 400px; margin: 5px; float: left">
+    <tbody>
+        <tr>
+            <td colspan=2 style="text-align: center;"><button class="btn btn-sm" onclick="publishOffer({windowIndex}, '{submitUrl}');">Save offer</button></td>
+        </tr>
+    </tbody>
+</table>
+</div>
+
+<script>
+$("#price{windowIndex}").on('keyup', function(){
+    var n = numberWithSpaces($(this).val());
+    $(this).val(n);
+});
+</script>
