@@ -177,7 +177,6 @@ class RealEstateAgentRestAPI: RestAPI {
                 try self.gameEngine.realEstateAgent.registerSaleOffer(address: address, netValue: price)
                 js.add(.showSuccess(txt: "Sale offer published successfully", duration: 5))
                 js.add(.closeWindow(windowIndex))
-                js.add(.clickMap(address))
             } catch {
                 return JSCode.showError(txt: "Problem with adding sale offer", duration: 10).response
             }

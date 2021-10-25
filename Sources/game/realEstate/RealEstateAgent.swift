@@ -8,7 +8,7 @@
 import Foundation
 
 protocol RealEstateAgentDelegate {
-    func notifyWalletChange(playerUUID: String)
+    func syncWalletChange(playerUUID: String)
     func notifyEveryone(_ notification: UINotification)
     func reloadMap()
 }
@@ -285,8 +285,8 @@ class RealEstateAgent {
 
         self.mapManager.map.replaceTile(tile: land.mapTile)
         
-        self.delegate?.notifyWalletChange(playerUUID: buyerUUID)
-        self.delegate?.notifyWalletChange(playerUUID: sellerID)
+        self.delegate?.syncWalletChange(playerUUID: buyerUUID)
+        self.delegate?.syncWalletChange(playerUUID: sellerID)
         self.delegate?.reloadMap()
         let playerName = self.dataStore.find(uuid: buyerUUID)?.login ?? ""
         self.delegate?.notifyEveryone(UINotification(text: "New transaction on the market. Player \(playerName) has just bought property `\(land.name)`", level: .info, duration: 10))
@@ -339,8 +339,8 @@ class RealEstateAgent {
         let mutation = ResidentialBuildingMutation(uuid: building.uuid, attributes: modifications)
         self.dataStore.update(mutation)
         
-        self.delegate?.notifyWalletChange(playerUUID: buyerUUID)
-        self.delegate?.notifyWalletChange(playerUUID: sellerID)
+        self.delegate?.syncWalletChange(playerUUID: buyerUUID)
+        self.delegate?.syncWalletChange(playerUUID: sellerID)
         let playerName = self.dataStore.find(uuid: buyerUUID)?.login ?? ""
         self.delegate?.notifyEveryone(UINotification(text: "New transaction on the market. Player \(playerName) has just bought property `\(building.name)`", level: .info, duration: 10))
     }

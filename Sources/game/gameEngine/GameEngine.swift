@@ -61,6 +61,7 @@ class GameEngine {
         
         self.realEstateAgent.delegate = self
         self.constructionServices.delegate = self
+        self.gameClock.delegate = self
         
         self.setupDevParams()
 
@@ -70,21 +71,13 @@ class GameEngine {
                 if let session = gameEvent.playerSession, let player = self?.dataStore.find(uuid: session.playerUUID) {
                     self?.websocketHandler.sendTo(playerSessionID: session.id, command: .updateWallet(player.wallet.money))
                     if let text = self?.gameClock.time.text, let secondsLeft = self?.gameClock.secondsLeft {
-                        self?.websocketHandler.sendToAll(command: .updateGameDate(UIGameDate(text: text, secondsLeft: secondsLeft)))
+                        self?.websocketHandler.sendTo(playerSessionID: session.id, command: .updateGameDate(UIGameDate(text: text, secondsLeft: secondsLeft)))
                     }
                 }
             case .userDisconnected:
                 if let session = gameEvent.playerSession {
                     PlayerSessionManager.shared.destroyPlayerSession(playerSessionID: session.id)
                 }
-            case .reloadMap:
-                self?.streetNavi.reload()
-                self?.websocketHandler.sendToAll(command: .reloadMap)
-            case .updateWallet(let wallet):
-                self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, command: .updateWallet(wallet))
-            case .updateGameDate(let date, let secondsLeft):
-                self?.constructionServices.finishInvestments()
-                self?.websocketHandler.sendToAll(command: .updateGameDate(UIGameDate(text: date, secondsLeft: secondsLeft)))
             case .tileClicked(let point):
 
                 let playerUUID = gameEvent.playerSession?.playerUUID
@@ -142,21 +135,34 @@ class GameEngine {
 
 
 extension GameEngine: RealEstateAgentDelegate, ConstructionServicesDelegate {
-    func notifyWalletChange(playerUUID: String) {
+    func syncWalletChange(playerUUID: String) {
+        
         if let player = self.dataStore.find(uuid: playerUUID) {
             for session in PlayerSessionManager.shared.getSessions(playerUUID: playerUUID){
-                let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(player.wallet.money))
-                GameEventBus.gameEvents.onNext(updateWalletEvent)
+                self.websocketHandler.sendTo(playerSessionID: session.id, command: .updateWallet(player.wallet.money))
             }
         }
     }
     func reloadMap() {
-        let reloadMapEvent = GameEvent(playerSession: nil, action: .reloadMap)
-        GameEventBus.gameEvents.onNext(reloadMapEvent)
+        self.streetNavi.reload()
+        self.gameTraffic.mapReloaded()
+        self.websocketHandler.sendToAll(command: .reloadMap)
     }
     
     func notifyEveryone(_ notification: UINotification) {
         let announcementEvent = GameEvent(playerSession: nil, action: .notification(notification))
-                GameEventBus.gameEvents.onNext(announcementEvent)
+        GameEventBus.gameEvents.onNext(announcementEvent)
     }
+}
+
+extension GameEngine: GameClockDelegate {
+    func nextMonth() {
+        self.constructionServices.finishInvestments()
+        self.websocketHandler.sendToAll(command: .updateGameDate(UIGameDate(text: self.time.text, secondsLeft: self.gameClock.secondsLeft)))
+    }
+
+    func syncTime() {
+        self.websocketHandler.sendToAll(command: .updateGameDate(UIGameDate(text: self.time.text, secondsLeft: self.gameClock.secondsLeft)))
+    }
+    
 }

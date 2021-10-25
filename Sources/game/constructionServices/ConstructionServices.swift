@@ -9,7 +9,7 @@ import Foundation
 
 
 protocol ConstructionServicesDelegate {
-    func notifyWalletChange(playerUUID: String)
+    func syncWalletChange(playerUUID: String)
     func notifyEveryone(_ notification: UINotification)
     func reloadMap()
 }
@@ -86,7 +86,7 @@ class ConstructionServices {
         let tile = GameMapTile(address: address, type: .streetUnderConstruction)
         self.mapManager.map.replaceTile(tile: tile)
 
-        self.delegate?.notifyWalletChange(playerUUID: playerUUID)
+        self.delegate?.syncWalletChange(playerUUID: playerUUID)
         self.delegate?.reloadMap()
     }
 
@@ -122,7 +122,7 @@ class ConstructionServices {
         let tile = GameMapTile(address: address, type: .buildingUnderConstruction(size: storeyAmount))
         self.mapManager.map.replaceTile(tile: tile)
         
-        self.delegate?.notifyWalletChange(playerUUID: playerUUID)
+        self.delegate?.syncWalletChange(playerUUID: playerUUID)
         self.delegate?.reloadMap()
     }
     

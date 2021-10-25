@@ -9,12 +9,18 @@ import Foundation
 import RxSwift
 import RxCocoa
 
+protocol GameClockDelegate {
+    func nextMonth()
+    func syncTime()
+}
+
 class GameClock {
     let realEstateAgent: RealEstateAgent
     let time: GameTime
     let secondsPerMonth: Int
     private var secondsCounter: Int
     private let dataStore: DataStoreProvider
+    var delegate: GameClockDelegate?
     private let disposeBag = DisposeBag()
     
     var secondsLeft: Int {
@@ -25,6 +31,7 @@ class GameClock {
         self.time = time
         self.realEstateAgent = realEstateAgent
         self.dataStore = realEstateAgent.dataStore
+        self.delegate = nil
         self.secondsPerMonth = secondsPerMonth
         self.secondsCounter = 0
         
@@ -37,8 +44,9 @@ class GameClock {
                 
                 Logger.info("GameClock", "End of the month")
                 self.time.nextMonth()
-                let updateDateEvent = GameEvent(playerSession: nil, action: .updateGameDate(self.time.text, self.secondsLeft))
-                GameEventBus.gameEvents.onNext(updateDateEvent)
+                self.delegate?.nextMonth()
+            } else if self.secondsCounter % 60 == 0 {
+                self.delegate?.syncTime()
             }
         }.disposed(by: self.disposeBag)
     }
@@ -71,14 +79,9 @@ class GameClock {
                 self.applyWalletChanges(property: building)
             }
         }
-         */
-        for session in PlayerSessionManager.shared.getActiveSessions() {
-            if let player = self.dataStore.find(uuid: session.playerUUID) {
-                let updateWalletEvent = GameEvent(playerSession: session, action: .updateWallet(player.wallet.money))
-                GameEventBus.gameEvents.onNext(updateWalletEvent)
-            }
-        }
         
+         */
+
     }
     
     private func applyWalletChanges(property: Property) {

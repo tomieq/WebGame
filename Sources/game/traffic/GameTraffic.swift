@@ -36,12 +36,14 @@ class GameTraffic {
             case .vehicleTravelFinished(let payload):
                 guard let session = event.playerSession else { return }
                 self?.runningCars[session] = self?.runningCars[session]?.filter { $0.id != payload.id } ?? []
-            case .reloadMap:
-                self?.buildingPoints = self?.streetNavi.gameMap.tiles.filter{ $0.isBuilding() }.map{ $0.address } ?? []
             default:
                 break
             }
         }.disposed(by: self.disposeBag)
+    }
+    
+    func mapReloaded() {
+        self.buildingPoints = self.streetNavi.gameMap.tiles.filter{ $0.isBuilding() }.map{ $0.address } ?? []
     }
     
     private func startRandomTraffic() {
