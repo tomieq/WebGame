@@ -24,6 +24,7 @@ class GameEngine {
     let constructionServices: ConstructionServices
     let gameClock: GameClock
     let clickRouter: ClickTileRouter
+    let investorAI: InvestorArtifficialIntelligence
     let reloadMapCoordinator: ReloadMapCoordinator
     let syncWalletCoordinator: SyncWalletCoordinator
     let disposeBag = DisposeBag()
@@ -60,6 +61,7 @@ class GameEngine {
         self.gameClock = GameClock(realEstateAgent: self.realEstateAgent, time: self.time, secondsPerMonth: 60*10)
         
         self.clickRouter = ClickTileRouter(agent: self.realEstateAgent)
+        self.investorAI = InvestorArtifficialIntelligence(agent: self.realEstateAgent)
         
         self.reloadMapCoordinator = ReloadMapCoordinator()
         self.syncWalletCoordinator = SyncWalletCoordinator()
@@ -175,6 +177,7 @@ extension GameEngine: GameClockDelegate {
         self.syncWalletCoordinator.hold()
         
         self.constructionServices.finishInvestments()
+        self.investorAI.purchaseBargains()
         
         self.reloadMapCoordinator.flush()
         self.syncWalletCoordinator.flush()
