@@ -30,10 +30,7 @@ class PropertyBalanceCalculator {
         switch propertyType {
             
         case .land:
-            let water = Invoice(title: "Water bill", netValue: self.priceList.montlyLandWaterCost, taxRate: self.taxRates.waterBillTax)
-            let electricity = Invoice(title: "Electricity bill", netValue: self.priceList.montlyLandElectricityCost, taxRate: self.taxRates.electricityBillTax)
-            let maintenance = Invoice(title: "Maintenance", netValue: self.priceList.montlyLandMaintenanceCost, taxRate: self.taxRates.valueAddedTax)
-            return [water, electricity, maintenance]
+            return self.getLandMontlyCosts()
         case .road:
             let maintenance = Invoice(title: "Maintenance", netValue: self.priceList.montlyRoadMaintenanceCost, taxRate: self.taxRates.valueAddedTax)
             return [maintenance]
@@ -41,19 +38,34 @@ class PropertyBalanceCalculator {
             
             switch tile.type {
             case .building(let size):
-                let water = Invoice(title: "Water bill", netValue: self.priceList.montlyResidentialBuildingWaterCost, taxRate: self.taxRates.waterBillTax)
-                let electricity = Invoice(title: "Electricity bill", netValue: self.priceList.montlyResidentialBuildingElectricityCost, taxRate: self.taxRates.electricityBillTax)
-                let maintenance = Invoice(title: "Maintenance", netValue: self.priceList.montlyResidentialBuildingMaintenanceCostPerStorey  * size.double, taxRate: self.taxRates.valueAddedTax)
-                
-                return [water, electricity, maintenance]
+                return self.getBuildingMontlyCosts(size: size)
             case .buildingUnderConstruction(_):
-                let water = Invoice(title: "Water bill", netValue: self.priceList.montlyResidentialBuildingUnderConstructionWaterCost, taxRate: self.taxRates.waterBillTax)
-                let electricity = Invoice(title: "Electricity bill", netValue: self.priceList.montlyResidentialBuildingUnderConstructionElectricityCost, taxRate: self.taxRates.electricityBillTax)
-                return [water, electricity]
+                return self.getBuildingUnderConstructionMontlyCosts()
             default:
                 return []
             }
         }
+    }
+    
+    func getLandMontlyCosts() -> [Invoice] {
+        let water = Invoice(title: "Water bill", netValue: self.priceList.montlyLandWaterCost, taxRate: self.taxRates.waterBillTax)
+        let electricity = Invoice(title: "Electricity bill", netValue: self.priceList.montlyLandElectricityCost, taxRate: self.taxRates.electricityBillTax)
+        let maintenance = Invoice(title: "Maintenance", netValue: self.priceList.montlyLandMaintenanceCost, taxRate: self.taxRates.valueAddedTax)
+        return [water, electricity, maintenance]
+    }
+    
+    func getBuildingMontlyCosts(size: Int) -> [Invoice] {
+        let water = Invoice(title: "Water bill", netValue: self.priceList.montlyResidentialBuildingWaterCost, taxRate: self.taxRates.waterBillTax)
+        let electricity = Invoice(title: "Electricity bill", netValue: self.priceList.montlyResidentialBuildingElectricityCost, taxRate: self.taxRates.electricityBillTax)
+        let maintenance = Invoice(title: "Maintenance", netValue: self.priceList.montlyResidentialBuildingMaintenanceCostPerStorey  * size.double, taxRate: self.taxRates.valueAddedTax)
+        
+        return [water, electricity, maintenance]
+    }
+    
+    func getBuildingUnderConstructionMontlyCosts() -> [Invoice] {
+        let water = Invoice(title: "Water bill", netValue: self.priceList.montlyResidentialBuildingUnderConstructionWaterCost, taxRate: self.taxRates.waterBillTax)
+        let electricity = Invoice(title: "Electricity bill", netValue: self.priceList.montlyResidentialBuildingUnderConstructionElectricityCost, taxRate: self.taxRates.electricityBillTax)
+        return [water, electricity]
     }
 }
 

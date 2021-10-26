@@ -57,7 +57,7 @@ class GameEngine {
         self.propertyBalanceCalculator = PropertyBalanceCalculator(mapManager: self.gameMapManager, dataStore: self.dataStore, taxRates: self.taxRates)
         
         self.constructionServices = ConstructionServices(mapManager: self.gameMapManager, centralBank: self.centralbank, time: self.time)
-        self.propertyValuer = PropertyValuer(mapManager: self.gameMapManager, constructionServices: self.constructionServices)
+        self.propertyValuer = PropertyValuer(balanceCalculator: self.propertyBalanceCalculator, constructionServices: self.constructionServices)
         self.realEstateAgent = RealEstateAgent(mapManager: self.gameMapManager, propertyValuer: self.propertyValuer, centralBank: self.centralbank)
         
         

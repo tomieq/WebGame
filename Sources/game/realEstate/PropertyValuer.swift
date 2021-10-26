@@ -22,12 +22,14 @@ class PropertyValuer {
     let mapManager: GameMapManager
     let dataStore: DataStoreProvider
     let valueFactors: PropertyValueFactors
+    let balanceCalculator: PropertyBalanceCalculator
     let constructionServices: ConstructionServices
     
-    init(mapManager: GameMapManager, constructionServices: ConstructionServices) {
-        self.mapManager = mapManager
+    init(balanceCalculator: PropertyBalanceCalculator, constructionServices: ConstructionServices) {
+        self.mapManager = balanceCalculator.mapManager
         self.dataStore = constructionServices.dataStore
         self.constructionServices = constructionServices
+        self.balanceCalculator = balanceCalculator
         self.valueFactors = PropertyValueFactors()
     }
     
@@ -42,12 +44,8 @@ class PropertyValuer {
     private func estimateResidentialBuildingValue(_ address: MapPoint) -> Double {
         guard let building: ResidentialBuilding = self.dataStore.find(address: address) else { return 0 }
         let constructionOffer = self.constructionServices.residentialBuildingOffer(landName: "", storeyAmount: building.storeyAmount)
-        var factor = self.calculateLocationValueFactor(address)
-        if factor > 1 {
-            let over = factor - 1
-            factor = 1 + over * 0.5
-        }
-        return (constructionOffer.invoice.netValue * self.calculateLocationValueFactor(address)).rounded(toPlaces: 0)
+        let factor = (1 + 2*constructionOffer.duration.double/100)
+        return (constructionOffer.invoice.netValue * factor + self.estimateLandValue(address)).rounded(toPlaces: 0)
     }
     
     func estimateValue(_ address: MapPoint) -> Double? {
