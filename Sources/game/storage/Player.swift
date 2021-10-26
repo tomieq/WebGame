@@ -11,6 +11,7 @@ enum SystemPlayer: String, CaseIterable {
     case government
     case bank
     case realEstateAgency
+    case investor
     
     var uuid: String {
         return self.rawValue
@@ -24,6 +25,8 @@ enum SystemPlayer: String, CaseIterable {
             return "Bank"
         case .realEstateAgency:
             return "Real Estate Agency"
+        case .investor:
+            return "Barren Wuffet"
         }
     }
 }

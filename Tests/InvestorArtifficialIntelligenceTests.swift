@@ -22,7 +22,7 @@ final class InvestorArtifficialIntelligenceTests: XCTestCase {
         engine.agent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
         let owner = Player(uuid: "john", login: "john", wallet: 0)
         engine.agent.dataStore.create(owner)
-        engine.agent.dataStore.update(PlayerMutation(id: SystemPlayer.government.uuid, attributes: [.wallet(90000)]))
+        engine.agent.dataStore.update(PlayerMutation(id: SystemPlayer.investor.uuid, attributes: [.wallet(90000)]))
         
         let estimatedValue = engine.agent.propertyValuer.estimateValue(address)
         let offerValue = 0.6 * (estimatedValue ?? 0)
@@ -44,7 +44,7 @@ final class InvestorArtifficialIntelligenceTests: XCTestCase {
         engine.agent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
         let owner = Player(uuid: "john", login: "john", wallet: 0)
         engine.agent.dataStore.create(owner)
-        engine.agent.dataStore.update(PlayerMutation(id: SystemPlayer.government.uuid, attributes: [.wallet(90000)]))
+        engine.agent.dataStore.update(PlayerMutation(id: SystemPlayer.investor.uuid, attributes: [.wallet(90000)]))
         
         let estimatedValue = engine.agent.propertyValuer.estimateValue(address)
         let offerValue = 1.2 * (estimatedValue ?? 0)
@@ -54,6 +54,30 @@ final class InvestorArtifficialIntelligenceTests: XCTestCase {
         
         let soldLand: Land? = engine.agent.dataStore.find(address: address)
         XCTAssertEqual(soldLand?.ownerUUID, "john")
+    }
+    
+    func test_purchaseResidentialBuilding () {
+        let engine = self.makeEngine()
+        engine.params.instantPurchaseToEstimatedValueFactor = 0.7
+
+        let address = MapPoint(x: 5, y: 5)
+        let building = ResidentialBuilding(land: Land(address: address, ownerUUID: "john"), storeyAmount: 6)
+        engine.agent.dataStore.create(building)
+        engine.agent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .building(size: 6)))
+        let owner = Player(uuid: "john", login: "john", wallet: 0)
+        engine.agent.dataStore.create(owner)
+        engine.params.instantPurchaseToEstimatedValueFactor = 0.85
+        
+        if let estimatedValue = engine.agent.propertyValuer.estimateValue(address) {
+            engine.agent.dataStore.update(PlayerMutation(id: SystemPlayer.investor.uuid, attributes: [.wallet(estimatedValue)]))
+            let offerValue = 0.8 * estimatedValue
+            XCTAssertNoThrow(try engine.agent.registerSaleOffer(address: address, netValue: offerValue))
+            
+            engine.purchaseBargains()
+            
+            let building: ResidentialBuilding? = engine.agent.dataStore.find(address: address)
+            XCTAssertNotEqual(building?.ownerUUID, "john")
+        }
     }
     
     private func makeEngine() -> InvestorArtifficialIntelligence {
@@ -68,11 +92,14 @@ final class InvestorArtifficialIntelligenceTests: XCTestCase {
         let propertyValuer = PropertyValuer(mapManager: mapManager, constructionServices: constructionServices)
         let agent = RealEstateAgent(mapManager: mapManager, propertyValuer: propertyValuer, centralBank: centralBank, delegate: nil)
         
-        let government = Player(uuid: SystemPlayer.government.uuid, login: "Big Uncle", wallet: 0)
+        let government = Player(uuid: SystemPlayer.government.uuid, login: SystemPlayer.government.login, wallet: 0)
         agent.dataStore.create(government)
         
-        let agency = Player(uuid: SystemPlayer.realEstateAgency.uuid, login: "Agency", wallet: 0)
+        let agency = Player(uuid: SystemPlayer.realEstateAgency.uuid, login: SystemPlayer.realEstateAgency.login, wallet: 0)
         agent.dataStore.create(agency)
+
+        let investor = Player(uuid: SystemPlayer.investor.uuid, login: SystemPlayer.investor.login, wallet: 0)
+        agent.dataStore.create(investor)
         
         let engine = InvestorArtifficialIntelligence(agent: agent)
         return engine

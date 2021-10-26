@@ -45,6 +45,9 @@ class GameEngine {
         self.dataStore.create(user1)
         self.dataStore.create(user2)
         
+        let investor = Player(uuid: SystemPlayer.investor.uuid, login: SystemPlayer.investor.login, wallet: 1000000000)
+        self.dataStore.create(investor)
+        
         self.gameMap = GameMap(width: 25, height: 25, scale: 0.30)
         self.gameMapManager = GameMapManager(self.gameMap)
         self.gameMapManager.loadMapFrom(path: "maps/roadMap1")
