@@ -184,7 +184,10 @@ class RealEstateAgent {
             return nil
         }
         
-        let commission = self.priceList.realEstateSellLandPropertyCommisionFee + price * self.priceList.realEstateSellPropertyCommisionRate
+        var commission = self.priceList.realEstateSellLandPropertyCommisionFee + price * self.priceList.realEstateSellPropertyCommisionRate
+        if commission > self.priceList.realEstateSellPropertyCommisionThreshold {
+            commission = self.priceList.realEstateSellPropertyCommisionThreshold + commission/10
+        }
         
         let saleInvoice = Invoice(title: "Purchase land \(name)", netValue: price, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
         let commissionInvoice = Invoice(title: "Commission for purchase land \(name)", grossValue: commission, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
@@ -212,7 +215,10 @@ class RealEstateAgent {
         guard let price = price else {
             return nil
         }
-        let commission = self.priceList.realEstateSellResidentialBuildingCommisionFee + price * self.priceList.realEstateSellPropertyCommisionRate
+        var commission = self.priceList.realEstateSellResidentialBuildingCommisionFee + price * self.priceList.realEstateSellPropertyCommisionRate
+        if commission > self.priceList.realEstateSellPropertyCommisionThreshold {
+            commission = self.priceList.realEstateSellPropertyCommisionThreshold + commission/10
+        }
         let saleInvoice = Invoice(title: "Purchase \(building.name)", netValue: price, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
         let commissionInvoice = Invoice(title: "Commission for purchase land \(building.name)", grossValue: commission, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
         
@@ -349,72 +355,6 @@ class RealEstateAgent {
         self.delegate?.syncWalletChange(playerUUID: sellerID)
         let playerName = self.dataStore.find(uuid: buyerUUID)?.login ?? ""
         self.delegate?.notifyEveryone(UINotification(text: "New transaction on the market. Player \(playerName) has just bought property `\(building.name)`", level: .info, duration: 10))
-    }
-    
-    func rentApartment(_ apartment: Apartment) {
-        apartment.isRented = true
-        if let building: ResidentialBuilding = self.dataStore.find(address: apartment.address) {
-            self.recalculateFeesInTheBuilding(building)
-        }
-    }
-    
-    func unrentApartment(_ apartment: Apartment) {
-        apartment.isRented = false
-        if let building: ResidentialBuilding = self.dataStore.find(address: apartment.address) {
-            self.recalculateFeesInTheBuilding(building)
-        }
-    }
-    /*
-    func estimateApartmentValue(_ apartment: Apartment) -> Double {
-        if let building: ResidentialBuilding = self.dataStore.find(address: apartment.address) {
-            let investmentCost = 0.0//ConstructionPriceList.makeResidentialBuildingCost(storey: building.storeyAmount)
-            let numberOfFlats = Double(building.numberOfFlatsPerStorey * building.storeyAmount)
-            let baseValue = (investmentCost/numberOfFlats + self.priceList.residentialBuildingOwnerIncomeOnFlatSellPrice) * 1.42
-            return (baseValue * building.condition/100 * apartment.condition/100 * self.calculateLocationValueFactor(building.address)).rounded(toPlaces: 0)
-        }
-        Logger.error("RealEstateAgent", "Apartment \(apartment.uuid) is detached from building!")
-        return 900000000
-    }
-    
-    func estimateRentFee(_ apartment: Apartment) -> Double {
-        if let building: ResidentialBuilding = self.dataStore.find(address: apartment.address) {
-            return (self.priceList.monthlyApartmentRentalFee * building.condition/100 * apartment.condition/100 * self.calculateLocationValueFactor(building.address)).rounded(toPlaces: 0)
-        }
-        return 0.0
-    }
-    */
-    func recalculateFeesInTheBuilding(_ building: ResidentialBuilding) {
-        /*
-        let baseBuildingMonthlyCosts: Double = self.priceList.montlyResidentialBuildingCost + self.priceList.montlyResidentialBuildingCostPerStorey * building.storeyAmount.double
-        let numberOfFlats = Double(building.storeyAmount * building.numberOfFlatsPerStorey)
-        
-        let buildingCostPerFlat = (baseBuildingMonthlyCosts/numberOfFlats + self.priceList.monthlyResidentialBuildingOwnerIncomePerFlat).rounded(toPlaces: 0)
-        
-        var income: Double = 0
-        var spendings = baseBuildingMonthlyCosts
-        for apartment in Storage.shared.getApartments(address: building.address) {
-            
-            switch apartment.isRented {
-                case true:
-                apartment.monthlyRentalFee = self.estimateRentFee(apartment)
-                apartment.monthlyBills = self.priceList.monthlyBillsForRentedApartment
-                case false:
-                apartment.monthlyRentalFee = 0
-                apartment.monthlyBills = self.priceList.monthlyBillsForUnrentedApartment
-            }
-            
-            if apartment.ownerID == building.ownerID {
-                apartment.monthlyBuildingFee = 0
-                income += apartment.monthlyRentalFee
-                spendings += apartment.monthlyBills
-            } else {
-                apartment.monthlyBuildingFee = buildingCostPerFlat
-                income += apartment.monthlyBuildingFee
-            }
-        }
-        building.monthlyIncome = income.rounded(toPlaces: 0)
-        building.monthlyMaintenanceCost = spendings.rounded(toPlaces: 0)
-         */
     }
  }
 

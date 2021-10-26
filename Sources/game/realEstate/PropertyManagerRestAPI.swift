@@ -156,9 +156,9 @@ class PropertyManagerRestAPI {
                 return code.response
             }
             if let _ = request.queryParam("unrent") {
-                self.gameEngine.realEstateAgent.unrentApartment(apartment)
+                //self.gameEngine.realEstateAgent.unrentApartment(apartment)
             } else {
-                self.gameEngine.realEstateAgent.rentApartment(apartment)
+                //self.gameEngine.realEstateAgent.rentApartment(apartment)
             }
             code.add(.showSuccess(txt: "Action successed", duration: 5))
             

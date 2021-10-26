@@ -48,8 +48,8 @@ class PropertyBalanceCalculator {
     }
     
     func getLandMontlyCosts() -> [Invoice] {
-        let water = Invoice(title: "Water bill", netValue: self.priceList.montlyLandWaterCost, taxRate: self.taxRates.waterBillTax)
-        let electricity = Invoice(title: "Electricity bill", netValue: self.priceList.montlyLandElectricityCost, taxRate: self.taxRates.electricityBillTax)
+        let water = Invoice(title: "Water constant bill", netValue: self.priceList.montlyLandWaterCost, taxRate: self.taxRates.waterBillTax)
+        let electricity = Invoice(title: "Electricity constant bill", netValue: self.priceList.montlyLandElectricityCost, taxRate: self.taxRates.electricityBillTax)
         let maintenance = Invoice(title: "Maintenance", netValue: self.priceList.montlyLandMaintenanceCost, taxRate: self.taxRates.servicesTax)
         return [water, electricity, maintenance]
     }
