@@ -39,8 +39,6 @@ class PropertyBalanceCalculator {
             return [maintenance]
         case .residentialBuilding:
             
-            
-            
             switch tile.type {
             case .building(let size):
                 let water = Invoice(title: "Water bill", netValue: self.priceList.montlyResidentialBuildingWaterCost, taxRate: self.taxRates.waterBillTax)

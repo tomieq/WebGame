@@ -10,6 +10,7 @@ import Foundation
 enum ClickTileAction {
     case roadInfo
     case landInfo
+    case residentialBuildingInfo
     case buyLand
     case buyResidentialBuilding
     case roadManager
@@ -58,8 +59,10 @@ class ClickTileRouter {
             if let building: ResidentialBuilding = self.dataStore.find(address: address) {
                 if building.ownerUUID == playerUUID {
                     return .residentialBuildingManager
-                } else {
+                } else if self.agent.isForSale(address: address) {
                     return .buyResidentialBuilding
+                } else {
+                    return .residentialBuildingInfo
                 }
             }
         }
@@ -94,6 +97,10 @@ extension ClickTileAction {
         case .landManager:
             return [
                 .openWindow(OpenWindow(title: "Loading", width: 0.7, height: 100, initUrl: RestEndpoint.openLandManager.append(point), address: point))
+            ]
+        case .residentialBuildingInfo:
+            return [
+                .openWindow(OpenWindow(title: "Property info", width: 400, height: 200, initUrl: RestEndpoint.openPropertyInfo.base.append(point), address: point))
             ]
         case .residentialBuildingManager:
             return [
