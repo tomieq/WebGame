@@ -64,7 +64,8 @@ final class InvestorArtifficialIntelligenceTests: XCTestCase {
         let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates, time: time)
         let map = GameMap(width: 10, height: 10, scale: 0.2)
         let mapManager = GameMapManager(map)
-        let propertyValuer = PropertyValuer(mapManager: mapManager, dataStore: dataStore)
+        let constructionServices = ConstructionServices(mapManager: mapManager, centralBank: centralBank, time: time)
+        let propertyValuer = PropertyValuer(mapManager: mapManager, constructionServices: constructionServices)
         let agent = RealEstateAgent(mapManager: mapManager, propertyValuer: propertyValuer, centralBank: centralBank, delegate: nil)
         
         let government = Player(uuid: SystemPlayer.government.uuid, login: "Big Uncle", wallet: 0)

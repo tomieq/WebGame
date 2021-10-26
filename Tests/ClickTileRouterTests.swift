@@ -83,7 +83,9 @@ final class ClickTileRouterTests: XCTestCase {
         let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates, time: GameTime())
         let map = GameMap(width: 10, height: 10, scale: 0.2)
         let mapManager = GameMapManager(map)
-        let propertyValuer = PropertyValuer(mapManager: mapManager, dataStore: dataStore)
+        let time = GameTime()
+        let constructionServices = ConstructionServices(mapManager: mapManager, centralBank: centralBank, time: time)
+        let propertyValuer = PropertyValuer(mapManager: mapManager, constructionServices: constructionServices)
         let agent = RealEstateAgent(mapManager: mapManager, propertyValuer: propertyValuer, centralBank: centralBank, delegate: nil)
         let router = ClickTileRouter(agent: agent)
         

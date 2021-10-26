@@ -10,6 +10,7 @@ import Foundation
 
 class PropertyValueFactors {
     public var baseLandValue: Double = 90000
+    public var roadValueFactor: Double = 0.3
     // property value loss
     public var propertyValueDistanceFromRoadLoss: Double = 0.6
     public var propertyValueAntennaSurroundingLoss: Double = 0.22
@@ -21,10 +22,12 @@ class PropertyValuer {
     let mapManager: GameMapManager
     let dataStore: DataStoreProvider
     let valueFactors: PropertyValueFactors
+    let constructionServices: ConstructionServices
     
-    init(mapManager: GameMapManager, dataStore: DataStoreProvider) {
+    init(mapManager: GameMapManager, constructionServices: ConstructionServices) {
         self.mapManager = mapManager
-        self.dataStore = dataStore
+        self.dataStore = constructionServices.dataStore
+        self.constructionServices = constructionServices
         self.valueFactors = PropertyValueFactors()
     }
     
@@ -33,11 +36,18 @@ class PropertyValuer {
     }
     
     private func estimateRoadValue(_ address: MapPoint) -> Double {
-        return 0
+        return (self.estimateLandValue(address) * self.valueFactors.roadValueFactor).rounded(toPlaces: 0)
     }
     
     private func estimateResidentialBuildingValue(_ address: MapPoint) -> Double {
-        return 10
+        guard let building: ResidentialBuilding = self.dataStore.find(address: address) else { return 0 }
+        let constructionOffer = self.constructionServices.residentialBuildingOffer(landName: "", storeyAmount: building.storeyAmount)
+        var factor = self.calculateLocationValueFactor(address)
+        if factor > 1 {
+            let over = factor - 1
+            factor = 1 + over * 0.5
+        }
+        return (constructionOffer.invoice.netValue * self.calculateLocationValueFactor(address)).rounded(toPlaces: 0)
     }
     
     func estimateValue(_ address: MapPoint) -> Double? {
