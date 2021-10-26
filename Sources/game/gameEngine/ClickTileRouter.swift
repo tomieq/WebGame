@@ -97,7 +97,7 @@ extension ClickTileAction {
             ]
         case .residentialBuildingManager:
             return [
-                .openWindow(OpenWindow(title: "Loading", width: 0.7, height: 100, initUrl: "/openPropertyManager.js?type=building&\(point.asQueryParams)", address: point))
+                .openWindow(OpenWindow(title: "Loading", width: 0.7, height: 100, initUrl: RestEndpoint.openBuildingManager.append(point), address: point))
             ]
         case .noAction:
             return []

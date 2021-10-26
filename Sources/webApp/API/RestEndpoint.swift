@@ -12,6 +12,7 @@ enum RestEndpoint {
     case openRoadInfo
     case openRoadManager
     case openLandManager
+    case openBuildingManager
     case openSaleOffer
     case openPropertyInfo
     case openPublishSaleOffer
@@ -26,6 +27,8 @@ enum RestEndpoint {
             return "/openRoadManager.js"
         case .openLandManager:
             return "/openLandManager.js"
+        case .openBuildingManager:
+            return "/openBuildingManager.js"
         case .openSaleOffer:
             return "/openSaleOffer.js"
         case .openPropertyInfo:

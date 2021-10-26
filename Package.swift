@@ -22,11 +22,11 @@ let package = Package(
             path: "Sources"),
         .target(
             name: "WebGame",
-            dependencies: ["WebGameLib"],
+            dependencies: ["WebGameLib", "Swifter", "RxSwift", "RxCocoa"],
             path: "Executable"),
         .testTarget(
             name: "WebGameTests",
-            dependencies: ["WebGameLib"],
+            dependencies: ["WebGameLib", "Swifter", "RxSwift", "RxCocoa"],
             path: "Tests"),
     ]
 )

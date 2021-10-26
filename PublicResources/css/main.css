@@ -133,3 +133,16 @@ input[type=text] {
     background-color: #30323C;
     color: white;
 }
+
+.priceTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.priceTable, .priceTable td, .priceTable th {
+  border: 1px solid #003649;
+}
+
+.priceTable th {
+  text-align: left;
+}
