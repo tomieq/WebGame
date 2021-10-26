@@ -16,6 +16,7 @@ class PropertyValueFactors {
     public var propertyValueAntennaSurroundingLoss: Double = 0.22
     // property value gain
     public var propertyValueDistanceFromResidentialBuildingGain: Double = 0.2
+    public var residentialBuildingReadyPriceGain: Double = 1.2
 }
 
 class PropertyValuer {
@@ -44,8 +45,10 @@ class PropertyValuer {
     private func estimateResidentialBuildingValue(_ address: MapPoint) -> Double {
         guard let building: ResidentialBuilding = self.dataStore.find(address: address) else { return 0 }
         let constructionOffer = self.constructionServices.residentialBuildingOffer(landName: "", storeyAmount: building.storeyAmount)
-        let factor = (1 + 2*constructionOffer.duration.double/100)
-        return (constructionOffer.invoice.netValue * factor + self.estimateLandValue(address)).rounded(toPlaces: 0)
+        let monthlyCost = self.balanceCalculator.getBuildingUnderConstructionMontlyCosts().map{ $0.netValue }.reduce(0, +)
+        let costs = constructionOffer.duration.double * monthlyCost
+        let basePrice = constructionOffer.invoice.netValue + costs + self.estimateLandValue(address)
+        return (basePrice * self.valueFactors.residentialBuildingReadyPriceGain).rounded(toPlaces: 0)
     }
     
     func estimateValue(_ address: MapPoint) -> Double? {
