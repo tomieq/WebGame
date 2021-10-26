@@ -14,4 +14,5 @@ class TaxRates {
     public var incomeTax: Double = 0.18
     public var electricityBillTax: Double = 0.05
     public var waterBillTax: Double = 0.02
+    public var servicesTax: Double = 0.08
 }

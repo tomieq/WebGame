@@ -32,7 +32,7 @@ class PropertyBalanceCalculator {
         case .land:
             return self.getLandMontlyCosts()
         case .road:
-            let maintenance = Invoice(title: "Maintenance", netValue: self.priceList.montlyRoadMaintenanceCost, taxRate: self.taxRates.valueAddedTax)
+            let maintenance = Invoice(title: "Maintenance", netValue: self.priceList.montlyRoadMaintenanceCost, taxRate: self.taxRates.servicesTax)
             return [maintenance]
         case .residentialBuilding:
             
@@ -50,14 +50,14 @@ class PropertyBalanceCalculator {
     func getLandMontlyCosts() -> [Invoice] {
         let water = Invoice(title: "Water bill", netValue: self.priceList.montlyLandWaterCost, taxRate: self.taxRates.waterBillTax)
         let electricity = Invoice(title: "Electricity bill", netValue: self.priceList.montlyLandElectricityCost, taxRate: self.taxRates.electricityBillTax)
-        let maintenance = Invoice(title: "Maintenance", netValue: self.priceList.montlyLandMaintenanceCost, taxRate: self.taxRates.valueAddedTax)
+        let maintenance = Invoice(title: "Maintenance", netValue: self.priceList.montlyLandMaintenanceCost, taxRate: self.taxRates.servicesTax)
         return [water, electricity, maintenance]
     }
     
     func getBuildingMontlyCosts(size: Int) -> [Invoice] {
         let water = Invoice(title: "Water bill", netValue: self.priceList.montlyResidentialBuildingWaterCost, taxRate: self.taxRates.waterBillTax)
         let electricity = Invoice(title: "Electricity bill", netValue: self.priceList.montlyResidentialBuildingElectricityCost, taxRate: self.taxRates.electricityBillTax)
-        let maintenance = Invoice(title: "Maintenance", netValue: self.priceList.montlyResidentialBuildingMaintenanceCostPerStorey  * size.double, taxRate: self.taxRates.valueAddedTax)
+        let maintenance = Invoice(title: "Maintenance", netValue: self.priceList.montlyResidentialBuildingMaintenanceCostPerStorey  * size.double, taxRate: self.taxRates.servicesTax)
         
         return [water, electricity, maintenance]
     }
