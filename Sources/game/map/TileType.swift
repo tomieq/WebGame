@@ -17,6 +17,7 @@ enum TileType {
     case buildingUnderConstruction(size: Int)
     case cityCouncil
     case school
+    case hospital
     case warehouse
     case tree(type: Int)
 }
@@ -28,6 +29,8 @@ extension TileType {
             return TileImage(path: "tiles/grass.png", width: 600, height: 400)
         case .school:
             return TileImage(path: "tiles/school.png", width: 600, height: 500)
+        case .hospital:
+            return TileImage(path: "tiles/hospital.png", width: 600, height: 600)
         case .soldLand:
             return TileImage(path: "tiles/sold-land.png", width: 600, height: 400)
         case .btsAntenna:
