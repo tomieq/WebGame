@@ -16,6 +16,7 @@ enum ClickTileAction {
     case roadManager
     case landManager
     case residentialBuildingManager
+    case footballPitchInfo
     case noAction
 }
 
@@ -37,7 +38,13 @@ class ClickTileRouter {
             return .buyLand
         }
         guard let propertyType = tile.propertyType else {
-            return .noAction
+            switch tile.type {
+            case .footballPitch(_):
+                return .footballPitchInfo
+            default:
+                return .noAction
+            }
+            
         }
         switch propertyType {
         case .land:
@@ -105,6 +112,10 @@ extension ClickTileAction {
         case .residentialBuildingManager:
             return [
                 .openWindow(OpenWindow(title: "Loading", width: 0.7, height: 100, initUrl: RestEndpoint.openBuildingManager.append(point), address: point))
+            ]
+        case .footballPitchInfo:
+            return  [
+                .openWindow(OpenWindow(title: "Football Pitch", width: 400, height: 250, initUrl: RestEndpoint.footballPitchInfo.append(point), address: point))
             ]
         case .noAction:
             return []
