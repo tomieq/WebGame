@@ -67,13 +67,12 @@ class LandRestAPI: RestAPI {
                 template.assign(variables: data, inNest: "notForSale")
             }
             
-            let monthlyCosts = self.gameEngine.propertyBalanceCalculator.getMontlyCosts(address: address)
-            
             data["name"] = land.name
             data["type"] = land.type
             data["purchasePrice"] = land.purchaseNetValue.rounded(toPlaces: 0).money
             data["investmentsValue"] = land.investmentsNetValue.money
             
+            let monthlyCosts = self.gameEngine.propertyBalanceCalculator.getMontlyCosts(address: address)
             for cost in monthlyCosts {
                 var data: [String:String] = [:]
                 data["name"] = cost.title
@@ -83,13 +82,30 @@ class LandRestAPI: RestAPI {
                 data["total"] = cost.total.money
                 template.assign(variables: data, inNest: "cost")
             }
-            if monthlyCosts.count > 0 {
+            let totalCosts = monthlyCosts.map{$0.total}.reduce(0, +)
+            var costData: [String:String] = [:]
+            costData["netValue"] = monthlyCosts.map{$0.netValue}.reduce(0, +).money
+            costData["taxValue"] = monthlyCosts.map{$0.tax}.reduce(0, +).money
+            costData["total"] = totalCosts.money
+            template.assign(variables: costData, inNest: "costTotal")
+            
+            let monthlyIncome = self.gameEngine.propertyBalanceCalculator.getMonthlyIncome(address: address)
+
+            for income in monthlyIncome {
                 var data: [String:String] = [:]
-                data["netValue"] = monthlyCosts.map{$0.netValue}.reduce(0, +).money
-                data["taxValue"] = monthlyCosts.map{$0.tax}.reduce(0, +).money
-                data["total"] = monthlyCosts.map{$0.total}.reduce(0, +).money
-                template.assign(variables: data, inNest: "costTotal")
+                data["name"] = income.name
+                data["netValue"] = income.netValue.money
+                template.assign(variables: data, inNest: "income")
             }
+            let balance = (-1 * totalCosts) + monthlyIncome.map{$0.netValue}.reduce(0, +)
+            var incomeData: [String:String] = [:]
+            incomeData["name"] = "Costs"
+            incomeData["netValue"] = (-1 * totalCosts).money
+            template.assign(variables: incomeData, inNest: "income")
+            incomeData = [:]
+            incomeData["netValue"] = balance.money
+            template.assign(variables: incomeData, inNest: "incomeTotal")
+            
             data["monthlyIncome"] = ""//property.monthlyIncome.money
             data["taxRate"] = (self.gameEngine.taxRates.incomeTax*100).string
             data["monthlyIncomeTax"] = ""//incomeTax.money
