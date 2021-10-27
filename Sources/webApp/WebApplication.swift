@@ -25,6 +25,7 @@ public class WebApplication {
         api.append(LandRestAPI(server, gameEngine: self.gameEngine))
         api.append(RealEstateAgentRestAPI(server, gameEngine: self.gameEngine))
         api.append(ResidentialBuildingRestAPI(server, gameEngine: self.gameEngine))
+        api.append(PropertyManagerRestAPI(server, gameEngine: self.gameEngine))
         self.api = api
 
         server.GET["/"] = { request, responseHeaders in
