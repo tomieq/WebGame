@@ -20,6 +20,10 @@ class PropertyBalanceCalculator {
         self.taxRates = taxRates
     }
     
+    func getMonthlyIncome(address: MapPoint) -> [MonthlyIncome] {
+        return []
+    }
+    
     func getMontlyCosts(address: MapPoint) -> [Invoice] {
         guard let tile = self.mapManager.map.getTile(address: address) else {
             return []
@@ -90,4 +94,9 @@ class MonthlyCostPriceList {
     public var monthlyBillsForUnrentedApartment: Double = 180.0
     public var monthlyApartmentRentalFee: Double = 2300
     public var monthlyApartmentBuildingOwnerFee: Double = 930
+}
+
+struct MonthlyIncome {
+    let name: String
+    let netValue: Double
 }
