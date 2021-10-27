@@ -115,6 +115,14 @@ class GameMapManager {
                     mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .school))
                 case .cityCouncil:
                     mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .cityCouncil))
+                case .footballPitchLeftTop:
+                    mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .footballPitch(.leftTop)))
+                case .footballPitchRightTop:
+                    mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .footballPitch(.rightTop)))
+                case .footballPitchLeftBottom:
+                    mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .footballPitch(.leftBottom)))
+                case .footballPitchRightBottom:
+                    mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .footballPitch(.rightBottom)))
                 case .warehouse:
                     mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .warehouse))
                 case .building4:
@@ -279,6 +287,10 @@ fileprivate enum GameMapFileEntry: String {
     case warehouse = "w"
     case school = "Q"
     case hostital = "H"
+    case footballPitchLeftTop = "F"
+    case footballPitchRightTop = "f"
+    case footballPitchLeftBottom = "P"
+    case footballPitchRightBottom = "p"
 }
 
 fileprivate enum RoadType {

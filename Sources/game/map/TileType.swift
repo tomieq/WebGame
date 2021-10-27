@@ -7,6 +7,13 @@
 
 import Foundation
 
+enum TileSide {
+    case leftTop
+    case rightTop
+    case leftBottom
+    case rightBottom
+}
+
 enum TileType {
     case grass
     case soldLand
@@ -18,6 +25,7 @@ enum TileType {
     case cityCouncil
     case school
     case hospital
+    case footballPitch(TileSide)
     case warehouse
     case tree(type: Int)
 }
@@ -27,6 +35,17 @@ extension TileType {
         switch self {
         case .grass:
             return TileImage(path: "tiles/grass.png", width: 600, height: 400)
+        case .footballPitch(let side):
+            switch side {
+            case .leftTop:
+                return TileImage(path: "tiles/pitchLeftTop.png", width: 600, height: 400)
+            case .rightTop:
+                return TileImage(path: "tiles/pitchRightTop.png", width: 600, height: 400)
+            case .leftBottom:
+                return TileImage(path: "tiles/pitchLeftBottom.png", width: 600, height: 400)
+            case .rightBottom:
+                return TileImage(path: "tiles/pitchRightBottom.png", width: 600, height: 400)
+            }
         case .school:
             return TileImage(path: "tiles/school.png", width: 600, height: 500)
         case .hospital:
