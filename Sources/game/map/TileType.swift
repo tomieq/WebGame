@@ -16,6 +16,7 @@ enum TileType {
     case building(size: Int)
     case buildingUnderConstruction(size: Int)
     case cityCouncil
+    case school
     case warehouse
     case tree(type: Int)
 }
@@ -25,6 +26,8 @@ extension TileType {
         switch self {
         case .grass:
             return TileImage(path: "tiles/grass.png", width: 600, height: 400)
+        case .school:
+            return TileImage(path: "tiles/school.png", width: 600, height: 500)
         case .soldLand:
             return TileImage(path: "tiles/sold-land.png", width: 600, height: 400)
         case .btsAntenna:

@@ -109,6 +109,8 @@ class GameMapManager {
                     mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .streetUnderConstruction))
                 case .btsAntenna:
                     mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .btsAntenna))
+                case .school:
+                    mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .school))
                 case .cityCouncil:
                     mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .cityCouncil))
                 case .warehouse:
@@ -273,6 +275,7 @@ fileprivate enum GameMapFileEntry: String {
     case tree2 = "t"
     case tree3 = "d"
     case warehouse = "w"
+    case school = "Q"
 }
 
 fileprivate enum RoadType {
