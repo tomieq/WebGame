@@ -67,32 +67,19 @@ class FootballBookieTests: XCTestCase {
     
     func test_winMoneyTransfer() {
         let bookie = self.makeBookie()
-        let gambler = Player(uuid: "gambler", login: "gambler", wallet: 700)
+        let gambler = Player(uuid: "gambler", login: "gambler", wallet: 100)
         bookie.centralBank.dataStore.create(gambler)
         
-        let bookmaker = Player(uuid: SystemPlayer.bookie.uuid, login: SystemPlayer.bookie.login, wallet: 0)
+        let bookmaker = Player(uuid: SystemPlayer.bookie.uuid, login: SystemPlayer.bookie.login, wallet: 50000)
         bookie.centralBank.dataStore.create(bookmaker)
-        var bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Won)
-        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
-        bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 200, expectedResult: .team2Won)
-        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
-        bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 400, expectedResult: .draw)
+        
+        let bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Won)
         XCTAssertNoThrow(try bookie.makeBet(bet: bet))
         
+        bookie.upcomingMatch.setResult(goals: (1, 0))
+        let expectedWin: Double = 100 * bookie.upcomingMatch.team1WinsRatio
+        
         bookie.nextMonth()
-        let result = bookie.lastMonthMatch?.result
-        let ratio = bookie.lastMonthMatch?.ratio ?? 0
-        XCTAssertNotNil(result)
-        var expectedWin: Double = 0
-        switch result ?? .draw {
-            
-        case .team1Won:
-            expectedWin = 100 * ratio
-        case .team2Won:
-            expectedWin = 200 * ratio
-        case .draw:
-            expectedWin = 400 * ratio
-        }
         bookie.nextMonth()
         bookie.nextMonth()
         let winner: Player? = bookie.centralBank.dataStore.find(uuid: "gambler")
@@ -126,6 +113,72 @@ class FootballBookieTests: XCTestCase {
         XCTAssertTrue(delegate.walletUUID.contains("gambler"))
         XCTAssertEqual(delegate.notifuUUID.count, 1)
         XCTAssertEqual(delegate.notifuUUID[safeIndex: 0]?.uuid, "gambler")
+    }
+    
+    func test_winNotifications() {
+        let bookie = self.makeBookie()
+        let gambler = Player(uuid: "gambler", login: "gambler", wallet: 100)
+        bookie.centralBank.dataStore.create(gambler)
+        
+        let bookmaker = Player(uuid: SystemPlayer.bookie.uuid, login: SystemPlayer.bookie.login, wallet: 50000)
+        bookie.centralBank.dataStore.create(bookmaker)
+        
+        let bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Won)
+        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
+        
+        bookie.upcomingMatch.setResult(goals: (1, 0))
+        
+        class BookieDelegate: FootballBookieDelegate {
+            var walletUUID: [String] = []
+            var notifuUUID: [(uuid: String, UINotification)] = []
+            func syncWalletChange(playerUUID: String) {
+                self.walletUUID.append(playerUUID)
+            }
+            
+            func notify(playerUUID: String, _ notification: UINotification) {
+                self.notifuUUID.append((playerUUID, notification))
+            }
+        }
+        let delegate = BookieDelegate()
+        bookie.delegate = delegate
+        
+        bookie.nextMonth()
+        XCTAssertEqual(delegate.notifuUUID.count, 1)
+        XCTAssertEqual(delegate.notifuUUID[safeIndex: 0]?.uuid, "gambler")
+        XCTAssertEqual(delegate.notifuUUID[safeIndex: 0]?.1.level, .success)
+    }
+    
+    func test_looseNotifications() {
+        let bookie = self.makeBookie()
+        let gambler = Player(uuid: "gambler", login: "gambler", wallet: 100)
+        bookie.centralBank.dataStore.create(gambler)
+        
+        let bookmaker = Player(uuid: SystemPlayer.bookie.uuid, login: SystemPlayer.bookie.login, wallet: 50000)
+        bookie.centralBank.dataStore.create(bookmaker)
+        
+        let bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Won)
+        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
+        
+        bookie.upcomingMatch.setResult(goals: (0, 1))
+        
+        class BookieDelegate: FootballBookieDelegate {
+            var walletUUID: [String] = []
+            var notifuUUID: [(uuid: String, UINotification)] = []
+            func syncWalletChange(playerUUID: String) {
+                self.walletUUID.append(playerUUID)
+            }
+            
+            func notify(playerUUID: String, _ notification: UINotification) {
+                self.notifuUUID.append((playerUUID, notification))
+            }
+        }
+        let delegate = BookieDelegate()
+        bookie.delegate = delegate
+        
+        bookie.nextMonth()
+        XCTAssertEqual(delegate.notifuUUID.count, 1)
+        XCTAssertEqual(delegate.notifuUUID[safeIndex: 0]?.uuid, "gambler")
+        XCTAssertEqual(delegate.notifuUUID[safeIndex: 0]?.1.level, .warning)
     }
     
     private func makeBookie() -> FootballBookie {
