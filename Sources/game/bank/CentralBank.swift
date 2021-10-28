@@ -39,7 +39,7 @@ class CentralBank {
         self.time = time
     }
     
-    func process(_ transaction: FinancialTransaction) throws {
+    func process(_ transaction: FinancialTransaction, taxFree: Bool = false) throws {
 
         Logger.info("CentralBank", "New transaction \(transaction.toJSONString() ?? "")")
         
@@ -80,7 +80,7 @@ class CentralBank {
         } else {
             // government takes income tax and VAT
             
-            var incomeTax = (transaction.invoice.netValue * self.taxRates.incomeTax).rounded(toPlaces: 0)
+            var incomeTax = taxFree ? 0 : (transaction.invoice.netValue * self.taxRates.incomeTax).rounded(toPlaces: 0)
             if incomeTax > transaction.invoice.netValue { incomeTax = transaction.invoice.netValue }
             let taxes = incomeTax + transaction.invoice.tax
             if taxes > 0, let government = government {
