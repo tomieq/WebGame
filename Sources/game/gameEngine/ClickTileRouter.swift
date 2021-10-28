@@ -106,9 +106,7 @@ extension ClickTileAction {
         case .residentialBuildingManager:
             return [ .runScript(RestEndpoint.openBuildingManager.append(point))]
         case .footballPitchInfo:
-            return  [
-                .openWindow(OpenWindow(title: "Football Pitch", width: 400, height: 250, initUrl: RestEndpoint.footballPitchInfo.append(point), address: point))
-            ]
+            return [ .runScript(RestEndpoint.openFootballPitch.append(point)) ]
         case .noAction:
             return []
         }
