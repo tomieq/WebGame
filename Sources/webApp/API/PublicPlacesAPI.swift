@@ -74,6 +74,10 @@ class PublicPlacesAPI: RestAPI {
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return self.htmlError("Invalid request! Missing window context.")
             }
+            guard let playerSessionID = request.queryParam("playerSessionID"),
+                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                    return self.htmlError("Invalid request! Missing session ID.")
+            }
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/footballPitchInfo.html"))
             
             
@@ -93,8 +97,28 @@ class PublicPlacesAPI: RestAPI {
             data["team2"] = match.team2
             data["referee"] = match.referee
             data["windowIndex"] = windowIndex
-            data["makeBetUrl"] = JSCode.loadHtml(windowIndex, htmlPath: "/makeBetForm.html?matchUUID=\(match.uuid)").js
+            
             template.assign(variables: data)
+            if let bet = self.gameEngine.footballBookie.getBet(playerUUID: session.playerUUID) {
+                func who() -> String {
+                    switch bet.expectedResult {
+                    case .draw:
+                        return "draw"
+                    case .team1Won:
+                        return match.team1
+                    case .team2Won:
+                        return match.team2
+                    }
+                }
+                var data = [String:String]()
+                data["money"] = bet.money.money
+                data["who"] = who()
+                template.assign(variables: data, inNest: "betInfo")
+            } else {
+                var data = [String:String]()
+                data["makeBetUrl"] = JSCode.loadHtml(windowIndex, htmlPath: "/makeBetForm.html?matchUUID=\(match.uuid)").js
+                template.assign(variables: data, inNest: "makeBet")
+            }
             return template.asResponse()
         }
         

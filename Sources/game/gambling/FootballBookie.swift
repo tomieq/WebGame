@@ -90,6 +90,10 @@ class FootballBookie {
         }
     }
     
+    func getBet(playerUUID: String) -> FootballBet? {
+        return self.bets.first{ $0.playerUUID == playerUUID }
+    }
+    
     func nextMonth() {
         let match = self.currentMatch
         match.playMatch()
