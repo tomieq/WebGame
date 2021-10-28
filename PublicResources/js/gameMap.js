@@ -85,6 +85,48 @@ class GameMap {
         });
     }
     
+    drawGrass() {
+        var left = this.calculator.getCanvasCoordinates(new MapPoint(0, 0));
+        var right = this.calculator.getCanvasCoordinates(new MapPoint(this.calculator.mapWidth - 1, this.calculator.mapHeight - 1));
+        var top = this.calculator.getCanvasCoordinates(new MapPoint(this.calculator.mapWidth - 1, 0));
+        var bottom = this.calculator.getCanvasCoordinates(new MapPoint(0, this.calculator.mapHeight - 1));
+        
+        var leftX = left.x;
+        var leftY = left.y - 0.5 * this.calculator.tileHeight;
+        var bottomX = bottom.x + this.calculator.tileWidth * 0.5;
+        var bottomY = bottom.y;
+        var rightX = right.x + this.calculator.tileWidth;
+        var rightY = right.y - 0.5 * this.calculator.tileHeight;
+        var topX = top.x + 0.5 * this.calculator.tileWidth;
+        var topY = top.y - this.calculator.tileHeight;
+        // rectangle
+        
+        this.canvas.drawLine({
+                strokeStyle: '#42626a',
+                strokeWidth: 10,
+                x1: leftX, y1: leftY,
+                x2: bottomX, y2: bottomY,
+                x3: rightX, y3: rightY,
+                x4: topX, y4: topY,
+                closed: true
+        });
+        
+        this.canvas.draw({
+          fn: function(ctx) {
+              let region = new Path2D();
+              region.moveTo(leftX, leftY);
+              region.lineTo(bottomX, bottomY);
+              region.lineTo(rightX, rightY);
+              region.lineTo(topX, topY);
+              region.closePath();
+
+              // Fill path
+              ctx.fillStyle = '#9baa49';
+              ctx.fill(region);
+          }
+        });
+    }
+    
     drawGround() {
         var left = this.calculator.getCanvasCoordinates(new MapPoint(0, 0));
         var right = this.calculator.getCanvasCoordinates(new MapPoint(this.calculator.mapWidth - 1, this.calculator.mapHeight - 1));

@@ -6,10 +6,13 @@ var gameBuildingsMap;
 var mouseOverMenu = false;
 
 $( document ).ready(function() {
+    var canvasGrass  = $('#canvasGrass');
+    var grass = new GameMap(canvasGrass, calculator);
+    grass.drawGrass();
     var canvasStreets  = $('#canvasStreets');
     gameStreetMap = new GameMap(canvasStreets, calculator);
-    gameStreetMap.drawGround();
-    gameStreetMap.drawCoordinates();
+    //gameStreetMap.drawGround();
+    //gameStreetMap.drawCoordinates();
 
     var canvasInteraction = $("#canvasInteraction");
     gameInteractionMap = new GameMap(canvasInteraction, calculator);

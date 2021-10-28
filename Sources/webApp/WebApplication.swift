@@ -40,7 +40,7 @@ public class WebApplication {
             
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/pageResponse.html"))
             
-            let canvasLayers = ["canvasStreets", "canvasInteraction", "canvasTraffic", "canvasBuildings"]
+            let canvasLayers = ["canvasGrass", "canvasStreets", "canvasInteraction", "canvasTraffic", "canvasBuildings"]
             let html = canvasLayers.enumerated().map { (zIndex, canvasName) in
                 return Template.htmlNode(type: "canvas", attributes: ["id":canvasName,"style":"z-index:\(zIndex);"])
             }.joined(separator: "\n")
