@@ -39,14 +39,7 @@ class FootballMatch {
     
     var ratio: Double? {
         guard let result = self.result else { return nil }
-        switch result {
-        case .team1Won:
-            return self.team1WinsRatio
-        case .team2Won:
-            return self.team2WinsRatio
-        case .draw:
-            return self.drawRatio
-        }
+        return self.resultRatio(result)
     }
     
     init(team: String) {
@@ -66,6 +59,17 @@ class FootballMatch {
         }
         let goals = (team1: Int.random(in: (0...5)), team2: Int.random(in: (0...5)))
         self.setResult(goals: goals)
+    }
+    
+    func resultRatio(_ result: FootballMatchResult) -> Double {
+        switch result {
+        case .team1Won:
+            return self.team1WinsRatio
+        case .team2Won:
+            return self.team2WinsRatio
+        case .draw:
+            return self.drawRatio
+        }
     }
     
     func setResult(goals: Goals) {

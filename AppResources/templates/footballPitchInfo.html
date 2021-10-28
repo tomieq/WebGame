@@ -29,13 +29,15 @@
         <strong>{team}</strong> vs <strong>{team2}</strong>
         <br><br>
         Referee: {referee}
-        <br><br>
+        
         [START makeBet]
+        <br><br>
         <button class="btn btn-sm" onclick="{makeBetUrl}">Make a bet</button>
         [END makeBet]
         [START betInfo]
         <hr>
-        You have made bet {money} on {who}
+        You have made bet {money} on {who}<br>
+        You can potencially win <b>{win}</b>. Keep your fingers crossed.
         [END betInfo]
     </p>
     <hr>

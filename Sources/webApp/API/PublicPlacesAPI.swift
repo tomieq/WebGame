@@ -112,6 +112,7 @@ class PublicPlacesAPI: RestAPI {
                 }
                 var data = [String:String]()
                 data["money"] = bet.money.money
+                data["win"] = (bet.money * self.gameEngine.footballBookie.upcomingMatch.resultRatio(bet.expectedResult)).money
                 data["who"] = who()
                 template.assign(variables: data, inNest: "betInfo")
             } else {
