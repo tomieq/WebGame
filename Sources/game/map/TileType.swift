@@ -50,7 +50,7 @@ extension TileType {
         case .smallFootballPitch:
             return TileImage(path: "tiles/pitch.png", width: 600, height: 400)
         case .school:
-            return TileImage(path: "tiles/school.png", width: 600, height: 500)
+            return TileImage(path: "tiles/school.png", width: 600, height: 600)
         case .hospital:
             return TileImage(path: "tiles/hospital.png", width: 600, height: 600)
         case .soldLand:
