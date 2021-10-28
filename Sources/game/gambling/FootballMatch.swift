@@ -51,8 +51,7 @@ class FootballMatch {
         let goals = (team1: Int.random(in: (0...5)), team2: Int.random(in: (0...5)))
         if goals.team1 == goals.team2 {
             self.result = .draw
-        }
-        if goals.team1 > goals.team2 {
+        } else if goals.team1 > goals.team2 {
             self.result = .team1Won
         } else {
             self.result = .team2Won
