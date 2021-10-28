@@ -14,7 +14,7 @@ class RoadRestAPI: RestAPI {
             request.disableKeepAlive = true
 
             guard let address = request.mapPoint else {
-                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
+                return self.jsError("Invalid request! Missing address.")
             }
             let js = JSResponse()
             js.add(.openWindow(name: "Road info", path: "/initRoadInfo.js".append(address), width: 400, height: 250, point: address, singletonID: address.asQueryParams))
@@ -25,10 +25,10 @@ class RoadRestAPI: RestAPI {
         self.server.GET["/initRoadInfo.js"] = { request, _ in
             request.disableKeepAlive = true
             guard let windowIndex = request.queryParam("windowIndex") else {
-                return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
+                return self.jsError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
-                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
+                return self.jsError("Invalid request! Missing address.")
             }
             let js = JSResponse()
             js.add(.loadHtml(windowIndex, htmlPath: "/roadInfo.html".append(address)))
@@ -40,7 +40,7 @@ class RoadRestAPI: RestAPI {
         self.server.GET["/roadInfo.html"] = { request, _ in
             request.disableKeepAlive = true
             guard let address = request.mapPoint else {
-                return .badRequest(.html("Invalid request! Missing address."))
+                return self.htmlError("Invalid request! Missing address.")
             }
             
             var ownerName = "Government"
@@ -75,10 +75,10 @@ class RoadRestAPI: RestAPI {
         self.server.GET["/initRoadManager.js"] = { request, _ in
             request.disableKeepAlive = true
             guard let windowIndex = request.queryParam("windowIndex") else {
-                return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
+                return self.jsError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
-                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
+                return self.jsError("Invalid request! Missing address.")
             }
             let js = JSResponse()
             js.add(.loadHtml(windowIndex, htmlPath: "/roadManager.html".append(address)))
@@ -90,17 +90,17 @@ class RoadRestAPI: RestAPI {
         self.server.GET["/roadManager.html"] = { request, _ in
             request.disableKeepAlive = true
             guard let address = request.mapPoint else {
-                return .badRequest(.html("Invalid request! Missing address."))
+                return self.htmlError("Invalid request! Missing address.")
             }
             
             guard let playerSessionID = request.queryParam("playerSessionID"),
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                      return .badRequest(.html("Invalid request! Missing sessionID."))
+                      return self.htmlError("Invalid request! Missing sessionID.")
             }
             
             guard let road: Road = self.dataStore.find(address: address),
                   road.ownerUUID == session.playerUUID else {
-                      return .badRequest(.html("You are not allowed to manage this road"))
+                      return self.htmlError("You are not allowed to manage this road")
             }
 
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/roadManager.html"))

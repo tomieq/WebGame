@@ -16,7 +16,7 @@ class LandRestAPI: RestAPI {
         server.GET[.openLandManager] = { request, _ in
             request.disableKeepAlive = true
             guard let address = request.mapPoint else {
-                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
+                return self.jsError("Invalid request! Missing address.")
             }
             let js = JSResponse()
             js.add(.openWindow(name: "Land Manager", path: "/initLandManager.js".append(address), width: 0.7, height: 0.8, singletonID: address.asQueryParams))
@@ -27,10 +27,10 @@ class LandRestAPI: RestAPI {
         server.GET["initLandManager.js"] = { request, _ in
             request.disableKeepAlive = true
             guard let windowIndex = request.queryParam("windowIndex") else {
-                return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
+                return self.jsError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
-                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
+                return self.jsError("Invalid request! Missing address.")
             }
             let js = JSResponse()
             js.add(.loadHtml(windowIndex, htmlPath: "/landManager.html".append(address)))
@@ -44,20 +44,20 @@ class LandRestAPI: RestAPI {
             request.disableKeepAlive = true
             guard let playerSessionID = request.queryParam("playerSessionID"),
                 let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                    return .ok(.text("Invalid request! Missing session ID."))
+                    return self.htmlError("Invalid request! Missing session ID.")
             }
             guard let windowIndex = request.queryParam("windowIndex") else {
-                return .ok(.text("Invalid request! Missing window context."))
+                return self.htmlError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
-                return .ok(.text("Invalid request! Missing address."))
+                return self.htmlError("Invalid request! Missing address.")
             }
             guard let land: Land = self.dataStore.find(address: address) else {
-                return .ok(.text("Property at \(address.description) not found!"))
+                return self.htmlError("Property at \(address.description) not found!")
             }
             let ownerID = land.ownerUUID
             guard session.playerUUID == ownerID else {
-                return .ok(.text("Property at \(address.description) is not yours!"))
+                return self.htmlError("Property at \(address.description) is not yours!")
             }
             
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/landManager.html"))

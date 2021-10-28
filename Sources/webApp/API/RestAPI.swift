@@ -26,4 +26,11 @@ class RestAPI {
         
     }
     
+    func jsError(_ text: String) -> HttpResponse {
+        return JSCode.showError(txt: text, duration: 10).response
+    }
+    
+    func htmlError(_ text: String) -> HttpResponse {
+        return .badRequest(.html("Invalid request! Missing window context."))
+    }
 }
