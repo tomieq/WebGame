@@ -13,6 +13,8 @@ enum FootballMatchResult: String {
     case draw
 }
 
+typealias Goals = (team1: Int, team2: Int)
+
 class FootballMatch {
     let uuid: String
     let team1: String
@@ -21,8 +23,19 @@ class FootballMatch {
     let team1WinsRatio: Double
     let team2WinsRatio: Double
     let drawRatio: Double
-    var result: FootballMatchResult?
-    var goals: (team1: Int, team2: Int)?
+    private var matchResult: FootballMatchResult?
+    private var matchGoals: Goals?
+    private var matchIsSuspected: Bool = false
+    
+    var result: FootballMatchResult? {
+        self.matchResult
+    }
+    var goals: Goals? {
+        self.matchGoals
+    }
+    var isSuspected: Bool {
+        self.matchIsSuspected
+    }
     
     var ratio: Double? {
         guard let result = self.result else { return nil }
@@ -47,16 +60,24 @@ class FootballMatch {
     }
     
     func playMatch() {
-        if self.result != nil { return }
-        let goals = (team1: Int.random(in: (0...5)), team2: Int.random(in: (0...5)))
-        if goals.team1 == goals.team2 {
-            self.result = .draw
-        } else if goals.team1 > goals.team2 {
-            self.result = .team1Won
-        } else {
-            self.result = .team2Won
+        guard self.matchResult == nil else {
+            self.matchIsSuspected = true
+            return
         }
-        self.goals = goals
+        let goals = (team1: Int.random(in: (0...5)), team2: Int.random(in: (0...5)))
+        self.setResult(goals: goals)
+    }
+    
+    func setResult(goals: Goals) {
+        guard self.matchResult == nil else { return }
         
+        if goals.team1 == goals.team2 {
+            self.matchResult = .draw
+        } else if goals.team1 > goals.team2 {
+            self.matchResult = .team1Won
+        } else {
+            self.matchResult = .team2Won
+        }
+        self.matchGoals = goals
     }
 }
