@@ -28,7 +28,7 @@ struct Land: Property {
         self.uuid = ""
         self.ownerUUID = ownerUUID
         self.address = address
-        self.name = name ?? "\(RandomNameGenerator.randomAdjective.capitalized) \(RandomNameGenerator.randomNoun.capitalized)"
+        self.name = name ?? RandomNameGenerator.getName()
         self.investmentsNetValue = investmentsNetValue
         self.isUnderConstruction = false
         self.constructionFinishMonth = 0

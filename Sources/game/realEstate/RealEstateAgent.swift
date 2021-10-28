@@ -161,7 +161,7 @@ class RealEstateAgent {
         
         var land: Land?
         var price: Double?
-        var name = "\(RandomNameGenerator.randomAdjective.capitalized) \(RandomNameGenerator.randomNoun.capitalized)"
+        var name = RandomNameGenerator.getName()
         
         if tile == nil {
             price = self.propertyValuer.estimateValue(address)
