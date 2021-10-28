@@ -43,6 +43,7 @@ enum JSCode {
     case showSuccess(txt: String, duration: Int)
     case showInfo(txt: String, duration: Int)
     case clickMap(MapPoint)
+    case highlightPoints([MapPoint], color: String)
     case any(String)
 }
 
@@ -94,6 +95,8 @@ extension JSCode {
             return "uiShowInfo('\(txt.escaped)', \(duration * 1000));"
         case .clickMap(let address):
             return "mapClicked(\(address.x), \(address.y));"
+        case .highlightPoints(let points, let color):
+            return "highlightTiles([\(points.map{"new MapPoint(\($0.x), \($0.y))"}.joined(separator: ","))], '\(color)');"
         case .any(let code):
             return code
         }

@@ -61,3 +61,7 @@ function publishOffer(windowIndex, submitUrl) {
         runScripts(windowIndex, [submitUrl + "&price=" + price]);
     }
 }
+
+function highlightTiles(points, color) {
+    gameInteractionMap.drawTiles(points, color);
+}

@@ -75,7 +75,7 @@ class WebSocketHandler {
                         var point = payload["points"][i];
                         points.push(new MapPoint(point["x"], point["y"]));
                     }
-                    gameInteractionMap.drawTiles(points, payload["color"]);
+                    highlightTiles(points, payload["color"]);
                 }
                 break;
             case "openWindow":
