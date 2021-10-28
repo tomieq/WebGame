@@ -133,6 +133,23 @@ function runScripts(windowIndex, scriptPaths) {
     }
 }
 
+function formSubmit(windowIndex, submitUrl, form) {
+    setWindowLoading(windowIndex);
+    var pathWithIndex = osAddWindowIndexToPath(windowIndex, submitUrl);
+    var formData = $(form);
+    $.ajax({
+          type: "POST",
+          url: pathWithIndex,
+          data: formData.serialize(),
+          dataType: "script"
+        }).fail(function( jqxhr, settings, exception ) {
+            uiShowError( windowIndex + ': Error while posting form '+this.url+'<br>' + exception);
+        }).always(function() {
+            setWindowLoaded(windowIndex);
+        });
+    return false;
+}
+
 Array.prototype.contains = function(obj) {
     var i = this.length;
     while (i--) {
