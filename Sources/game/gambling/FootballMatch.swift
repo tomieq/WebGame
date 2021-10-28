@@ -24,6 +24,18 @@ class FootballMatch {
     var result: FootballMatchResult?
     var goals: (team1: Int, team2: Int)?
     
+    var ratio: Double? {
+        guard let result = self.result else { return nil }
+        switch result {
+        case .team1Won:
+            return self.team1WinsRatio
+        case .team2Won:
+            return self.team2WinsRatio
+        case .draw:
+            return self.drawRatio
+        }
+    }
+    
     init(team: String) {
         self.uuid = UUID().uuidString
         self.team1 = team

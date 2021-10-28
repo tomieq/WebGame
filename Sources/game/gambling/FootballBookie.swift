@@ -28,19 +28,24 @@ enum MakeBetError: Error, Equatable {
     }
 }
 
+protocol FootballBookieDelegate {
+    func syncWalletChange(playerUUID: String)
+}
+
 class FootballBookie {
     let localTeam: String
     private var currentMatch: FootballMatch
     private var lastMatch: FootballMatch?
     private var bets: [FootballBet]
     let centralBank: CentralBank
+    var delegate: FootballBookieDelegate?
     
     var upcomingMatch: FootballMatch {
         self.currentMatch
     }
     
-    var lastMonthMatch: FootballMatch {
-        self.lastMonthMatch
+    var lastMonthMatch: FootballMatch? {
+        self.lastMatch
     }
     
     init(centralBank: CentralBank) {
@@ -67,10 +72,22 @@ class FootballBookie {
     
     func nextMonth() {
         self.currentMatch.playMatch()
+        let ratio = self.currentMatch.ratio ?? 1
+        var winnerUUIDs: [String] = []
         for bet in self.bets {
             if bet.expectedResult == self.currentMatch.result {
-                
+                let money = bet.money * ratio
+                let invoice = Invoice(title: "Football bet win!", grossValue: money, taxRate: 0)
+                let transaction = FinancialTransaction(payerUUID: SystemPlayer.bookie.uuid, recipientUUID: bet.playerUUID, invoice: invoice)
+                try? self.centralBank.process(transaction, taxFree: true)
+                winnerUUIDs.append(bet.playerUUID)
             }
         }
+        for winnerUUID in winnerUUIDs.unique {
+            self.delegate?.syncWalletChange(playerUUID: winnerUUID)
+        }
+        self.lastMatch = self.currentMatch
+        self.currentMatch = FootballMatch(team: self.localTeam)
+        self.bets = []
     }
 }
