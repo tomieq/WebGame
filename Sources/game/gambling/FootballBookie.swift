@@ -98,7 +98,7 @@ class FootballBookie {
         var looserUUIDs: [String] = []
         
         for bet in self.bets {
-            if bet.expectedResult == self.currentMatch.result {
+            if bet.expectedResult == match.result {
                 let money = bet.money * ratio
                 let invoice = Invoice(title: "Money transfer from bookmaker. Revenue for the bet", grossValue: money, taxRate: 0)
                 let transaction = FinancialTransaction(payerUUID: SystemPlayer.bookie.uuid, recipientUUID: bet.playerUUID, invoice: invoice)
@@ -118,7 +118,7 @@ class FootballBookie {
         for looserUUID in looserUUIDs {
             self.delegate?.notify(playerUUID: looserUUID, UINotification(text: looserMessage, level: .warning, duration: 10))
         }
-        self.lastMatch = self.currentMatch
+        self.lastMatch = match
         self.currentMatch = FootballMatch(team: self.localTeam)
         self.bets = []
     }
