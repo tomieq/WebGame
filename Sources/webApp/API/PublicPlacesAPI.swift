@@ -19,6 +19,36 @@ class PublicPlacesAPI: RestAPI {
             }
             let js = JSResponse()
             js.add(.openWindow(name: "Football pitch", path: "/initFootballPitch.js".append(address), width: 400, height: 310, point: address, singletonID: address.asQueryParams))
+            
+            if let tile = self.gameEngine.gameMap.getTile(address: address) {
+                switch tile.type {
+                case .footballPitch(let side):
+                    var points: [MapPoint] = [address]
+                    switch side {
+                    case .leftTop:
+                        points.append(address.move(.right))
+                        points.append(address.move(.down))
+                        points.append(address.move(.down).move(.right))
+                    case .rightTop:
+                        points.append(address.move(.left))
+                        points.append(address.move(.down))
+                        points.append(address.move(.down).move(.left))
+                    case .leftBottom:
+                        points.append(address.move(.right))
+                        points.append(address.move(.up))
+                        points.append(address.move(.up).move(.right))
+                    case .rightBottom:
+                        points.append(address.move(.left))
+                        points.append(address.move(.up))
+                        points.append(address.move(.up).move(.left))
+                    }
+                    js.add(.highlightPoints(points, color: "yellow"))
+                default:
+                    return JSCode.showError(txt: "Invalid request! Not a football pitch!", duration: 10).response
+                }
+            }
+            
+            
             return js.response
         }
         
