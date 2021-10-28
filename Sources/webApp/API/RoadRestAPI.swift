@@ -17,7 +17,7 @@ class RoadRestAPI: RestAPI {
                 return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
             }
             let js = JSResponse()
-            js.add(.openWindow(name: "Road info", path: "/initRoadInfo.js".append(address), width: 400, height: 250, mapX: address.x, mapY: address.y, singletonID: address.asQueryParams))
+            js.add(.openWindow(name: "Road info", path: "/initRoadInfo.js".append(address), width: 400, height: 250, point: address, singletonID: address.asQueryParams))
             return js.response
         }
         
@@ -67,7 +67,7 @@ class RoadRestAPI: RestAPI {
                 return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
             }
             let js = JSResponse()
-            js.add(.openWindow(name: "Road manager", path: "/initRoadManager.js".append(address), width: 0.7, height: 250, mapX: address.x, mapY: address.y, singletonID: address.asQueryParams))
+            js.add(.openWindow(name: "Road manager", path: "/initRoadManager.js".append(address), width: 0.7, height: 250, point: address, singletonID: address.asQueryParams))
             return js.response
         }
 

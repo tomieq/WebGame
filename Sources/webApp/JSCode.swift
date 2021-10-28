@@ -22,7 +22,7 @@ class JSResponse {
 }
 
 enum JSCode {
-    case openWindow(name: String, path: String, width: Double, height: Double, mapX: Int? = nil, mapY: Int? = nil, singletonID: String? = nil)
+    case openWindow(name: String, path: String, width: Double, height: Double, point: MapPoint? = nil, singletonID: String? = nil)
     case setWindowContent(String, content: String)
     case setWindowTitle(String, title: String)
     case setWindowActive(String)
@@ -49,10 +49,10 @@ enum JSCode {
 extension JSCode {
     var js: String {
         switch self {
-        case .openWindow(let name, let path, let width, let height, let mapX, let mapY, let singletonID):
+        case .openWindow(let name, let path, let width, let height, let point, let singletonID):
             let singleton = singletonID != nil ? "'\(singletonID!)'" : "false"
-            let mapXValue = mapX ?? -1
-            let mapYValue = mapY ?? -1
+            let mapXValue = point?.x ?? -1
+            let mapYValue = point?.y ?? -1
             return "openWindow('\(name.escaped)', '\(path)', \(width), \(height), \(mapXValue), \(mapYValue), \(singleton))"
         case .setWindowContent(let windowIndex, let content):
             return "setWindowContent(\(windowIndex), '\(content.escaped)');"
