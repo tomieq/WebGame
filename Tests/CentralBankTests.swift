@@ -63,6 +63,21 @@ final class CentralBankTests: XCTestCase {
         }
     }
     
+    func test_ignoreWalletCapacity() {
+        let centralBank = self.makeCentralBank()
+        
+        let invoice = Invoice(title: "money transfer", grossValue: 150, taxRate: 0)
+        let financialTransaction = FinancialTransaction(payerUUID: "payer2", recipientUUID: "receiver2", invoice: invoice)
+        
+        let payer = Player(uuid: "payer2", login: "user1", wallet: 0)
+        centralBank.dataStore.create(payer)
+        let receiver = Player(uuid: "receiver2", login: "receiver", wallet: 0)
+        centralBank.dataStore.create(receiver)
+        
+        XCTAssertNoThrow(try centralBank.process(financialTransaction, checkWalletCapacity: false))
+        XCTAssertEqual(centralBank.dataStore.find(uuid: "payer2")?.wallet, -150)
+    }
+    
     func test_negativeMoneyAmount() {
         let centralBank = self.makeCentralBank()
         

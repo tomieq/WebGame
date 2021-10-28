@@ -39,7 +39,7 @@ class CentralBank {
         self.time = time
     }
     
-    func process(_ transaction: FinancialTransaction, taxFree: Bool = false) throws {
+    func process(_ transaction: FinancialTransaction, taxFree: Bool = false, checkWalletCapacity: Bool = true) throws {
 
         Logger.info("CentralBank", "New transaction \(transaction.toJSONString() ?? "")")
         
@@ -63,7 +63,7 @@ class CentralBank {
         
         let government: Player? = self.dataStore.find(uuid: SystemPlayer.government.uuid)
         
-        guard payer.wallet >= transaction.invoice.total else {
+        if checkWalletCapacity, payer.wallet < transaction.invoice.total {
             self.semaphore.signal()
             throw FinancialTransactionError.notEnoughMoney
         }
