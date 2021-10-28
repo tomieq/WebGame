@@ -106,7 +106,7 @@ class FootballBookie {
                 let money = bet.money * ratio
                 let invoice = Invoice(title: "Money transfer from bookmaker. Revenue for the bet", grossValue: money, taxRate: 0)
                 let transaction = FinancialTransaction(payerUUID: SystemPlayer.bookie.uuid, recipientUUID: bet.playerUUID, invoice: invoice)
-                try? self.centralBank.process(transaction, taxFree: true)
+                try? self.centralBank.process(transaction, taxFree: true, checkWalletCapacity: false)
                 winnerUUIDs.append(bet.playerUUID)
             } else {
                 looserUUIDs.append(bet.playerUUID)
