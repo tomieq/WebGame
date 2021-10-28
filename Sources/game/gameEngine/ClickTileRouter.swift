@@ -102,9 +102,7 @@ extension ClickTileAction {
                 .openWindow(OpenWindow(title: "Sale offer", width: 300, height: 270, initUrl: RestEndpoint.openSaleOffer.append(point), address: point))
             ]
         case .landManager:
-            return [
-                .openWindow(OpenWindow(title: "Loading", width: 0.7, height: 100, initUrl: RestEndpoint.openLandManager.append(point), address: point))
-            ]
+            return [ .runScript(RestEndpoint.openLandManager.append(point))]
         case .residentialBuildingInfo:
             return [
                 .openWindow(OpenWindow(title: "Property info", width: 400, height: 200, initUrl: RestEndpoint.openPropertyInfo.base.append(point), address: point))

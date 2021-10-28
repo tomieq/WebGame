@@ -15,6 +15,17 @@ class LandRestAPI: RestAPI {
         // MARK: openLandManager
         server.GET[.openLandManager] = { request, _ in
             request.disableKeepAlive = true
+            guard let address = request.mapPoint else {
+                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
+            }
+            let js = JSResponse()
+            js.add(.openWindow(name: "Land Manager", path: "/initLandManager.js?\(address.asQueryParams)", width: 0.7, height: 0.8, singletonID: address.asQueryParams))
+            return js.response
+        }
+        
+        // MARK: initLandManager.js
+        server.GET["initLandManager.js"] = { request, _ in
+            request.disableKeepAlive = true
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
             }
@@ -25,7 +36,6 @@ class LandRestAPI: RestAPI {
             js.add(.setWindowTitle(windowIndex, title: "Land management"))
             js.add(.loadHtml(windowIndex, htmlPath: "/landManager.html?\(address.asQueryParams)"))
             
-            js.add(.resizeWindow(windowIndex, width: 0.7, height: 0.8))
             js.add(.disableWindowResizing(windowIndex))
             js.add(.centerWindow(windowIndex))
             return js.response
