@@ -107,6 +107,9 @@ class WebSocketHandler {
                     timeout: payload["duration"] * 1000
                 }).show();
                 break;
+            case "runScript":
+                var url = json["payload"];
+                runScripts(0, [url])
             default:
                 console.log("[webSocket] [unknown command] " + json["command"]);
                 break;

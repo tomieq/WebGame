@@ -12,6 +12,7 @@ enum WebsocketOutCommand {
     case reloadMap
     case highlightArea(HighlightArea)
     case openWindow(OpenWindow)
+    case runScript(String)
     case notification(UINotification)
     case updateWallet(String)
     case updateGameDate(UIGameDate)
@@ -32,6 +33,8 @@ enum WebsocketOutCommand {
             return "updateWallet"
         case .updateGameDate:
             return "updateGameDate"
+        case .runScript:
+            return "runScript"
         }
     }
     
@@ -51,6 +54,8 @@ enum WebsocketOutCommand {
         case .updateWallet(let payload):
             return payload
         case .updateGameDate(let payload):
+            return payload
+        case .runScript(let payload):
             return payload
         }
     }
