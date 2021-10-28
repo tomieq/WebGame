@@ -166,7 +166,13 @@ class GameEngine {
     }
 }
 
-extension GameEngine: FootballBookieDelegate {}
+extension GameEngine: FootballBookieDelegate {
+    func notify(playerUUID: String, _ notification: UINotification) {
+        for session in PlayerSessionManager.shared.getSessions(playerUUID: playerUUID){
+            self.websocketHandler.sendTo(playerSessionID: session.id, command: .notification(notification))
+        }
+    }
+}
 extension GameEngine: RealEstateAgentDelegate, ConstructionServicesDelegate {
     
     func syncWalletChange(playerUUID: String) {

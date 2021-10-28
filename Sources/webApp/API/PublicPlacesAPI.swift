@@ -161,7 +161,6 @@ class PublicPlacesAPI: RestAPI {
             do {
                 try bookie.makeBet(bet: bet)
                 let js = JSResponse()
-                js.add(.showSuccess(txt: "Your bet was accepted", duration: 5))
                 js.add(.closeWindow(windowIndex))
                 return js.response
             } catch let error as MakeBetError {
