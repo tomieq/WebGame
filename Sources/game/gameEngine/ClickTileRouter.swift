@@ -82,13 +82,9 @@ extension ClickTileAction {
         switch self {
             
         case .roadInfo:
-            return  [
-                .openWindow(OpenWindow(title: "Road info", width: 400, height: 250, initUrl: RestEndpoint.openRoadInfo.append(point), address: point))
-            ]
+            return  [.runScript(RestEndpoint.openRoadInfo.append(point))]
         case .roadManager:
-            return  [
-                .openWindow(OpenWindow(title: "Road manager", width: 0.7, height: 250, initUrl: RestEndpoint.openRoadManager.base.append(point), address: point))
-            ]
+            return  [ .runScript(RestEndpoint.openRoadManager.base.append(point))]
         case .landInfo:
             return [
                 .openWindow(OpenWindow(title: "Property info", width: 400, height: 200, initUrl: RestEndpoint.openPropertyInfo.base.append(point), address: point))

@@ -12,6 +12,18 @@ class RoadRestAPI: RestAPI {
         // MARK: openRoadInfo
         self.server.GET[.openRoadInfo] = { request, _ in
             request.disableKeepAlive = true
+
+            guard let address = request.mapPoint else {
+                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
+            }
+            let js = JSResponse()
+            js.add(.openWindow(name: "Road info", path: "/initRoadInfo.js".append(address), width: 400, height: 250, mapX: address.x, mapY: address.y, singletonID: address.asQueryParams))
+            return js.response
+        }
+        
+        // MARK: initRoadInfo.js
+        self.server.GET["/initRoadInfo.js"] = { request, _ in
+            request.disableKeepAlive = true
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
             }
@@ -19,8 +31,7 @@ class RoadRestAPI: RestAPI {
                 return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
             }
             let js = JSResponse()
-            js.add(.loadHtml(windowIndex, htmlPath: "/roadInfo.html?&\(address.asQueryParams)"))
-            js.add(.setWindowTitle(windowIndex, title: "Road info"))
+            js.add(.loadHtml(windowIndex, htmlPath: "/roadInfo.html".append(address)))
             js.add(.disableWindowResizing(windowIndex))
             return js.response
         }
@@ -51,6 +62,18 @@ class RoadRestAPI: RestAPI {
         // MARK: openRoadManager
         self.server.GET[.openRoadManager] = { request, _ in
             request.disableKeepAlive = true
+
+            guard let address = request.mapPoint else {
+                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
+            }
+            let js = JSResponse()
+            js.add(.openWindow(name: "Road manager", path: "/initRoadManager.js".append(address), width: 0.7, height: 250, mapX: address.x, mapY: address.y, singletonID: address.asQueryParams))
+            return js.response
+        }
+
+        // MARK: initRoadManager.js
+        self.server.GET["/initRoadManager.js"] = { request, _ in
+            request.disableKeepAlive = true
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
             }
@@ -58,8 +81,7 @@ class RoadRestAPI: RestAPI {
                 return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
             }
             let js = JSResponse()
-            js.add(.loadHtml(windowIndex, htmlPath: "/roadManager.html?\(address.asQueryParams)"))
-            js.add(.setWindowTitle(windowIndex, title: "Road manager"))
+            js.add(.loadHtml(windowIndex, htmlPath: "/roadManager.html".append(address)))
             js.add(.disableWindowResizing(windowIndex))
             return js.response
         }

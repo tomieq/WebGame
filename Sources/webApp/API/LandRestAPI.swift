@@ -19,7 +19,7 @@ class LandRestAPI: RestAPI {
                 return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
             }
             let js = JSResponse()
-            js.add(.openWindow(name: "Land Manager", path: "/initLandManager.js?\(address.asQueryParams)", width: 0.7, height: 0.8, singletonID: address.asQueryParams))
+            js.add(.openWindow(name: "Land Manager", path: "/initLandManager.js".append(address), width: 0.7, height: 0.8, singletonID: address.asQueryParams))
             return js.response
         }
         
@@ -33,9 +33,7 @@ class LandRestAPI: RestAPI {
                 return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
             }
             let js = JSResponse()
-            js.add(.setWindowTitle(windowIndex, title: "Land management"))
-            js.add(.loadHtml(windowIndex, htmlPath: "/landManager.html?\(address.asQueryParams)"))
-            
+            js.add(.loadHtml(windowIndex, htmlPath: "/landManager.html".append(address)))
             js.add(.disableWindowResizing(windowIndex))
             js.add(.centerWindow(windowIndex))
             return js.response
@@ -73,7 +71,7 @@ class LandRestAPI: RestAPI {
                 template.assign(variables: data, inNest: "forSale")
             } else {
                 var data = [String:String]()
-                data["publishOfferJS"] = JSCode.runScripts(windowIndex, paths: ["/openPublishSaleOffer.js?\(address.asQueryParams)"]).js
+                data["publishOfferJS"] = JSCode.runScripts(windowIndex, paths: ["/openPublishSaleOffer.js".append(address)]).js
                 template.assign(variables: data, inNest: "notForSale")
             }
             
