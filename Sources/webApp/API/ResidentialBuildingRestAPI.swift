@@ -15,6 +15,18 @@ class ResidentialBuildingRestAPI: RestAPI {
         // MARK: openBuildingManager
         server.GET[.openBuildingManager] = { request, _ in
             request.disableKeepAlive = true
+  
+            guard let address = request.mapPoint else {
+                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
+            }
+            let js = JSResponse()
+            js.add(.openWindow(name: "Residential Building", path: "/initBuildingManager.js".append(address), width: 0.7, height: 0.8, singletonID: address.asQueryParams))
+            return js.response
+        }
+        
+        // MARK: initBuildingManager.js
+        server.GET["/initBuildingManager.js"] = { request, _ in
+            request.disableKeepAlive = true
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
             }
@@ -22,16 +34,13 @@ class ResidentialBuildingRestAPI: RestAPI {
                 return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
             }
             let js = JSResponse()
-            js.add(.setWindowTitle(windowIndex, title: "Residential Building"))
             js.add(.loadHtml(windowIndex, htmlPath: "/buildingManager.html?\(address.asQueryParams)"))
-            
-            js.add(.resizeWindow(windowIndex, width: 0.7, height: 0.8))
             js.add(.disableWindowResizing(windowIndex))
             js.add(.centerWindow(windowIndex))
             return js.response
         }
 
-        // MARK: landManager.html
+        // MARK: buildingManager.html
         server.GET["/buildingManager.html"] = { request, _ in
             request.disableKeepAlive = true
             guard let playerSessionID = request.queryParam("playerSessionID"),
