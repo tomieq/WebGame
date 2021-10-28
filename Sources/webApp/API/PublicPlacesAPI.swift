@@ -162,7 +162,7 @@ class PublicPlacesAPI: RestAPI {
             request.disableKeepAlive = true
             guard let playerSessionID = request.queryParam("playerSessionID"),
                 let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                    return self.htmlError("Invalid request! Missing session ID.")
+                    return self.jsError("Invalid request! Missing session ID.")
             }
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return self.jsError("Invalid request! Missing window context.")
@@ -179,7 +179,7 @@ class PublicPlacesAPI: RestAPI {
             }
             let match = self.gameEngine.footballBookie.upcomingMatch
             guard match.uuid == matchUUID else {
-                return self.htmlError("The match is over. You can not bet now. Try next game.")
+                return self.jsError("The match is over. You can not bet now. Try next game.")
             }
             let bookie = self.gameEngine.footballBookie
             let bet = FootballBet(matchUUID: matchUUID, playerUUID: session.playerUUID, money: money, expectedResult: result)
