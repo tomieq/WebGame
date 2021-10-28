@@ -14,16 +14,27 @@
         Local football team plays every month. You can visit bookie and make a bet.
         Maybe you want to visit the referee and talk to him...
     </p>
-    
+    [START lastMatch]
     <hr>
     <p style="text-align: center;">
-    Next match:<br>
-    <strong>{team}</strong> vs <strong>{team2}</strong>
-    <br><br>
-    Referee: {referee}
-    <hr>
-    <button class="btn btn-sm">Make a bet</button>
-    <button class="btn btn-sm">Meet referee</button>
+        Last match:<br>
+        <strong>{team}</strong> <big>{goals1}</big> vs <big>{goals2}</big> <strong>{team2}</strong>
+        <br><br>
+        Referee: {referee}
     </p>
+    [END lastMatch]
+    <hr>
+    <p style="text-align: center;">
+        Next match:<br>
+        <strong>{team}</strong> vs <strong>{team2}</strong>
+        <br><br>
+        Referee: {referee}
+        <br><br>
+        <button class="btn btn-sm" onclick="{makeBetUrl}">Make a bet</button>
+        <button class="btn btn-sm">Meet referee</button>
+    </p>
+    <hr>
+    
+    
 </div>
 

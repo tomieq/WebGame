@@ -65,6 +65,7 @@ class FootballBookie {
         do {
             try self.centralBank.process(transaction, taxFree: true)
             self.bets.append(bet)
+            self.delegate?.syncWalletChange(playerUUID: bet.playerUUID)
         } catch let error as FinancialTransactionError {
             throw MakeBetError.financialProblem(error)
         }

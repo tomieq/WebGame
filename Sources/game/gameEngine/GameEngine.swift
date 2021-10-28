@@ -26,6 +26,7 @@ class GameEngine {
     let gameClock: GameClock
     let clickRouter: ClickTileRouter
     let investorAI: InvestorArtifficialIntelligence
+    let footballBookie: FootballBookie
     let reloadMapCoordinator: ReloadMapCoordinator
     let syncWalletCoordinator: SyncWalletCoordinator
     let disposeBag = DisposeBag()
@@ -67,10 +68,11 @@ class GameEngine {
         self.streetNavi = StreetNavi(gameMap: self.gameMap)
         self.gameTraffic = GameTraffic(streetNavi: self.streetNavi)
         self.websocketHandler = WebsocketHandler()
-        self.gameClock = GameClock(realEstateAgent: self.realEstateAgent, time: self.time, secondsPerMonth: 60*10)
+        self.gameClock = GameClock(realEstateAgent: self.realEstateAgent, time: self.time, secondsPerMonth: 120)
         
         self.clickRouter = ClickTileRouter(agent: self.realEstateAgent)
         self.investorAI = InvestorArtifficialIntelligence(agent: self.realEstateAgent)
+        self.footballBookie = FootballBookie(centralBank: self.centralbank)
         
         self.reloadMapCoordinator = ReloadMapCoordinator()
         self.syncWalletCoordinator = SyncWalletCoordinator()
@@ -78,6 +80,7 @@ class GameEngine {
         self.realEstateAgent.delegate = self
         self.constructionServices.delegate = self
         self.gameClock.delegate = self
+        self.footballBookie.delegate = self
         
         self.reloadMapCoordinator.setFlushAction { [weak self] in
            self?.streetNavi.reload()
@@ -163,7 +166,7 @@ class GameEngine {
     }
 }
 
-
+extension GameEngine: FootballBookieDelegate {}
 extension GameEngine: RealEstateAgentDelegate, ConstructionServicesDelegate {
     
     func syncWalletChange(playerUUID: String) {
@@ -187,6 +190,7 @@ extension GameEngine: GameClockDelegate {
         
         self.constructionServices.finishInvestments()
         self.investorAI.purchaseBargains()
+        self.footballBookie.nextMonth()
         
         self.reloadMapCoordinator.flush()
         self.syncWalletCoordinator.flush()

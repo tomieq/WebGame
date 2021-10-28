@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum FootballMatchResult {
+enum FootballMatchResult: String {
     case team1Won
     case team2Won
     case draw
