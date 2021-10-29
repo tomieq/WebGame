@@ -15,75 +15,40 @@ class PoliceTests: XCTestCase {
         let police = self.makePolice()
         let bookie = police.footballBookie
         
-        var bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
-        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
-        bookie.nextMonth()
-        police.checkFootballMatches()
-        XCTAssertEqual(police.investigations.count, 0)
-        
-        bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
-        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
-        bookie.nextMonth()
-        police.checkFootballMatches()
-        XCTAssertEqual(police.investigations.count, 0)
-        
-        bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
-        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
-        bookie.nextMonth()
-        police.checkFootballMatches()
-        XCTAssertEqual(police.investigations.count, 0)
-        
-        bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
-        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
-        bookie.nextMonth()
-        police.checkFootballMatches()
-        XCTAssertEqual(police.investigations.count, 0)
-        
-        bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
-        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
-        bookie.nextMonth()
-        police.checkFootballMatches()
-        XCTAssertEqual(police.investigations.count, 0)
-        
-        bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
-        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
-        bookie.nextMonth()
-        police.checkFootballMatches()
-        XCTAssertEqual(police.investigations.count, 0)
+        for _ in (1...6) {
+            self.makeCleandBet(bookie)
+            bookie.nextMonth()
+            police.checkFootballMatches()
+            XCTAssertEqual(police.investigations.count, 0)
+        }
     }
 
     func test_bribedFootballMatches_oneAfterAnother() {
         let police = self.makePolice()
         let bookie = police.footballBookie
         
-        var bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
-        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
-        bookie.upcomingMatch.setResult(goals: (1, 0), briberUUID: "gambler")
+        self.makeBribedBet(bookie)
         bookie.nextMonth()
         police.checkFootballMatches()
         XCTAssertEqual(police.investigations.count, 0)
         
-        bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
-        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
+        self.makeBribedBet(bookie)
         bookie.upcomingMatch.setResult(goals: (1, 0), briberUUID: "gambler")
         bookie.nextMonth()
         police.checkFootballMatches()
         XCTAssertEqual(police.investigations.count, 1)
         
-        bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
-        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
+        self.makeCleandBet(bookie)
         bookie.nextMonth()
         police.checkFootballMatches()
         XCTAssertEqual(police.investigations.count, 1)
         
-        bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
-        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
+        self.makeCleandBet(bookie)
         bookie.nextMonth()
         police.checkFootballMatches()
         XCTAssertEqual(police.investigations.count, 1)
         
-        bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
-        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
+        self.makeCleandBet(bookie)
         bookie.nextMonth()
         police.checkFootballMatches()
         XCTAssertEqual(police.investigations.count, 0)
@@ -93,34 +58,27 @@ class PoliceTests: XCTestCase {
         let police = self.makePolice()
         let bookie = police.footballBookie
         
-        var bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
-        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
-        bookie.upcomingMatch.setResult(goals: (1, 0), briberUUID: "gambler")
+        self.makeBribedBet(bookie)
         bookie.nextMonth()
         police.checkFootballMatches()
         XCTAssertEqual(police.investigations.count, 0)
         
-        bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
-        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
+        self.makeCleandBet(bookie)
         bookie.nextMonth()
         police.checkFootballMatches()
         XCTAssertEqual(police.investigations.count, 0)
         
-        bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
-        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
+        self.makeCleandBet(bookie)
         bookie.nextMonth()
         police.checkFootballMatches()
         XCTAssertEqual(police.investigations.count, 0)
         
-        bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
-        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
-        bookie.upcomingMatch.setResult(goals: (1, 0), briberUUID: "gambler")
+        self.makeBribedBet(bookie)
         bookie.nextMonth()
         police.checkFootballMatches()
         XCTAssertEqual(police.investigations.count, 1)
         
-        bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
-        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
+        self.makeCleandBet(bookie)
         bookie.nextMonth()
         police.checkFootballMatches()
         XCTAssertEqual(police.investigations.count, 0)
@@ -130,34 +88,27 @@ class PoliceTests: XCTestCase {
         let police = self.makePolice()
         let bookie = police.footballBookie
         
-        var bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
-        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
-        bookie.upcomingMatch.setResult(goals: (1, 0), briberUUID: "gambler")
+        self.makeBribedBet(bookie)
         bookie.nextMonth()
         police.checkFootballMatches()
         XCTAssertEqual(police.investigations.count, 0)
         
-        bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
-        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
+        self.makeCleandBet(bookie)
         bookie.nextMonth()
         police.checkFootballMatches()
         XCTAssertEqual(police.investigations.count, 0)
         
-        bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
-        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
+        self.makeCleandBet(bookie)
         bookie.nextMonth()
         police.checkFootballMatches()
         XCTAssertEqual(police.investigations.count, 0)
         
-        bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
-        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
+        self.makeCleandBet(bookie)
         bookie.nextMonth()
         police.checkFootballMatches()
         XCTAssertEqual(police.investigations.count, 0)
         
-        bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
-        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
-        bookie.upcomingMatch.setResult(goals: (1, 0), briberUUID: "gambler")
+        self.makeBribedBet(bookie)
         bookie.nextMonth()
         police.checkFootballMatches()
         XCTAssertEqual(police.investigations.count, 1)
@@ -170,17 +121,13 @@ class PoliceTests: XCTestCase {
         let delegate = PoliceTestDelegate()
         police.delegate = delegate
         
-        var bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
-        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
-        bookie.upcomingMatch.setResult(goals: (1, 0), briberUUID: "gambler")
+        self.makeBribedBet(bookie)
         bookie.nextMonth()
         police.checkFootballMatches()
         XCTAssertEqual(police.investigations.count, 0)
         XCTAssertEqual(delegate.notifuUUID.count, 0)
         
-        bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
-        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
-        bookie.upcomingMatch.setResult(goals: (1, 0), briberUUID: "gambler")
+        self.makeBribedBet(bookie)
         bookie.nextMonth()
         police.checkFootballMatches()
         XCTAssertEqual(police.investigations.count, 1)
@@ -220,7 +167,8 @@ class PoliceTests: XCTestCase {
         let taxRates = TaxRates()
         let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates, time: time)
         let bookie = FootballBookie(centralBank: centralBank)
-        let police = Police(footballBookie: bookie)
+        let court = Court(centralbank: centralBank)
+        let police = Police(footballBookie: bookie, court: court)
         
         
         let gambler = Player(uuid: "gambler", login: "gambler", wallet: 1000000)
@@ -230,6 +178,17 @@ class PoliceTests: XCTestCase {
         dataStore.create(bookmaker)
         
         return police
+    }
+    
+    private func makeBribedBet(_ bookie: FootballBookie) {
+        let bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
+        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
+        bookie.upcomingMatch.setResult(goals: (1, 0), briberUUID: "gambler")
+    }
+    
+    private func makeCleandBet(_ bookie: FootballBookie) {
+        let bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
+        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
     }
 }
 
