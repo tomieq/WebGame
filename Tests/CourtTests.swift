@@ -22,12 +22,15 @@ class CourtTests: XCTestCase {
     
     func test_checkFootballBribery_FineWasIssued() {
         let court = self.makeCourt()
+        court.duration.footballMatchBriberyDuration = 1
+        let time = court.time
         let dataStore = court.centralbank.dataStore
         let bribeCase = FootballBriberyCase(accusedUUID: "gambler", illegalWin: 100, bribedReferees: ["Mike Poor"])
         court.registerNewCase(bribeCase)
-        
         XCTAssertEqual(court.cases.count, 1)
-        court.nextMonth()
+        
+        time.nextMonth()
+        court.processTrials()
         XCTAssertEqual(court.cases.count, 0)
         let guilty: Player? = dataStore.find(uuid: "gambler")
         XCTAssertEqual(guilty?.wallet, -300)
@@ -35,17 +38,38 @@ class CourtTests: XCTestCase {
     
     func test_checkFootballBribery_notifications() {
         let court = self.makeCourt()
+        court.duration.footballMatchBriberyDuration = 1
+        let time = court.time
         let delegate = CourtTestDelegate()
         court.delegate = delegate
         let bribeCase = FootballBriberyCase(accusedUUID: "gambler", illegalWin: 100, bribedReferees: ["Mike Poor"])
         court.registerNewCase(bribeCase)
-        
-        court.nextMonth()
+        time.nextMonth()
+        court.processTrials()
         
         XCTAssertEqual(delegate.walletUUID.count, 1)
         XCTAssertTrue(delegate.walletUUID.contains("gambler"))
         XCTAssertEqual(delegate.notifuUUID.count, 1)
         XCTAssertTrue(delegate.notifuUUID.contains{ $0.uuid == "gambler"})
+    }
+    
+    func test_checkFootballBribery_trial_Duration() {
+        let court = self.makeCourt()
+        court.duration.footballMatchBriberyDuration = 2
+        let time = court.time
+        let dataStore = court.centralbank.dataStore
+        let bribeCase = FootballBriberyCase(accusedUUID: "gambler", illegalWin: 100, bribedReferees: ["Mike Poor"])
+        court.registerNewCase(bribeCase)
+        XCTAssertEqual(court.cases.count, 1)
+        
+        time.nextMonth()
+        court.processTrials()
+        XCTAssertEqual(court.cases.count, 1)
+        time.nextMonth()
+        court.processTrials()
+        XCTAssertEqual(court.cases.count, 0)
+        let guilty: Player? = dataStore.find(uuid: "gambler")
+        XCTAssertEqual(guilty?.wallet, -300)
     }
     
     private func makeCourt() -> Court {

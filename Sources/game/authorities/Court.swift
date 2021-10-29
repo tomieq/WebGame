@@ -13,25 +13,37 @@ protocol CourtDelegate {
 }
 
 class Court {
-    var cases: [CourtCase]
+    var cases: [CourtCaseQueue]
     let centralbank: CentralBank
     var delegate: CourtDelegate?
+    let time: GameTime
+    let duration: CourtCaseDuration
     
     init(centralbank: CentralBank) {
         self.cases = []
         self.centralbank = centralbank
+        self.time = centralbank.time
+        self.duration = CourtCaseDuration()
     }
     
     func registerNewCase(_ courtCase: CourtCase) {
-        self.cases.append(courtCase)
+        var delay = 1
+        switch courtCase.type {
+        case .footballMatchBribery:
+            delay = self.duration.footballMatchBriberyDuration
+        }
+        let queue = CourtCaseQueue(courtCase: courtCase, trialMonth: self.time.month + delay)
+        self.cases.append(queue)
     }
     
-    func nextMonth() {
-        for trial in self.cases {
-            switch trial.type {
-            case .footballMatchBribery:
-                if let footbalBribery = trial as? FootballBriberyCase {
-                    self.startFootballBriberyTrial(footbalBribery)
+    func processTrials() {
+        for queue in self.cases {
+            if queue.trialMonth == self.time.month {
+                switch queue.courtCase.type {
+                case .footballMatchBribery:
+                    if let footbalBribery = queue.courtCase as? FootballBriberyCase {
+                        self.startFootballBriberyTrial(footbalBribery)
+                    }
                 }
             }
         }
@@ -48,7 +60,7 @@ class Court {
             self.delegate?.notify(playerUUID: guilty.uuid, UINotification(text: verdict, level: .warning, duration: 60))
             self.delegate?.syncWalletChange(playerUUID: guilty.uuid)
         }
-        self.cases.removeAll{ $0.uuid == courtCase.uuid }
+        self.cases.removeAll{ $0.courtCase.uuid == courtCase.uuid }
     }
 }
 
@@ -60,6 +72,11 @@ protocol CourtCase {
     var uuid: String { get }
     var type: CourtCaseType { get }
     var accusedUUID: String { get }
+}
+
+struct CourtCaseQueue {
+    let courtCase: CourtCase
+    let trialMonth: Int
 }
 
 struct FootballBriberyCase: CourtCase {
@@ -76,4 +93,8 @@ struct FootballBriberyCase: CourtCase {
         self.illegalWin = illegalWin
         self.bribedReferees = bribedReferees
     }
+}
+
+class CourtCaseDuration {
+    var footballMatchBriberyDuration: Int = 2
 }
