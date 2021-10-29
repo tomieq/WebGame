@@ -104,9 +104,9 @@ class PublicPlacesAPI: RestAPI {
                     switch bet.expectedResult {
                     case .draw:
                         return "draw"
-                    case .team1Won:
+                    case .team1Win:
                         return match.team1
-                    case .team2Won:
+                    case .team2Win:
                         return match.team2
                     }
                 }
@@ -148,8 +148,8 @@ class PublicPlacesAPI: RestAPI {
             data["windowIndex"] = windowIndex
             data["submitUrl"] = "/makeBet.js"
             data["draw"] = FootballMatchResult.draw.rawValue
-            data["team2Won"] = FootballMatchResult.team2Won.rawValue
-            data["team1Won"] = FootballMatchResult.team1Won.rawValue
+            data["team2Won"] = FootballMatchResult.team2Win.rawValue
+            data["team1Won"] = FootballMatchResult.team1Win.rawValue
             data["team1winRatio"] = match.team1WinsRatio.rounded(toPlaces: 2).string
             data["team2winRatio"] = match.team2WinsRatio.rounded(toPlaces: 2).string
             data["drawRatio"] = match.drawRatio.rounded(toPlaces: 2).string
@@ -171,7 +171,7 @@ class PublicPlacesAPI: RestAPI {
             guard let matchUUID = formData["matchUUID"] else {
                 return self.jsError("Invalid request! Missing match ID.")
             }
-            guard let moneyString = formData["money"], let money = Double(moneyString) else {
+            guard let moneyString = formData["money"]?.replacingOccurrences(of: " ", with: ""), let money = Double(moneyString) else {
                 return self.jsError("Please provide the amount of money")
             }
             guard let resultString = formData["result"], let result = FootballMatchResult(rawValue: resultString) else {
