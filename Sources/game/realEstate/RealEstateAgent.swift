@@ -267,14 +267,14 @@ class RealEstateAgent {
         Logger.info("RealEstateAgent", "New land sale transaction. @\(address.description)")
         let realEstateAgentID = SystemPlayer.realEstateAgency.uuid
         // process the transaction
-        let saleTransaction = FinancialTransaction(payerUUID: buyerUUID, recipientUUID: sellerID , invoice: offer.saleInvoice)
+        let saleTransaction = FinancialTransaction(payerUUID: buyerUUID, recipientUUID: sellerID , invoice: offer.saleInvoice, type: .realEstateTrade)
         do {
              try self.centralBank.process(saleTransaction)
         } catch let error as FinancialTransactionError {
             Logger.error("RealEstateAgent", "buyLandProperty:sale invoice transaction problem")
             throw BuyPropertyError.financialTransactionProblem(error)
         }
-        let feeTransaction = FinancialTransaction(payerUUID: buyerUUID, recipientUUID: realEstateAgentID, invoice: offer.commissionInvoice)
+        let feeTransaction = FinancialTransaction(payerUUID: buyerUUID, recipientUUID: realEstateAgentID, invoice: offer.commissionInvoice, type: .services)
         do {
              try self.centralBank.process(feeTransaction)
         } catch let error as FinancialTransactionError {
@@ -328,14 +328,14 @@ class RealEstateAgent {
         Logger.info("RealEstateAgent", "New residentialBuilding sale transaction. @\(address.description)")
         let realEstateAgentID = SystemPlayer.realEstateAgency.uuid
         // process the transaction
-        let saleTransaction = FinancialTransaction(payerUUID: buyerUUID, recipientUUID: sellerID , invoice: offer.saleInvoice)
+        let saleTransaction = FinancialTransaction(payerUUID: buyerUUID, recipientUUID: sellerID , invoice: offer.saleInvoice, type: .realEstateTrade)
         do {
              try self.centralBank.process(saleTransaction)
         } catch let error as FinancialTransactionError {
             Logger.error("RealEstateAgent", "buyResidentialBuilding:sale invoice transaction problem")
             throw BuyPropertyError.financialTransactionProblem(error)
         }
-        let feeTransaction = FinancialTransaction(payerUUID: buyerUUID, recipientUUID: realEstateAgentID, invoice: offer.commissionInvoice)
+        let feeTransaction = FinancialTransaction(payerUUID: buyerUUID, recipientUUID: realEstateAgentID, invoice: offer.commissionInvoice, type: .services)
         do {
              try self.centralBank.process(feeTransaction)
         } catch let error as FinancialTransactionError {

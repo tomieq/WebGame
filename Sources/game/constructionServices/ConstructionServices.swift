@@ -68,7 +68,7 @@ class ConstructionServices {
         let governmentID = SystemPlayer.government.uuid
         let offer = self.roadOffer(landName: land.name)
 
-        let transaction = FinancialTransaction(payerUUID: playerUUID, recipientUUID: governmentID, invoice: offer.invoice)
+        let transaction = FinancialTransaction(payerUUID: playerUUID, recipientUUID: governmentID, invoice: offer.invoice, type: .investments)
         // process the transaction
         do {
              try self.centralBank.process(transaction)
@@ -110,7 +110,7 @@ class ConstructionServices {
         self.dataStore.create(building)
         // process the transaction
         let governmentID = SystemPlayer.government.uuid
-        let transaction = FinancialTransaction(payerUUID: playerUUID, recipientUUID: governmentID, invoice: offer.invoice)
+        let transaction = FinancialTransaction(payerUUID: playerUUID, recipientUUID: governmentID, invoice: offer.invoice, type: .investments)
         do {
              try self.centralBank.process(transaction)
         } catch let error as FinancialTransactionError {

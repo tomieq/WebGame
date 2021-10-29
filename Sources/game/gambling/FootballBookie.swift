@@ -73,9 +73,9 @@ class FootballBookie {
             throw MakeBetError.canNotBetTwice
         }
         let invoice = Invoice(title: "Footbal match bet", grossValue: bet.money, taxRate: 0)
-        let transaction = FinancialTransaction(payerUUID: bet.playerUUID, recipientUUID: SystemPlayer.bookie.uuid, invoice: invoice)
+        let transaction = FinancialTransaction(payerUUID: bet.playerUUID, recipientUUID: SystemPlayer.bookie.uuid, invoice: invoice, type: .incomeTaxFree)
         do {
-            try self.centralBank.process(transaction, taxFree: true)
+            try self.centralBank.process(transaction)
             self.bets.append(bet)
             self.delegate?.syncWalletChange(playerUUID: bet.playerUUID)
             
@@ -111,7 +111,7 @@ class FootballBookie {
             if bet.expectedResult == self.match.result {
                 let money = bet.money * winRatio
                 let invoice = Invoice(title: "Money transfer from bookmaker. Revenue for the bet", grossValue: money, taxRate: 0)
-                let transaction = FinancialTransaction(payerUUID: SystemPlayer.bookie.uuid, recipientUUID: bet.playerUUID, invoice: invoice)
+                let transaction = FinancialTransaction(payerUUID: SystemPlayer.bookie.uuid, recipientUUID: bet.playerUUID, invoice: invoice, type: .gambling)
                 try? self.centralBank.process(transaction, checkWalletCapacity: false)
                 self.centralBank.refundIncomeTax(transaction: transaction, costs: bet.money)
                 winnerUUIDs.append(bet.playerUUID)
