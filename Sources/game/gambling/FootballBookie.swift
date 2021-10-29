@@ -43,6 +43,7 @@ struct FootballBetArchive {
 
 class FootballBookie {
     let localTeam: String
+    let archiveCapacity = 5
     private var archive: [FootballBetArchive] = []
     private var match: FootballMatch
     private var bets: [FootballBet]
@@ -135,7 +136,7 @@ class FootballBookie {
         }
         
         self.archive.append(FootballBetArchive(match: self.match, bets: self.bets))
-        if self.archive.count > 5 {
+        if self.archive.count > self.archiveCapacity {
             self.archive.removeFirst()
         }
 
