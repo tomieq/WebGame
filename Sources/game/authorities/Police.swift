@@ -16,13 +16,15 @@ class Police {
     let footballBookie: FootballBookie
     var investigations: [PoliceInvestigation]
     var delegate: PoliceDelegate?
+    let court: Court
     
-    init(footballBookie: FootballBookie) {
+    init(footballBookie: FootballBookie, court: Court) {
         self.footballBookie = footballBookie
         self.investigations = []
+        self.court = court
     }
     
-    func nextMonth() {
+    func controlEvents() {
         self.checkFootballMatches()
     }
     
@@ -60,7 +62,42 @@ class Police {
     }
     
     func finishInvestigation(_ investigation: PoliceInvestigation) {
+        switch investigation.type {
+        case .footballMatchBribery:
+            self.finishFootballBriberyInvestigation(investigation)
+        }
         self.investigations.removeAll{ $0.uuid == investigation.uuid }
+    }
+    
+    func finishFootballBriberyInvestigation(_ investigation: PoliceInvestigation) {
+        class InvestigationProgress {
+            var suspectUUID: String
+            var fraud: Double = 0
+            var referees: [String] = []
+            
+            init(suspectUUID: String) {
+                self.suspectUUID = suspectUUID
+            }
+        }
+        let bookie = self.footballBookie
+        var progresses: [InvestigationProgress] = []
+        for archive in bookie.getArchive() {
+            let match = archive.match
+            if let briberUUID = match.briberUUID {
+                var progress = progresses.first{ $0.suspectUUID == briberUUID }
+                if progress == nil {
+                    progress = InvestigationProgress(suspectUUID: briberUUID)
+                    progresses.append(progress!)
+                }
+                progress?.fraud += archive.bets.filter{ $0.playerUUID == briberUUID }.map{$0.money}.reduce(0, +)
+                progress?.referees.append(match.referee)
+            }
+        }
+        for progress in progresses {
+            self.court.registerNewCase(FootballBriberyCase(accusedUUID: progress.suspectUUID, illegalWin: progress.fraud, bribedReferees: progress.referees))
+            let text = "Football match investigation revealed that you were involved in referee bribery. Federal police collected evidence and handed it to the Court. The trial will start soon."
+            self.delegate?.notify(playerUUID: progress.suspectUUID, UINotification(text: text, level: .warning, duration: 60))
+        }
     }
 }
 

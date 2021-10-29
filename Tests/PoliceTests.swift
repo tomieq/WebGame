@@ -161,6 +161,45 @@ class PoliceTests: XCTestCase {
         XCTAssertTrue(delegate.notifuUUID.contains{ $0.uuid == "secondGambler" })
     }
     
+    func test_startedTrialAfterFootballBribery() {
+        let police = self.makePolice()
+        let bookie = police.footballBookie
+        let delegate = PoliceTestDelegate()
+        police.delegate = delegate
+        XCTAssertEqual(police.court.cases.count, 0)
+        
+        self.makeBribedBet(bookie)
+        bookie.nextMonth()
+        police.checkFootballMatches()
+        XCTAssertEqual(police.court.cases.count, 0)
+
+        self.makeBribedBet(bookie)
+        bookie.nextMonth()
+        police.checkFootballMatches()
+        XCTAssertEqual(police.investigations.count, 1)
+        XCTAssertEqual(police.court.cases.count, 0)
+        XCTAssertEqual(delegate.notifuUUID.count, 1)
+        
+        self.makeCleandBet(bookie)
+        bookie.nextMonth()
+        police.checkFootballMatches()
+        XCTAssertEqual(police.investigations.count, 1)
+        XCTAssertEqual(police.court.cases.count, 0)
+        
+        self.makeCleandBet(bookie)
+        bookie.nextMonth()
+        police.checkFootballMatches()
+        XCTAssertEqual(police.investigations.count, 1)
+        XCTAssertEqual(police.court.cases.count, 0)
+        
+        self.makeCleandBet(bookie)
+        bookie.nextMonth()
+        police.checkFootballMatches()
+        XCTAssertEqual(police.investigations.count, 0)
+        XCTAssertEqual(police.court.cases.count, 1)
+        XCTAssertEqual(delegate.notifuUUID.count, 2)
+    }
+    
     private func makePolice() -> Police {
         let dataStore = DataStoreMemoryProvider()
         let time = GameTime()
