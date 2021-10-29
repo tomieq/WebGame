@@ -20,7 +20,7 @@ class CourtTests: XCTestCase {
         XCTAssertEqual(court.cases.count, 1)
     }
     
-    func test_checkFineWasIssued() {
+    func test_checkFootballBribery_FineWasIssued() {
         let court = self.makeCourt()
         let dataStore = court.centralbank.dataStore
         let bribeCase = FootballBriberyCase(accusedUUID: "gambler", illegalWin: 100, bribedReferees: ["Mike Poor"])
@@ -31,6 +31,21 @@ class CourtTests: XCTestCase {
         XCTAssertEqual(court.cases.count, 0)
         let guilty: Player? = dataStore.find(uuid: "gambler")
         XCTAssertEqual(guilty?.wallet, -300)
+    }
+    
+    func test_checkFootballBribery_notifications() {
+        let court = self.makeCourt()
+        let delegate = CourtTestDelegate()
+        court.delegate = delegate
+        let bribeCase = FootballBriberyCase(accusedUUID: "gambler", illegalWin: 100, bribedReferees: ["Mike Poor"])
+        court.registerNewCase(bribeCase)
+        
+        court.nextMonth()
+        
+        XCTAssertEqual(delegate.walletUUID.count, 1)
+        XCTAssertTrue(delegate.walletUUID.contains("gambler"))
+        XCTAssertEqual(delegate.notifuUUID.count, 1)
+        XCTAssertTrue(delegate.notifuUUID.contains{ $0.uuid == "gambler"})
     }
     
     private func makeCourt() -> Court {
@@ -47,5 +62,17 @@ class CourtTests: XCTestCase {
         let government = Player(uuid: SystemPlayer.government.uuid, login: SystemPlayer.government.login, wallet: 0)
         dataStore.create(government)
         return court
+    }
+}
+
+fileprivate class CourtTestDelegate: CourtDelegate {
+    var walletUUID: [String] = []
+    var notifuUUID: [(uuid: String, UINotification)] = []
+    func syncWalletChange(playerUUID: String) {
+        self.walletUUID.append(playerUUID)
+    }
+    
+    func notify(playerUUID: String, _ notification: UINotification) {
+        self.notifuUUID.append((playerUUID, notification))
     }
 }
