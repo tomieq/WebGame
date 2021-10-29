@@ -130,17 +130,6 @@ class FootballBookieTests: XCTestCase {
         
         bookie.upcomingMatch.setResult(goals: (1, 0))
         
-        class BookieDelegate: FootballBookieDelegate {
-            var walletUUID: [String] = []
-            var notifuUUID: [(uuid: String, UINotification)] = []
-            func syncWalletChange(playerUUID: String) {
-                self.walletUUID.append(playerUUID)
-            }
-            
-            func notify(playerUUID: String, _ notification: UINotification) {
-                self.notifuUUID.append((playerUUID, notification))
-            }
-        }
         let delegate = BookieDelegate()
         bookie.delegate = delegate
         
@@ -163,17 +152,6 @@ class FootballBookieTests: XCTestCase {
         
         bookie.upcomingMatch.setResult(goals: (0, 1))
         
-        class BookieDelegate: FootballBookieDelegate {
-            var walletUUID: [String] = []
-            var notifuUUID: [(uuid: String, UINotification)] = []
-            func syncWalletChange(playerUUID: String) {
-                self.walletUUID.append(playerUUID)
-            }
-            
-            func notify(playerUUID: String, _ notification: UINotification) {
-                self.notifuUUID.append((playerUUID, notification))
-            }
-        }
         let delegate = BookieDelegate()
         bookie.delegate = delegate
         
@@ -183,6 +161,46 @@ class FootballBookieTests: XCTestCase {
         XCTAssertEqual(delegate.notifuUUID[safeIndex: 0]?.1.level, .warning)
     }
     
+    func test_archiveRotation() {
+        let bookie = self.makeBookie()
+        XCTAssertEqual(bookie.getArchive().count, 0)
+        bookie.nextMonth()
+        XCTAssertEqual(bookie.getArchive().count, 1)
+        bookie.nextMonth()
+        XCTAssertEqual(bookie.getArchive().count, 2)
+        bookie.nextMonth()
+        XCTAssertEqual(bookie.getArchive().count, 3)
+        bookie.nextMonth()
+        XCTAssertEqual(bookie.getArchive().count, 4)
+        bookie.nextMonth()
+        XCTAssertEqual(bookie.getArchive().count, 5)
+        bookie.nextMonth()
+        XCTAssertEqual(bookie.getArchive().count, 5)
+    }
+    
+    func test_betsInArchive() {
+        let bookie = self.makeBookie()
+        let gambler = Player(uuid: "gambler", login: "gambler", wallet: 100)
+        bookie.centralBank.dataStore.create(gambler)
+        
+        let bookmaker = Player(uuid: SystemPlayer.bookie.uuid, login: SystemPlayer.bookie.login, wallet: 0)
+        bookie.centralBank.dataStore.create(bookmaker)
+        
+        let bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
+        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
+        
+        
+        XCTAssertEqual(bookie.getArchive().count, 0)
+        bookie.nextMonth()
+        XCTAssertEqual(bookie.getArchive().count, 1)
+        XCTAssertEqual(bookie.getArchive()[safeIndex: 0]?.bets.count, 1)
+        
+        bookie.nextMonth()
+        XCTAssertEqual(bookie.getArchive().count, 2)
+        XCTAssertEqual(bookie.getArchive()[safeIndex: 0]?.bets.count, 1)
+        XCTAssertEqual(bookie.getArchive()[safeIndex: 1]?.bets.count, 0)
+    }
+    
     private func makeBookie() -> FootballBookie {
         let dataStore = DataStoreMemoryProvider()
         let taxRates = TaxRates()
@@ -190,5 +208,17 @@ class FootballBookieTests: XCTestCase {
         let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates, time: time)
         let bookie = FootballBookie(centralBank: centralBank)
         return bookie
+    }
+}
+
+fileprivate class BookieDelegate: FootballBookieDelegate {
+    var walletUUID: [String] = []
+    var notifuUUID: [(uuid: String, UINotification)] = []
+    func syncWalletChange(playerUUID: String) {
+        self.walletUUID.append(playerUUID)
+    }
+    
+    func notify(playerUUID: String, _ notification: UINotification) {
+        self.notifuUUID.append((playerUUID, notification))
     }
 }

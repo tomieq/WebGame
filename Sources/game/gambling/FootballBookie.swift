@@ -100,6 +100,10 @@ class FootballBookie {
         return self.bets.first{ $0.playerUUID == playerUUID }
     }
     
+    func getArchive() -> [FootballBetArchive] {
+        return self.archive
+    }
+    
     func nextMonth() {
         self.match.playMatch()
         let winRatio = match.winRatio ?? 1
@@ -131,6 +135,9 @@ class FootballBookie {
         }
         
         self.archive.append(FootballBetArchive(match: self.match, bets: self.bets))
+        if self.archive.count > 5 {
+            self.archive.removeFirst()
+        }
 
         self.match = FootballMatch(team: self.localTeam)
         self.bets = []
