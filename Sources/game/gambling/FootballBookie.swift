@@ -36,32 +36,37 @@ protocol FootballBookieDelegate {
     func notify(playerUUID: String, _ notification: UINotification)
 }
 
+struct FootballBetArchive {
+    let match: FootballMatch
+    let bets: [FootballBet]
+}
+
 class FootballBookie {
     let localTeam: String
-    private var currentMatch: FootballMatch
-    private var lastMatch: FootballMatch?
+    private var archive: [FootballBetArchive] = []
+    private var match: FootballMatch
     private var bets: [FootballBet]
     let centralBank: CentralBank
     var delegate: FootballBookieDelegate?
     
     var upcomingMatch: FootballMatch {
-        self.currentMatch
+        self.match
     }
     
     var lastMonthMatch: FootballMatch? {
-        self.lastMatch
+        self.archive.last?.match
     }
     
     init(centralBank: CentralBank) {
         self.localTeam = RandomNameGenerator.getName()
-        self.currentMatch = FootballMatch(team: self.localTeam)
+        self.match = FootballMatch(team: self.localTeam)
         self.bets = []
         self.centralBank = centralBank
     }
     
     func makeBet(bet: FootballBet) throws {
         
-        guard bet.matchUUID == self.upcomingMatch.uuid else {
+        guard bet.matchUUID == self.match.uuid else {
             throw MakeBetError.outOfTime
         }
         if (self.bets.contains{ $0.playerUUID == bet.playerUUID}) {
@@ -73,14 +78,15 @@ class FootballBookie {
             try self.centralBank.process(transaction, taxFree: true)
             self.bets.append(bet)
             self.delegate?.syncWalletChange(playerUUID: bet.playerUUID)
+            
             func who() -> String {
                 switch bet.expectedResult {
                 case .draw:
                     return "draw"
-                case .team1Won:
-                    return self.currentMatch.team1
-                case .team2Won:
-                    return self.currentMatch.team2
+                case .team1Win:
+                    return self.match.team1
+                case .team2Win:
+                    return self.match.team2
                 }
             }
             let txt = "Bookmaker: Thank you for playing with us! You have bet \(bet.money.money) on \(who())"
@@ -95,24 +101,25 @@ class FootballBookie {
     }
     
     func nextMonth() {
-        let match = self.currentMatch
-        match.playMatch()
-        let ratio = match.ratio ?? 1
+        self.match.playMatch()
+        let winRatio = match.winRatio ?? 1
+        print("Win ration is \(winRatio)")
         var winnerUUIDs: [String] = []
         var looserUUIDs: [String] = []
         
         for bet in self.bets {
-            if bet.expectedResult == match.result {
-                let money = bet.money * ratio
+            if bet.expectedResult == self.match.result {
+                let money = bet.money * winRatio
                 let invoice = Invoice(title: "Money transfer from bookmaker. Revenue for the bet", grossValue: money, taxRate: 0)
                 let transaction = FinancialTransaction(payerUUID: SystemPlayer.bookie.uuid, recipientUUID: bet.playerUUID, invoice: invoice)
-                try? self.centralBank.process(transaction, taxFree: true, checkWalletCapacity: false)
+                try? self.centralBank.process(transaction, checkWalletCapacity: false)
+                self.centralBank.refundIncomeTax(transaction: transaction, costs: bet.money)
                 winnerUUIDs.append(bet.playerUUID)
             } else {
                 looserUUIDs.append(bet.playerUUID)
             }
         }
-        let results = "\(match.team1) <b>\(match.goals?.team1 ?? 0)</b> vs <b>\(match.goals?.team2 ?? 0)</b> \(match.team2)"
+        let results = "\(self.match.team1) <b>\(self.match.goals?.team1 ?? 0)</b> vs <b>\(self.match.goals?.team2 ?? 0)</b> \(self.match.team2)"
         let winnerMessage = "Bookmaker: We have match results!<br>\(results)<br>Your bet has brought you money! Congratulations!"
         let looserMessage = "Bookmaker: We have match results!<br>\(results)<br>Your bet has lost! You need to try again."
         for winnerUUID in winnerUUIDs.unique {
@@ -122,8 +129,10 @@ class FootballBookie {
         for looserUUID in looserUUIDs {
             self.delegate?.notify(playerUUID: looserUUID, UINotification(text: looserMessage, level: .warning, duration: 10))
         }
-        self.lastMatch = match
-        self.currentMatch = FootballMatch(team: self.localTeam)
+        
+        self.archive.append(FootballBetArchive(match: self.match, bets: self.bets))
+
+        self.match = FootballMatch(team: self.localTeam)
         self.bets = []
     }
 }

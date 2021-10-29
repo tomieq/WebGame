@@ -18,7 +18,7 @@ class FootballBookieTests: XCTestCase {
         
         let bookmaker = Player(uuid: SystemPlayer.bookie.uuid, login: SystemPlayer.bookie.login, wallet: 0)
         bookie.centralBank.dataStore.create(bookmaker)
-        let bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Won)
+        let bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
         XCTAssertNoThrow(try bookie.makeBet(bet: bet))
     }
     
@@ -29,7 +29,7 @@ class FootballBookieTests: XCTestCase {
         
         let bookmaker = Player(uuid: SystemPlayer.bookie.uuid, login: SystemPlayer.bookie.login, wallet: 0)
         bookie.centralBank.dataStore.create(bookmaker)
-        let bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Won)
+        let bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
 
         XCTAssertThrowsError(try bookie.makeBet(bet: bet)){ error in
             XCTAssertEqual(error as? MakeBetError, .financialProblem(.notEnoughMoney))
@@ -43,7 +43,7 @@ class FootballBookieTests: XCTestCase {
         
         let bookmaker = Player(uuid: SystemPlayer.bookie.uuid, login: SystemPlayer.bookie.login, wallet: 0)
         bookie.centralBank.dataStore.create(bookmaker)
-        let bet = FootballBet(matchUUID: "876204", playerUUID: "gambler", money: 100, expectedResult: .team1Won)
+        let bet = FootballBet(matchUUID: "876204", playerUUID: "gambler", money: 100, expectedResult: .team1Win)
 
         XCTAssertThrowsError(try bookie.makeBet(bet: bet)){ error in
             XCTAssertEqual(error as? MakeBetError, .outOfTime)
@@ -57,7 +57,7 @@ class FootballBookieTests: XCTestCase {
         
         let bookmaker = Player(uuid: SystemPlayer.bookie.uuid, login: SystemPlayer.bookie.login, wallet: 0)
         bookie.centralBank.dataStore.create(bookmaker)
-        let bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Won)
+        let bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
 
         XCTAssertNoThrow(try bookie.makeBet(bet: bet))
         XCTAssertThrowsError(try bookie.makeBet(bet: bet)){ error in
@@ -73,17 +73,19 @@ class FootballBookieTests: XCTestCase {
         let bookmaker = Player(uuid: SystemPlayer.bookie.uuid, login: SystemPlayer.bookie.login, wallet: 50000)
         bookie.centralBank.dataStore.create(bookmaker)
         
-        let bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Won)
+        let bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
         XCTAssertNoThrow(try bookie.makeBet(bet: bet))
         
         bookie.upcomingMatch.setResult(goals: (1, 0))
-        let expectedWin: Double = 100 * bookie.upcomingMatch.team1WinsRatio
-        
+        let winRatio: Double = bookie.upcomingMatch.team1WinsRatio
+        XCTAssertEqual(winRatio, bookie.upcomingMatch.resultRatio(.team1Win))
         bookie.nextMonth()
+        XCTAssertEqual(winRatio, bookie.lastMonthMatch?.resultRatio(.team1Win))
+        XCTAssertEqual(winRatio, bookie.lastMonthMatch?.winRatio)
         bookie.nextMonth()
         bookie.nextMonth()
         let winner: Player? = bookie.centralBank.dataStore.find(uuid: "gambler")
-        XCTAssertEqual(expectedWin.rounded(toPlaces: 0), winner?.wallet)
+        XCTAssertGreaterThan(winner?.wallet ?? 0, 100)
     }
     
     func test_makeBetNotification() {
@@ -93,7 +95,7 @@ class FootballBookieTests: XCTestCase {
         
         let bookmaker = Player(uuid: SystemPlayer.bookie.uuid, login: SystemPlayer.bookie.login, wallet: 0)
         bookie.centralBank.dataStore.create(bookmaker)
-        let bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Won)
+        let bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
         
         class BookieDelegate: FootballBookieDelegate {
             var walletUUID: [String] = []
@@ -123,7 +125,7 @@ class FootballBookieTests: XCTestCase {
         let bookmaker = Player(uuid: SystemPlayer.bookie.uuid, login: SystemPlayer.bookie.login, wallet: 50000)
         bookie.centralBank.dataStore.create(bookmaker)
         
-        let bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Won)
+        let bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
         XCTAssertNoThrow(try bookie.makeBet(bet: bet))
         
         bookie.upcomingMatch.setResult(goals: (1, 0))
@@ -156,7 +158,7 @@ class FootballBookieTests: XCTestCase {
         let bookmaker = Player(uuid: SystemPlayer.bookie.uuid, login: SystemPlayer.bookie.login, wallet: 50000)
         bookie.centralBank.dataStore.create(bookmaker)
         
-        let bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Won)
+        let bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
         XCTAssertNoThrow(try bookie.makeBet(bet: bet))
         
         bookie.upcomingMatch.setResult(goals: (0, 1))

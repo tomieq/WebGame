@@ -8,8 +8,8 @@
 import Foundation
 
 enum FootballMatchResult: String {
-    case team1Won
-    case team2Won
+    case team1Win
+    case team2Win
     case draw
 }
 
@@ -23,6 +23,7 @@ class FootballMatch {
     let team1WinsRatio: Double
     let team2WinsRatio: Double
     let drawRatio: Double
+
     private var matchResult: FootballMatchResult?
     private var matchGoals: Goals?
     private var matchIsSuspected: Bool = false
@@ -37,7 +38,7 @@ class FootballMatch {
         self.matchIsSuspected
     }
     
-    var ratio: Double? {
+    var winRatio: Double? {
         guard let result = self.result else { return nil }
         return self.resultRatio(result)
     }
@@ -63,9 +64,9 @@ class FootballMatch {
     
     func resultRatio(_ result: FootballMatchResult) -> Double {
         switch result {
-        case .team1Won:
+        case .team1Win:
             return self.team1WinsRatio
-        case .team2Won:
+        case .team2Win:
             return self.team2WinsRatio
         case .draw:
             return self.drawRatio
@@ -78,9 +79,9 @@ class FootballMatch {
         if goals.team1 == goals.team2 {
             self.matchResult = .draw
         } else if goals.team1 > goals.team2 {
-            self.matchResult = .team1Won
+            self.matchResult = .team1Win
         } else {
-            self.matchResult = .team2Won
+            self.matchResult = .team2Win
         }
         self.matchGoals = goals
     }
