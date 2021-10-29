@@ -161,9 +161,10 @@ final class CentralBankTests: XCTestCase {
         let receiver = Player(uuid: "receiver2", login: "receiver", wallet: 0)
         centralBank.dataStore.create(receiver)
         
-        let iterations = 1000
+        let iterations = 500
 
         let expectations = (0...iterations-1).map { _ in XCTestExpectation(description: "Financial transaction") }
+        
         
         for i in 0...iterations-1 {
             let queue = DispatchQueue(label: "queue\(i)", qos: .background, attributes: .concurrent)
@@ -174,7 +175,8 @@ final class CentralBankTests: XCTestCase {
                 expectations[i].fulfill()
             }
         }
-        wait(for: expectations, timeout: 1)
+        wait(for: expectations, timeout: 2)
+        
         let rich: Player? = centralBank.dataStore.find(uuid: "receiver2")
         XCTAssertEqual(rich?.wallet, iterations.double * 100)
     }
