@@ -26,7 +26,7 @@ class FootballMatch {
 
     private var matchResult: FootballMatchResult?
     private var matchGoals: Goals?
-    private var matchIsSuspected: Bool = false
+    var briberUUID: String?
     
     var result: FootballMatchResult? {
         self.matchResult
@@ -35,7 +35,7 @@ class FootballMatch {
         self.matchGoals
     }
     var isSuspected: Bool {
-        self.matchIsSuspected
+        self.briberUUID != nil
     }
     
     var winRatio: Double? {
@@ -54,12 +54,9 @@ class FootballMatch {
     }
     
     func playMatch() {
-        guard self.matchResult == nil else {
-            self.matchIsSuspected = true
-            return
-        }
+        guard self.matchResult == nil else { return }
         let goals = (team1: Int.random(in: (0...5)), team2: Int.random(in: (0...5)))
-        self.setResult(goals: goals)
+        self.setGoals(goals)
     }
     
     func resultRatio(_ result: FootballMatchResult) -> Double {
@@ -73,9 +70,14 @@ class FootballMatch {
         }
     }
     
-    func setResult(goals: Goals) {
+    func setResult(goals: Goals, briberUUID: String) {
         guard self.matchResult == nil else { return }
-        
+        self.briberUUID = briberUUID
+        self.setGoals(goals)
+    }
+    
+    private func setGoals(_ goals: Goals) {
+        guard self.matchResult == nil else { return }
         if goals.team1 == goals.team2 {
             self.matchResult = .draw
         } else if goals.team1 > goals.team2 {

@@ -58,14 +58,14 @@ class PoliceTests: XCTestCase {
         
         var bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
         XCTAssertNoThrow(try bookie.makeBet(bet: bet))
-        bookie.upcomingMatch.setResult(goals: (1, 0))
+        bookie.upcomingMatch.setResult(goals: (1, 0), briberUUID: "gambler")
         bookie.nextMonth()
         police.checkFootballMatches()
         XCTAssertEqual(police.investigations.count, 0)
         
         bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
         XCTAssertNoThrow(try bookie.makeBet(bet: bet))
-        bookie.upcomingMatch.setResult(goals: (1, 0))
+        bookie.upcomingMatch.setResult(goals: (1, 0), briberUUID: "gambler")
         bookie.nextMonth()
         police.checkFootballMatches()
         XCTAssertEqual(police.investigations.count, 1)
@@ -95,7 +95,7 @@ class PoliceTests: XCTestCase {
         
         var bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
         XCTAssertNoThrow(try bookie.makeBet(bet: bet))
-        bookie.upcomingMatch.setResult(goals: (1, 0))
+        bookie.upcomingMatch.setResult(goals: (1, 0), briberUUID: "gambler")
         bookie.nextMonth()
         police.checkFootballMatches()
         XCTAssertEqual(police.investigations.count, 0)
@@ -114,7 +114,7 @@ class PoliceTests: XCTestCase {
         
         bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
         XCTAssertNoThrow(try bookie.makeBet(bet: bet))
-        bookie.upcomingMatch.setResult(goals: (1, 0))
+        bookie.upcomingMatch.setResult(goals: (1, 0), briberUUID: "gambler")
         bookie.nextMonth()
         police.checkFootballMatches()
         XCTAssertEqual(police.investigations.count, 1)
@@ -132,7 +132,7 @@ class PoliceTests: XCTestCase {
         
         var bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
         XCTAssertNoThrow(try bookie.makeBet(bet: bet))
-        bookie.upcomingMatch.setResult(goals: (1, 0))
+        bookie.upcomingMatch.setResult(goals: (1, 0), briberUUID: "gambler")
         bookie.nextMonth()
         police.checkFootballMatches()
         XCTAssertEqual(police.investigations.count, 0)
@@ -157,7 +157,7 @@ class PoliceTests: XCTestCase {
         
         bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
         XCTAssertNoThrow(try bookie.makeBet(bet: bet))
-        bookie.upcomingMatch.setResult(goals: (1, 0))
+        bookie.upcomingMatch.setResult(goals: (1, 0), briberUUID: "gambler")
         bookie.nextMonth()
         police.checkFootballMatches()
         XCTAssertEqual(police.investigations.count, 1)

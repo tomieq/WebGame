@@ -76,7 +76,7 @@ class FootballBookieTests: XCTestCase {
         let bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
         XCTAssertNoThrow(try bookie.makeBet(bet: bet))
         
-        bookie.upcomingMatch.setResult(goals: (1, 0))
+        bookie.upcomingMatch.setResult(goals: (1, 0), briberUUID: "gambler")
         let winRatio: Double = bookie.upcomingMatch.team1WinsRatio
         XCTAssertEqual(winRatio, bookie.upcomingMatch.resultRatio(.team1Win))
         bookie.nextMonth()
@@ -128,7 +128,7 @@ class FootballBookieTests: XCTestCase {
         let bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
         XCTAssertNoThrow(try bookie.makeBet(bet: bet))
         
-        bookie.upcomingMatch.setResult(goals: (1, 0))
+        bookie.upcomingMatch.setResult(goals: (1, 0), briberUUID: "gambler")
         
         let delegate = BookieDelegate()
         bookie.delegate = delegate
@@ -150,7 +150,7 @@ class FootballBookieTests: XCTestCase {
         let bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
         XCTAssertNoThrow(try bookie.makeBet(bet: bet))
         
-        bookie.upcomingMatch.setResult(goals: (0, 1))
+        bookie.upcomingMatch.setResult(goals: (0, 1), briberUUID: "gambler")
         
         let delegate = BookieDelegate()
         bookie.delegate = delegate

@@ -26,7 +26,7 @@ class FootballMatchTests: XCTestCase {
     func test_setGoals() {
         let match = FootballMatch(team: "rangers")
         let goals = (team1: 5, team2: 3)
-        match.setResult(goals: goals)
+        match.setResult(goals: goals, briberUUID: "gambler")
         match.playMatch()
         XCTAssertEqual(match.goals?.team1, goals.team1)
         XCTAssertEqual(match.goals?.team2, goals.team2)
@@ -35,7 +35,7 @@ class FootballMatchTests: XCTestCase {
     func test_setIsSuspected() {
         let match = FootballMatch(team: "rangers")
         let goals = (team1: 5, team2: 3)
-        match.setResult(goals: goals)
+        match.setResult(goals: goals, briberUUID: "gambler")
         match.playMatch()
         XCTAssertEqual(match.isSuspected, true)
     }
