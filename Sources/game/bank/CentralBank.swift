@@ -69,14 +69,14 @@ class CentralBank {
         }
         
         // update payer's wallet
-        self.pay(payer, transaction.invoice.total)
+        payer.decreaseWallet(amount: transaction.invoice.total, self.dataStore)
 
         if !payer.isSystemPlayer {
             self.archive(playerID: payer.uuid, title: transaction.invoice.title, amount: -1 * transaction.invoice.total)
         }
         
         if recipient.uuid == government?.uuid, let government = government {
-            self.receive(government, transaction.invoice.total)
+            government.increaseWallet(amount: transaction.invoice.total, self.dataStore)
         } else {
             // government takes income tax and VAT
             
@@ -90,11 +90,11 @@ class CentralBank {
             if incomeTax > transaction.invoice.netValue { incomeTax = transaction.invoice.netValue }
             let taxes = incomeTax + transaction.invoice.tax
             if taxes > 0, let government = government {
-                receive(government, incomeTax + transaction.invoice.tax)
+                government.increaseWallet(amount: incomeTax + transaction.invoice.tax, self.dataStore)
             }
             let moneyToReceive = (transaction.invoice.netValue - incomeTax).rounded(toPlaces: 0)
             if moneyToReceive > 0 {
-                self.receive(recipient, moneyToReceive)
+                recipient.increaseWallet(amount: moneyToReceive, self.dataStore)
             }
             if !recipient.isSystemPlayer {
                 self.archive(playerID: recipient.uuid, title: transaction.invoice.title, amount: transaction.invoice.netValue)
@@ -125,9 +125,9 @@ class CentralBank {
                 refund = (paidIncomeTax - taxAfterCosts).rounded(toPlaces: 0)
             }
             if refund > 10 {
-                self.receive(payer, refund)
+                payer.increaseWallet(amount: refund, self.dataStore)
                 if let government: Player = self.dataStore.find(uuid: SystemPlayer.government.uuid) {
-                    self.pay(government, refund)
+                    government.decreaseWallet(amount: refund, self.dataStore)
                 }
                 self.archive(playerID: payer.uuid, title: "Tax refund based on costs for \(transaction.invoice.title)", amount: refund)
             }
@@ -136,19 +136,21 @@ class CentralBank {
         
     }
     
-    private func pay(_ payer: Player, _ amount: Double) {
-        let value = (payer.wallet - amount).rounded(toPlaces: 0)
-        self.dataStore.update(PlayerMutation(id: payer.uuid, attributes: [.wallet(value)]))
-    }
-    
-    private func receive(_ receiver: Player, _ amount: Double) {
-        let value = (receiver.wallet + amount).rounded(toPlaces: 0)
-        self.dataStore.update(PlayerMutation(id: receiver.uuid, attributes: [.wallet(value)]))
-    }
-    
     private func archive(playerID: String, title: String, amount: Double) {
         
         let archive = CashFlow(month: self.time.month, title: title, playerID: playerID, amount: amount)
         self.dataStore.create(archive)
+    }
+}
+
+fileprivate extension Player {
+    func decreaseWallet(amount: Double, _ dataStore: DataStoreProvider) {
+        let value = (self.wallet - amount).rounded(toPlaces: 0)
+        dataStore.update(PlayerMutation(id: self.uuid, attributes: [.wallet(value)]))
+    }
+    
+    func increaseWallet(amount: Double, _ dataStore: DataStoreProvider) {
+        let value = (self.wallet + amount).rounded(toPlaces: 0)
+        dataStore.update(PlayerMutation(id: self.uuid, attributes: [.wallet(value)]))
     }
 }
