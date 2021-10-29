@@ -82,7 +82,7 @@ class CentralBank {
             
             var incomeTax: Double = 0
             switch transaction.type {
-            case .incomeTaxFree:
+            case .incomeTaxFree, .fine:
                 incomeTax = 0;
             case .realEstateTrade, .services, .investments, .gambling:
                 incomeTax = (transaction.invoice.netValue * self.taxRates.incomeTax).rounded(toPlaces: 0)

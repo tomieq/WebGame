@@ -13,6 +13,7 @@ enum FinancialTransactionType: Codable {
     case investments
     case services
     case incomeTaxFree
+    case fine
 }
 
 struct FinancialTransaction: Codable {
