@@ -163,6 +163,57 @@ class PoliceTests: XCTestCase {
         XCTAssertEqual(police.investigations.count, 1)
     }
     
+
+    func test_bribedFootballMatches_checkInvestigationNotificationSameBriber() {
+        let police = self.makePolice()
+        let bookie = police.footballBookie
+        let delegate = PoliceTestDelegate()
+        police.delegate = delegate
+        
+        var bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
+        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
+        bookie.upcomingMatch.setResult(goals: (1, 0), briberUUID: "gambler")
+        bookie.nextMonth()
+        police.checkFootballMatches()
+        XCTAssertEqual(police.investigations.count, 0)
+        XCTAssertEqual(delegate.notifuUUID.count, 0)
+        
+        bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
+        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
+        bookie.upcomingMatch.setResult(goals: (1, 0), briberUUID: "gambler")
+        bookie.nextMonth()
+        police.checkFootballMatches()
+        XCTAssertEqual(police.investigations.count, 1)
+        XCTAssertEqual(delegate.notifuUUID.count, 1)
+        XCTAssertEqual(delegate.notifuUUID[safeIndex: 0]?.uuid, "gambler")
+    }
+    
+    func test_bribedFootballMatches_checkInvestigationNotificationDifferentBribers() {
+        let police = self.makePolice()
+        let bookie = police.footballBookie
+        let delegate = PoliceTestDelegate()
+        police.delegate = delegate
+        
+        var bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
+        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
+        bookie.upcomingMatch.setResult(goals: (1, 0), briberUUID: "gambler")
+        bookie.nextMonth()
+        police.checkFootballMatches()
+        XCTAssertEqual(police.investigations.count, 0)
+        XCTAssertEqual(delegate.notifuUUID.count, 0)
+        
+        bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
+        XCTAssertNoThrow(try bookie.makeBet(bet: bet))
+        bookie.upcomingMatch.setResult(goals: (1, 0), briberUUID: "secondGambler")
+        bookie.nextMonth()
+        police.checkFootballMatches()
+        XCTAssertEqual(police.investigations.count, 1)
+        XCTAssertEqual(delegate.notifuUUID.count, 2)
+        XCTAssertEqual(delegate.notifuUUID[safeIndex: 0]?.uuid, "gambler")
+        XCTAssertTrue(delegate.notifuUUID.contains{ $0.uuid == "gambler" })
+        XCTAssertTrue(delegate.notifuUUID.contains{ $0.uuid == "secondGambler" })
+    }
+    
     private func makePolice() -> Police {
         let dataStore = DataStoreMemoryProvider()
         let time = GameTime()
@@ -179,5 +230,17 @@ class PoliceTests: XCTestCase {
         dataStore.create(bookmaker)
         
         return police
+    }
+}
+
+fileprivate class PoliceTestDelegate: PoliceDelegate {
+    var walletUUID: [String] = []
+    var notifuUUID: [(uuid: String, UINotification)] = []
+    func syncWalletChange(playerUUID: String) {
+        self.walletUUID.append(playerUUID)
+    }
+    
+    func notify(playerUUID: String, _ notification: UINotification) {
+        self.notifuUUID.append((playerUUID, notification))
     }
 }
