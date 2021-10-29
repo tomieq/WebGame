@@ -27,6 +27,8 @@ class GameEngine {
     let clickRouter: ClickTileRouter
     let investorAI: InvestorArtifficialIntelligence
     let footballBookie: FootballBookie
+    let court: Court
+    let police: Police
     let reloadMapCoordinator: ReloadMapCoordinator
     let syncWalletCoordinator: SyncWalletCoordinator
     let disposeBag = DisposeBag()
@@ -68,11 +70,14 @@ class GameEngine {
         self.streetNavi = StreetNavi(gameMap: self.gameMap)
         self.gameTraffic = GameTraffic(streetNavi: self.streetNavi)
         self.websocketHandler = WebsocketHandler()
-        self.gameClock = GameClock(realEstateAgent: self.realEstateAgent, time: self.time, secondsPerMonth: 120)
+        self.gameClock = GameClock(realEstateAgent: self.realEstateAgent, time: self.time, secondsPerMonth: 30)
         
         self.clickRouter = ClickTileRouter(agent: self.realEstateAgent)
         self.investorAI = InvestorArtifficialIntelligence(agent: self.realEstateAgent)
         self.footballBookie = FootballBookie(centralBank: self.centralbank)
+        
+        self.court = Court(centralbank: self.centralbank)
+        self.police = Police(footballBookie: self.footballBookie, court: self.court)
         
         self.reloadMapCoordinator = ReloadMapCoordinator()
         self.syncWalletCoordinator = SyncWalletCoordinator()
@@ -81,6 +86,8 @@ class GameEngine {
         self.constructionServices.delegate = self
         self.gameClock.delegate = self
         self.footballBookie.delegate = self
+        self.court.delegate = self
+        self.police.delegate = self
         
         self.reloadMapCoordinator.setFlushAction { [weak self] in
            self?.streetNavi.reload()
@@ -166,6 +173,8 @@ class GameEngine {
     }
 }
 
+extension GameEngine: CourtDelegate {}
+extension GameEngine: PoliceDelegate {}
 extension GameEngine: FootballBookieDelegate {
     func notify(playerUUID: String, _ notification: UINotification) {
         for session in PlayerSessionManager.shared.getSessions(playerUUID: playerUUID){
@@ -197,6 +206,9 @@ extension GameEngine: GameClockDelegate {
         self.constructionServices.finishInvestments()
         self.investorAI.purchaseBargains()
         self.footballBookie.nextMonth()
+        
+        self.police.checkFootballMatches()
+        self.court.processTrials()
         
         self.reloadMapCoordinator.flush()
         self.syncWalletCoordinator.flush()

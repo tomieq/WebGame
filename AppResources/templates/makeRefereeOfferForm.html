@@ -1,0 +1,28 @@
+<div style="margin: 20px;">
+    <p style="text-align: center;">
+        Match:<br>
+        <strong>{team}</strong> vs <strong>{team2}</strong>
+        <br><br>
+        Referee: {referee}
+    </p>
+    <hr>
+    <p>
+        <form onsubmit="event.preventDefault();  formSubmit({windowIndex}, '{submitUrl}', this);">
+        <input type="hidden" name="matchUUID" value="{matchUUID}" />
+        <div>
+            The amount of money you want to send to the referee:<br><br>
+          $ <input type="text" name="money" value="{money}">
+        </div>
+        <br>
+        <div style="text-align: center;">
+            <button class="btn btn-sm" onclick="this.submit();">Send cash</button>
+        </div>
+        </form>
+    </p>
+    <p>
+        Remember that sending gifts to the referee might be considered illegal.
+        It might be very profitable and go undetected.
+        But if you unlucky or the offer insults the referee, you must have in mind, that there might be law consequences.
+    </p>
+</div>
+

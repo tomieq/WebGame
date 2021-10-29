@@ -56,8 +56,8 @@ class Court {
             let invoice = Invoice(title: "Bribery trial fine", grossValue: fine, taxRate: 0)
             let transaction = FinancialTransaction(payerUUID: guilty.uuid, recipientUUID: SystemPlayer.government.uuid, invoice: invoice, type: .fine)
             try? self.centralbank.process(transaction, checkWalletCapacity: false)
-            let verdict = "\(guilty.login) was found guilty of bribing referee \(courtCase.bribedReferees.joined(separator: ", ")) and thus making illegal income from football bets. Court sentenced \(guilty.login) to pay \(fine.money) fine. No jailtime this time."
-            self.delegate?.notify(playerUUID: guilty.uuid, UINotification(text: verdict, level: .warning, duration: 60))
+            let verdict = "\(guilty.login) was found guilty of bribing referee \(courtCase.bribedReferees.joined(separator: ", ")) and thus making illegal income from football bets. Court sentenced \(guilty.login) to pay <b>\(fine.money)</b> fine."
+            self.delegate?.notify(playerUUID: guilty.uuid, UINotification(text: verdict, level: .error, duration: 60))
             self.delegate?.syncWalletChange(playerUUID: guilty.uuid)
         }
         self.cases.removeAll{ $0.courtCase.uuid == courtCase.uuid }

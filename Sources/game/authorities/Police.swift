@@ -53,7 +53,7 @@ class Police {
             self.investigations.append(PoliceInvestigation(type: .footballMatchBribery, name: name))
             
             var notice = "Federal police started a new investigation: \(name). They will be checking last matches and investigating people. "
-            notice.append("They might close the case if they find nothing or they might route the case to Court if they find any evidence of illegal activity.")
+            notice.append("They might close the case if they find nothing or they might hand the case to Court if they find any evidence of illegal activity.")
             
             for suspectUUID in suspectsUUIDs.unique {
                 self.delegate?.notify(playerUUID: suspectUUID, UINotification(text: notice, level: .warning, duration: 30))
@@ -89,7 +89,7 @@ class Police {
                     progress = InvestigationProgress(suspectUUID: briberUUID)
                     progresses.append(progress!)
                 }
-                progress?.fraud += archive.bets.filter{ $0.playerUUID == briberUUID }.map{$0.money}.reduce(0, +)
+                progress?.fraud += archive.bets.filter{ $0.playerUUID == briberUUID }.map{ (match.winRatio ?? 1) * $0.money}.reduce(0, +)
                 progress?.referees.append(match.referee)
             }
         }

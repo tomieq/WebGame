@@ -114,6 +114,8 @@ class PublicPlacesAPI: RestAPI {
                 data["money"] = bet.money.money
                 data["win"] = (bet.money * self.gameEngine.footballBookie.upcomingMatch.resultRatio(bet.expectedResult)).money
                 data["who"] = who()
+                data["referee"] = match.referee
+                data["contactRefereeJS"] = JSCode.loadHtml(windowIndex, htmlPath: "/contactReferee.html?matchUUID=\(match.uuid)").js
                 template.assign(variables: data, inNest: "betInfo")
             } else {
                 var data = [String:String]()
@@ -194,6 +196,82 @@ class PublicPlacesAPI: RestAPI {
                 return self.jsError(error.localizedDescription)
             }
             
+        }
+        
+        
+        // MARK: contactReferee.html
+        self.server.GET["/contactReferee.html"] = { request, _ in
+            request.disableKeepAlive = true
+
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return self.htmlError("Invalid request! Missing window context.")
+            }
+            guard let matchUUID = request.queryParam("matchUUID") else {
+                return self.htmlError("Invalid request! Missing match ID.")
+            }
+            let match = self.gameEngine.footballBookie.upcomingMatch
+            guard match.uuid == matchUUID else {
+                return self.htmlError("The match is over. You can not bet now. Try next game.")
+            }
+            
+            let template = Template(raw: ResourceCache.shared.getAppResource("templates/makeRefereeOfferForm.html"))
+            var data = [String:String]()
+            data["team"] = match.team1
+            data["team2"] = match.team2
+            data["referee"] = match.referee
+            data["matchUUID"] = matchUUID
+            data["windowIndex"] = windowIndex
+            data["submitUrl"] = "/makeRefereeOfferForm.js"
+            template.assign(variables: data)
+            return template.asResponse()
+        }
+        
+        // MARK: makeRefereeOfferForm.js
+        self.server.POST["/makeRefereeOfferForm.js"] = { request, _ in
+            request.disableKeepAlive = true
+            guard let playerSessionID = request.queryParam("playerSessionID"),
+                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                    return self.jsError("Invalid request! Missing session ID.")
+            }
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return self.jsError("Invalid request! Missing window context.")
+            }
+            let formData = request.flatFormData()
+            guard let matchUUID = formData["matchUUID"] else {
+                return self.jsError("Invalid request! Missing match ID.")
+            }
+            guard let moneyString = formData["money"]?.replacingOccurrences(of: " ", with: ""), let money = Double(moneyString) else {
+                return self.jsError("Please provide the amount of money")
+            }
+            let match = self.gameEngine.footballBookie.upcomingMatch
+            guard match.uuid == matchUUID else {
+                return self.jsError("The match is over. You can not send money to the referee")
+            }
+            let bookie = self.gameEngine.footballBookie
+            let invoice = Invoice(title: "Gift for \(bookie.upcomingMatch.referee)", grossValue: money, taxRate: 0)
+            let transaction = FinancialTransaction(payerUUID: session.playerUUID, recipientUUID: SystemPlayer.government.uuid, invoice: invoice, type: .incomeTaxFree)
+            do {
+                try self.gameEngine.centralbank.process(transaction)
+            } catch {
+                return self.jsError("Problem sending money!")
+            }
+            
+            if let bet = bookie.getBet(playerUUID: session.playerUUID) {
+                switch bet.expectedResult {
+                    
+                case .team1Win:
+                    bookie.upcomingMatch.setResult(goals: (Int.random(in: (5...8)), Int.random(in: (0...4))), briberUUID: session.playerUUID)
+                case .team2Win:
+                    bookie.upcomingMatch.setResult(goals: (Int.random(in: (0...4)), Int.random(in: (5...8))), briberUUID: session.playerUUID)
+                case .draw:
+                    let goal = Int.random(in: (0...4))
+                    bookie.upcomingMatch.setResult(goals: (goal, goal), briberUUID: session.playerUUID)
+                }
+            }
+            let js = JSResponse()
+            js.add(.showSuccess(txt: "Your gift was accepted by the referee", duration: 10))
+            js.add(.closeWindow(windowIndex))
+            return js.response
         }
     }
 }
