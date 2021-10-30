@@ -44,6 +44,7 @@ function gameDisconnected() {
     $("canvas").fadeOut(3000);
     $("#mainMenu").fadeOut(3000);
     $("#gameClock").fadeOut(3000);
+    $(".appWindow").remove();
 }
 
 function numberWithSpaces(x) {
