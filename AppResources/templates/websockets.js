@@ -100,18 +100,9 @@ class WebSocketHandler {
             case "notification":
                 var payload = json["payload"];
                 var text = payload["text"];
-                switch (payload["icon"]) {
-                    case "none":
-                        break;
-                    case "police":
-                        text = "<div class='notification-icon' style='"+iconBorder(payload["level"])+"'><img src='images/policeman.png' /></div>" + text;
-                        break;
-                    case "court":
-                        text = "<div class='notification-icon' style='"+iconBorder(payload["level"])+"'><img src='images/court.png' /></div>" + text;
-                        break;
-                    case "property":
-                        text = "<div class='notification-icon' style='"+iconBorder(payload["level"])+"'><img src='images/property.png' /></div>" + text;
-                        break;
+                var icon = payload["icon"]
+                if (icon.length > 0 ) {
+                    text = "<div class='notification-icon' style='"+iconBorder(payload["level"])+"'><img src='images/"+icon+".png' /></div>" + text;
                 }
                 new Noty({
                     text: text,

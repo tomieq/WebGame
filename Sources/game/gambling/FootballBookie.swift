@@ -91,7 +91,7 @@ class FootballBookie {
                 }
             }
             let txt = "Bookmaker: Thank you for playing with us! You have bet \(bet.money.money) on \(who())"
-            self.delegate?.notify(playerUUID: bet.playerUUID, UINotification(text: txt, level: .success, duration: 10))
+            self.delegate?.notify(playerUUID: bet.playerUUID, UINotification(text: txt, level: .success, duration: 10, icon: .betting))
         } catch let error as FinancialTransactionError {
             throw MakeBetError.financialProblem(error)
         }
@@ -129,10 +129,10 @@ class FootballBookie {
         let looserMessage = "Bookmaker: We have match results!<br>\(results)<br>Your bet has lost! You need to try again."
         for winnerUUID in winnerUUIDs.unique {
             self.delegate?.syncWalletChange(playerUUID: winnerUUID)
-            self.delegate?.notify(playerUUID: winnerUUID, UINotification(text: winnerMessage, level: .success, duration: 10))
+            self.delegate?.notify(playerUUID: winnerUUID, UINotification(text: winnerMessage, level: .success, duration: 10, icon: .money))
         }
         for looserUUID in looserUUIDs {
-            self.delegate?.notify(playerUUID: looserUUID, UINotification(text: looserMessage, level: .warning, duration: 10))
+            self.delegate?.notify(playerUUID: looserUUID, UINotification(text: looserMessage, level: .warning, duration: 10, icon: .redFlag))
         }
         
         self.archive.append(FootballBetArchive(match: self.match, bets: self.bets))

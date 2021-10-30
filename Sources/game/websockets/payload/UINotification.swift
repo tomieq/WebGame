@@ -15,22 +15,25 @@ enum UINotificationLevel: String, Codable {
 }
 
 enum UINotificationIcon: String, Codable {
-    case none
+    case none = ""
     case police
     case court
     case property
+    case betting
+    case money
+    case redFlag
 }
 
 struct UINotification: Codable {
     let text: String
     let level: UINotificationLevel
     let duration: Int
-    let icon: UINotificationIcon
+    let icon: String
     
     init(text: String, level: UINotificationLevel, duration: Int, icon: UINotificationIcon = .none) {
         self.text = text
         self.level = level
         self.duration = duration
-        self.icon = icon
+        self.icon = icon.rawValue
     }
 }
