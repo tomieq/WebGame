@@ -18,7 +18,7 @@ class PublicPlacesAPI: RestAPI {
                 return self.jsError("Invalid request! Missing address.")
             }
             let js = JSResponse()
-            js.add(.openWindow(name: "Football pitch", path: "/initFootballPitch.js".append(address), width: 400, height: 420, point: address, singletonID: address.asQueryParams))
+            js.add(.openWindow(name: "Football pitch", path: "/initFootballPitch.js".append(address), width: 400, height: 435, point: address, singletonID: address.asQueryParams))
             
             if let tile = self.gameEngine.gameMap.getTile(address: address) {
                 switch tile.type {
@@ -112,11 +112,16 @@ class PublicPlacesAPI: RestAPI {
                 }
                 var data = [String:String]()
                 data["money"] = bet.money.money
-                data["win"] = (bet.money * self.gameEngine.footballBookie.upcomingMatch.resultRatio(bet.expectedResult)).money
                 data["who"] = who()
-                data["referee"] = match.referee
-                data["contactRefereeJS"] = JSCode.loadHtml(windowIndex, htmlPath: "/contactReferee.html?matchUUID=\(match.uuid)").js
+                data["win"] = (bet.money * self.gameEngine.footballBookie.upcomingMatch.resultRatio(bet.expectedResult)).money
                 template.assign(variables: data, inNest: "betInfo")
+                let ivestigation = self.gameEngine.police.investigations.filter{ $0.type == .footballMatchBribery }
+                if match.briberUUID != session.playerUUID && ivestigation.isEmpty {
+                    data = [String:String]()
+                    data["referee"] = match.referee
+                    data["contactRefereeJS"] = JSCode.loadHtml(windowIndex, htmlPath: "/contactReferee.html?matchUUID=\(match.uuid)").js
+                    template.assign(variables: data, inNest: "bribe")
+                }
             } else {
                 var data = [String:String]()
                 data["makeBetUrl"] = JSCode.loadHtml(windowIndex, htmlPath: "/makeBetForm.html?matchUUID=\(match.uuid)").js
