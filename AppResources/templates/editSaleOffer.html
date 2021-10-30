@@ -30,7 +30,9 @@
 <tr><td colspan=2><hr/></td></tr>
 <tr>
     <td>Price you want get</td>
-    <td style="text-align: right;">$ <input type="text" value="{price}" id="price{windowIndex}" size=10 /></td>
+    <td style="text-align: right;">
+        $ <input type="text" value="{price}" onkeypress="onlyNumbers(event)" id="price{windowIndex}" size=14 />
+    </td>
 </tr>
 </tbody>
 </table>
@@ -44,9 +46,3 @@
 </table>
 </div>
 
-<script>
-$("#price{windowIndex}").on('keyup', function(){
-    var n = numberWithSpaces($(this).val());
-    $(this).val(n);
-});
-</script>

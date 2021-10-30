@@ -11,11 +11,11 @@
         <input type="hidden" name="matchUUID" value="{matchUUID}" />
         <div>
             The amount of money you want to send to the referee:<br><br>
-          $ <input type="text" name="money" value="{money}">
+          $ <input type="text" onkeypress="onlyNumbers(event)"  name="money" value="{money}">
         </div>
         <br>
         <div style="text-align: center;">
-            <button class="btn btn-sm" onclick="this.submit();">Send cash</button>
+            <input type="submit" class="btn btn-sm" value="Send cash" />
         </div>
         </form>
     </p>

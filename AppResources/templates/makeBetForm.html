@@ -11,7 +11,7 @@
         <input type="hidden" name="matchUUID" value="{matchUUID}" />
         <div>
             The amount you want to bet:<br>
-          $ <input type="text" name="money" id="x1" value="{money}">
+          $ <input type="text" onkeypress="onlyNumbers(event)" name="money" id="x1" value="{money}">
         </div>
         <br>
         <div>
@@ -27,7 +27,7 @@
           <label for="x3">draw  ({drawRatio})</label>
         </div>
         <div style="text-align: center;">
-            <button class="btn btn-sm" onclick="this.submit();">Make a bet</button>
+            <input type="submit" class="btn btn-sm" value="Make a bet"/>
         </div>
         </form>
     </p>

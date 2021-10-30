@@ -47,13 +47,6 @@ function gameDisconnected() {
     $(".appWindow").remove();
 }
 
-function numberWithSpaces(x) {
-    if (x.length > 0) {
-        return parseInt(x.replace(/\D/g,''),10).toLocaleString();
-    }
-    return x;
-}
-
 function publishOffer(windowIndex, submitUrl) {
     var price = $("#price" + windowIndex).val().replace(/\s/g, '');
     if(isNaN(price) || isNaN(parseFloat(price))){
@@ -65,4 +58,22 @@ function publishOffer(windowIndex, submitUrl) {
 
 function highlightTiles(points, color) {
     gameInteractionMap.drawTiles(points, color);
+}
+
+function onlyNumbers(evt) {
+  var theEvent = evt || window.event;
+
+  // Handle paste
+  if (theEvent.type === 'paste') {
+      key = event.clipboardData.getData('text/plain');
+  } else {
+  // Handle key press
+      var key = theEvent.keyCode || theEvent.which;
+      key = String.fromCharCode(key);
+  }
+  var regex = /[0-9\s]|\./;
+  if( !regex.test(key) ) {
+    theEvent.returnValue = false;
+    if(theEvent.preventDefault) theEvent.preventDefault();
+  }
 }
