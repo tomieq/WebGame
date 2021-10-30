@@ -104,10 +104,13 @@ class WebSocketHandler {
                     case "none":
                         break;
                     case "police":
-                        text = "<div class='notification-icon'><img src='images/policeman.png' /></div>" + text;
+                        text = "<div class='notification-icon' style='"+iconBorder(payload["level"])+"'><img src='images/policeman.png' /></div>" + text;
                         break;
                     case "court":
-                        text = "<div class='notification-icon' style='border: 1px solid #AA4442;'><img src='images/court.png' /></div>" + text;
+                        text = "<div class='notification-icon' style='"+iconBorder(payload["level"])+"'><img src='images/court.png' /></div>" + text;
+                        break;
+                    case "property":
+                        text = "<div class='notification-icon' style='"+iconBorder(payload["level"])+"'><img src='images/property.png' /></div>" + text;
                         break;
                 }
                 new Noty({
@@ -125,5 +128,19 @@ class WebSocketHandler {
                 console.log("[webSocket] [unknown command] " + json["command"]);
                 break;
         }
+    }
+}
+
+
+function iconBorder(notificationLevel) {
+    switch (notificationLevel) {
+        case "warning":
+            return "border: 1px solid #8A6D3A;";
+        case "info":
+            return "border: 1px solid#6797AE;";
+        case "error":
+            return "border: 1px solid#AA4442;";
+        case "success":
+            return "border: 1px solid#6F9D6D;";
     }
 }

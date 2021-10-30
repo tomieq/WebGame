@@ -301,7 +301,7 @@ class RealEstateAgent {
         self.delegate?.syncWalletChange(playerUUID: sellerID)
         self.delegate?.reloadMap()
         let playerName = self.dataStore.find(uuid: buyerUUID)?.login ?? ""
-        self.delegate?.notifyEveryone(UINotification(text: "New transaction on the market. Player \(playerName) has just bought property `\(land.name)`", level: .info, duration: 10))
+        self.delegate?.notifyEveryone(UINotification(text: "New transaction on the market. Player \(playerName) has just bought property `\(land.name)`", level: .info, duration: 10, icon: .property))
     }
     
     private func buyResidentialBuilding(address: MapPoint, buyerUUID: String, netPrice: Double? = nil) throws {
@@ -354,7 +354,7 @@ class RealEstateAgent {
         self.delegate?.syncWalletChange(playerUUID: buyerUUID)
         self.delegate?.syncWalletChange(playerUUID: sellerID)
         let playerName = self.dataStore.find(uuid: buyerUUID)?.login ?? ""
-        self.delegate?.notifyEveryone(UINotification(text: "New transaction on the market. Player \(playerName) has just bought property `\(building.name)`", level: .info, duration: 10))
+        self.delegate?.notifyEveryone(UINotification(text: "New transaction on the market. Player \(playerName) has just bought property `\(building.name)`", level: .info, duration: 10, icon: .property))
     }
  }
 

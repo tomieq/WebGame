@@ -18,6 +18,7 @@ enum UINotificationIcon: String, Codable {
     case none
     case police
     case court
+    case property
 }
 
 struct UINotification: Codable {
