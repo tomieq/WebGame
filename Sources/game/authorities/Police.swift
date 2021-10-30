@@ -29,6 +29,7 @@ class Police {
     }
     
     func checkFootballMatches() {
+        var startInvestigation = false
         let bookie = self.footballBookie
         if let investigation = (self.investigations.first{ $0.type == .footballMatchBribery }) {
             
@@ -43,12 +44,16 @@ class Police {
         for archive in bookie.getArchive() {
             if archive.match.isSuspected {
                 numberOfSuspectedMatches += 1
-                if let briberUUID = archive.match.briberUUID {
+                if let briberUUID = archive.match.briberUUID, let betMoney = (archive.bets.first{ $0.playerUUID == briberUUID }?.money) {
                     suspectsUUIDs.append(briberUUID)
+                    
+                    if (archive.match.winRatio ?? 1) * betMoney > 500000.0 {
+                        startInvestigation = true
+                    }
                 }
             }
         }
-        if numberOfSuspectedMatches > 1 {
+        if numberOfSuspectedMatches > 1 || startInvestigation {
             let name = "Suspicious concidence with football match results"
             self.investigations.append(PoliceInvestigation(type: .footballMatchBribery, name: name))
             
