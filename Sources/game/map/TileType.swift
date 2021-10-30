@@ -58,9 +58,6 @@ extension TileType {
         case .btsAntenna:
             return TileImage(path: "tiles/btsAntenna.png", width: 600, height: 800)
         case .building(let size):
-            if size == 4 || size == 6 {
-                return TileImage(path: "tiles/buildingB-\(size).png", width: 600, height: 900)
-            }
             return TileImage(path: "tiles/building-\(size).png", width: 600, height: 900)
         case .buildingUnderConstruction(let size):
             return TileImage(path: "tiles/construction-\(size).png", width: 600, height: 1000)
