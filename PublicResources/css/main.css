@@ -146,3 +146,10 @@ input[type=text] {
 .priceTable th {
   text-align: left;
 }
+
+.notification-icon {
+    border: 1px solid #6797AE;
+    float: left;
+    padding:5px;
+    margin-right: 5px;
+}
