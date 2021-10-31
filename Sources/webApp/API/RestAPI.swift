@@ -31,6 +31,8 @@ class RestAPI {
     }
     
     func htmlError(_ text: String) -> HttpResponse {
-        return .badRequest(.html("Invalid request! Missing window context."))
+        let template = Template(raw: ResourceCache.shared.getAppResource("templates/error.html"))
+        template.assign(variables: ["text": text])
+        return template.asResponse()
     }
 }
