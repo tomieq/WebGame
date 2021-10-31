@@ -33,7 +33,7 @@ class CourtTests: XCTestCase {
         court.processTrials()
         XCTAssertEqual(court.cases.count, 0)
         let guilty: Player? = dataStore.find(uuid: "gambler")
-        XCTAssertEqual(guilty?.wallet, -300)
+        XCTAssertEqual(guilty?.wallet, -200)
     }
     
     func test_checkFootballBribery_notifications() {
@@ -69,7 +69,7 @@ class CourtTests: XCTestCase {
         court.processTrials()
         XCTAssertEqual(court.cases.count, 0)
         let guilty: Player? = dataStore.find(uuid: "gambler")
-        XCTAssertEqual(guilty?.wallet, -300)
+        XCTAssertEqual(guilty?.wallet, -200)
     }
     
     private func makeCourt() -> Court {

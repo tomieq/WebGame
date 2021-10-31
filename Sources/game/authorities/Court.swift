@@ -52,7 +52,7 @@ class Court {
     func startFootballBriberyTrial(_ courtCase: FootballBriberyCase) {
         
         if let guilty: Player = self.centralbank.dataStore.find(uuid: courtCase.accusedUUID) {
-            let fine = courtCase.illegalWin * 3
+            let fine = courtCase.illegalWin * 2
             let invoice = Invoice(title: "Bribery trial fine", grossValue: fine, taxRate: 0)
             let transaction = FinancialTransaction(payerUUID: guilty.uuid, recipientUUID: SystemPlayer.government.uuid, invoice: invoice, type: .fine)
             try? self.centralbank.process(transaction, checkWalletCapacity: false)
