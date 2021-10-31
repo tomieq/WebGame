@@ -34,7 +34,7 @@ class FootballMatch {
     var goals: Goals? {
         self.matchGoals
     }
-    var isSuspected: Bool {
+    var isResultBribed: Bool {
         self.briberUUID != nil
     }
     

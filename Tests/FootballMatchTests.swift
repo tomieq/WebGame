@@ -37,12 +37,12 @@ class FootballMatchTests: XCTestCase {
         let goals = (team1: 5, team2: 3)
         match.setResult(goals: goals, briberUUID: "gambler")
         match.playMatch()
-        XCTAssertEqual(match.isSuspected, true)
+        XCTAssertEqual(match.isResultBribed, true)
     }
     
     func test_setIsNotSuspected() {
         let match = FootballMatch(team: "rangers")
         match.playMatch()
-        XCTAssertEqual(match.isSuspected, false)
+        XCTAssertEqual(match.isResultBribed, false)
     }
 }
