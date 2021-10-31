@@ -51,6 +51,7 @@ class FootballBookie {
     private var archive: [FootballBetArchive] = []
     private var match: FootballMatch
     private var bets: [FootballBet]
+    let referee: Referee
     let centralBank: CentralBank
     var delegate: FootballBookieDelegate?
     
@@ -65,8 +66,11 @@ class FootballBookie {
     init(centralBank: CentralBank) {
         self.localTeam = RandomNameGenerator.getName()
         self.match = FootballMatch(team: self.localTeam)
+        self.referee = Referee()
         self.bets = []
         self.centralBank = centralBank
+        
+        self.referee.delegate = self
     }
     
     func makeBet(bet: FootballBet) throws {
@@ -146,5 +150,12 @@ class FootballBookie {
 
         self.match = FootballMatch(team: self.localTeam)
         self.bets = []
+        self.referee.nextMatch()
+    }
+}
+
+extension FootballBookie: RefereeDelegate {
+    func notify(playerUUID: String, _ notification: UINotification) {
+        self.delegate?.notify(playerUUID: playerUUID, notification)
     }
 }

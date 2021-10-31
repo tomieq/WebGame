@@ -79,9 +79,9 @@ class PublicPlacesAPI: RestAPI {
                     return self.htmlError("Invalid request! Missing session ID.")
             }
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/footballPitchInfo.html"))
+            let bookie = self.gameEngine.footballBookie
             
-            
-            if let lastMatch = self.gameEngine.footballBookie.lastMonthMatch {
+            if let lastMatch = bookie.lastMonthMatch {
                 var data = [String:String]()
                 data["team"] = lastMatch.team1
                 data["team2"] = lastMatch.team2
@@ -90,7 +90,7 @@ class PublicPlacesAPI: RestAPI {
                 data["goals2"] = lastMatch.goals?.team2.string ?? "0"
                 template.assign(variables: data, inNest: "lastMatch")
             }
-            let match = self.gameEngine.footballBookie.upcomingMatch
+            let match = bookie.upcomingMatch
             var data = [String:String]()
             data["tileUrl"] = TileType.smallFootballPitch.image.path
             data["team"] = match.team1
@@ -99,7 +99,7 @@ class PublicPlacesAPI: RestAPI {
             data["windowIndex"] = windowIndex
             
             template.assign(variables: data)
-            if let bet = self.gameEngine.footballBookie.getBet(playerUUID: session.playerUUID) {
+            if let bet = bookie.getBet(playerUUID: session.playerUUID) {
                 func who() -> String {
                     switch bet.expectedResult {
                     case .draw:
@@ -113,10 +113,10 @@ class PublicPlacesAPI: RestAPI {
                 var data = [String:String]()
                 data["money"] = bet.money.money
                 data["who"] = who()
-                data["win"] = (bet.money * self.gameEngine.footballBookie.upcomingMatch.resultRatio(bet.expectedResult)).money
+                data["win"] = (bet.money * bookie.upcomingMatch.resultRatio(bet.expectedResult)).money
                 template.assign(variables: data, inNest: "betInfo")
                 let ivestigation = self.gameEngine.police.investigations.filter{ $0.type == .footballMatchBribery }
-                if match.briberUUID != session.playerUUID && ivestigation.isEmpty {
+                if !bookie.referee.didAlreadyTryBribe(playerUUID: session.playerUUID) && ivestigation.isEmpty {
                     data = [String:String]()
                     data["referee"] = match.referee
                     data["contactRefereeJS"] = JSCode.loadHtml(windowIndex, htmlPath: "/contactReferee.html?matchUUID=\(match.uuid)").js
@@ -186,7 +186,7 @@ class PublicPlacesAPI: RestAPI {
             }
             let match = self.gameEngine.footballBookie.upcomingMatch
             guard match.uuid == matchUUID else {
-                return self.jsError("The match is over. You can not bet now. Try next game.")
+                return self.jsError("The match is over. You can not do any action now. Try with next game.")
             }
             let bookie = self.gameEngine.footballBookie
             let bet = FootballBet(matchUUID: matchUUID, playerUUID: session.playerUUID, money: money, expectedResult: result)
@@ -248,35 +248,18 @@ class PublicPlacesAPI: RestAPI {
             guard let moneyString = formData["money"]?.replacingOccurrences(of: " ", with: ""), let money = Double(moneyString) else {
                 return self.jsError("Please provide the amount of money")
             }
-            let match = self.gameEngine.footballBookie.upcomingMatch
-            guard match.uuid == matchUUID else {
-                return self.jsError("The match is over. You can not send money to the referee")
-            }
-            let bookie = self.gameEngine.footballBookie
-            let invoice = Invoice(title: "Gift for \(bookie.upcomingMatch.referee)", grossValue: money, taxRate: 0)
-            let transaction = FinancialTransaction(payerUUID: session.playerUUID, recipientUUID: SystemPlayer.government.uuid, invoice: invoice, type: .incomeTaxFree)
-            do {
-                try self.gameEngine.centralbank.process(transaction)
-            } catch {
-                return self.jsError("Problem sending money!")
-            }
-            
-            if let bet = bookie.getBet(playerUUID: session.playerUUID) {
-                switch bet.expectedResult {
-                    
-                case .team1Win:
-                    bookie.upcomingMatch.setResult(goals: (Int.random(in: (5...8)), Int.random(in: (0...4))), briberUUID: session.playerUUID)
-                case .team2Win:
-                    bookie.upcomingMatch.setResult(goals: (Int.random(in: (0...4)), Int.random(in: (5...8))), briberUUID: session.playerUUID)
-                case .draw:
-                    let goal = Int.random(in: (0...4))
-                    bookie.upcomingMatch.setResult(goals: (goal, goal), briberUUID: session.playerUUID)
-                }
-            }
+            let referee = self.gameEngine.footballBookie.referee
             let js = JSResponse()
-            js.add(.showSuccess(txt: "Your gift was accepted by the referee", duration: 10))
+            do {
+                try referee.bribe(playerUUID: session.playerUUID, matchUUID: matchUUID, amount: money)
+            } catch let error as RefereeError {
+                js.add(.showError(txt: error.description, duration: 10))
+            } catch {
+                js.add(.showError(txt: error.localizedDescription, duration: 10))
+            }
             js.add(.closeWindow(windowIndex))
             return js.response
+            
         }
     }
 }

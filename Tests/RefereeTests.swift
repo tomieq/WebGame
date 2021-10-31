@@ -93,12 +93,77 @@ class RefereeTests: XCTestCase {
         XCTAssertEqual(bookie.upcomingMatch.result, .team1Win)
     }
     
+    func test_trySendBribeOfferTwice() {
+        let referee = Referee()
+        let bookie = self.makeBookie()
+        referee.delegate = bookie
+        
+        let matchUUID = bookie.upcomingMatch.uuid
+        let gambler = Player(uuid: "gambler", login: "gambler", wallet: 100000)
+        bookie.centralBank.dataStore.create(gambler)
+        
+        let bookmaker = Player(uuid: SystemPlayer.bookie.uuid, login: SystemPlayer.bookie.login, wallet: 0)
+        bookie.centralBank.dataStore.create(bookmaker)
+        
+        XCTAssertThrowsError(try referee.bribe(playerUUID: "gambler", matchUUID: matchUUID, amount: 100.0)){ error in
+            XCTAssertEqual(error as? RefereeError, .bribeTooSmall)
+        }
+        XCTAssertThrowsError(try referee.bribe(playerUUID: "gambler", matchUUID: matchUUID, amount: 100000.0)){ error in
+            XCTAssertEqual(error as? RefereeError, .didAlreadySentBribeOffer)
+        }
+    }
+    
     func test_bribeFromTwoUsersBettingTheSame() {
         
+        let referee = Referee()
+        let bookie = self.makeBookie()
+        referee.delegate = bookie
+        
+        let matchUUID = bookie.upcomingMatch.uuid
+        let gambler = Player(uuid: "gambler", login: "gambler", wallet: 100000)
+        bookie.centralBank.dataStore.create(gambler)
+        
+        
+        let gambler2 = Player(uuid: "gambler2", login: "gambler2", wallet: 100000)
+        bookie.centralBank.dataStore.create(gambler2)
+            
+        let bookmaker = Player(uuid: SystemPlayer.bookie.uuid, login: SystemPlayer.bookie.login, wallet: 0)
+        bookie.centralBank.dataStore.create(bookmaker)
+
+        XCTAssertNoThrow(try bookie.makeBet(bet: FootballBet(matchUUID: matchUUID, playerUUID: "gambler", money: 100, expectedResult: .team1Win)))
+        XCTAssertNoThrow(try bookie.makeBet(bet: FootballBet(matchUUID: matchUUID, playerUUID: "gambler2", money: 100, expectedResult: .team1Win)))
+        
+        XCTAssertNoThrow(try referee.bribe(playerUUID: "gambler", matchUUID: matchUUID, amount: 20000.0))
+        XCTAssertEqual(bookie.upcomingMatch.result, .team1Win)
+        XCTAssertNoThrow(try referee.bribe(playerUUID: "gambler2", matchUUID: matchUUID, amount: 20000.0))
+        XCTAssertEqual(bookie.upcomingMatch.result, .team1Win)
     }
     
     func test_bribeFromTwoUsersBettingDifferent() {
+        let referee = Referee()
+        let bookie = self.makeBookie()
+        referee.delegate = bookie
         
+        let matchUUID = bookie.upcomingMatch.uuid
+        let gambler = Player(uuid: "gambler", login: "gambler", wallet: 100000)
+        bookie.centralBank.dataStore.create(gambler)
+        
+        
+        let gambler2 = Player(uuid: "gambler2", login: "gambler2", wallet: 100000)
+        bookie.centralBank.dataStore.create(gambler2)
+            
+        let bookmaker = Player(uuid: SystemPlayer.bookie.uuid, login: SystemPlayer.bookie.login, wallet: 0)
+        bookie.centralBank.dataStore.create(bookmaker)
+
+        XCTAssertNoThrow(try bookie.makeBet(bet: FootballBet(matchUUID: matchUUID, playerUUID: "gambler", money: 100, expectedResult: .team1Win)))
+        XCTAssertNoThrow(try bookie.makeBet(bet: FootballBet(matchUUID: matchUUID, playerUUID: "gambler2", money: 100, expectedResult: .team2Win)))
+        
+        XCTAssertNoThrow(try referee.bribe(playerUUID: "gambler", matchUUID: matchUUID, amount: 20000.0))
+        XCTAssertEqual(bookie.upcomingMatch.result, .team1Win)
+        
+        XCTAssertThrowsError(try referee.bribe(playerUUID: "gambler2", matchUUID: matchUUID, amount: 100000.0)){ error in
+            XCTAssertEqual(error as? RefereeError, .refereeAlreadyTookMoney)
+        }
     }
     
     func test_bribeFromUserWithoutEnoughMoneyInWallet() {
