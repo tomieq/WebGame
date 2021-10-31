@@ -149,7 +149,11 @@ class PoliceTests: XCTestCase {
         XCTAssertEqual(police.investigations.count, 0)
         XCTAssertEqual(delegate.notifuUUID.count, 0)
         
-        bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "gambler", money: 100, expectedResult: .team1Win)
+        
+        let gambler = Player(uuid: "secondGambler", login: "secondGambler", wallet: 1000000)
+        police.court.centralbank.dataStore.create(gambler)
+        
+        bet = FootballBet(matchUUID: bookie.upcomingMatch.uuid, playerUUID: "secondGambler", money: 100, expectedResult: .team1Win)
         XCTAssertNoThrow(try bookie.makeBet(bet: bet))
         bookie.upcomingMatch.setResult(goals: (1, 0), briberUUID: "secondGambler")
         bookie.nextMonth()

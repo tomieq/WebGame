@@ -34,7 +34,7 @@ class Police {
         if let investigation = (self.investigations.first{ $0.type == .footballMatchBribery }) {
             
             if bookie.getArchive().count == self.footballBookie.archiveCapacity,
-               bookie.getArchive()[safeIndex: 0]?.match.isSuspected ?? false {
+               bookie.getArchive()[safeIndex: 0]?.match.isResultBribed ?? false {
                 self.finishInvestigation(investigation)
             }
             return
@@ -42,15 +42,15 @@ class Police {
         var numberOfSuspectedMatches = 0
         var suspectsUUIDs: [String] = []
         for archive in bookie.getArchive() {
-            if archive.match.isSuspected {
+            if let briberUUID = archive.match.briberUUID, let betMoney = archive.getBet(playerUUID: briberUUID)?.money {
                 numberOfSuspectedMatches += 1
-                if let briberUUID = archive.match.briberUUID, let betMoney = (archive.bets.first{ $0.playerUUID == briberUUID }?.money) {
-                    suspectsUUIDs.append(briberUUID)
-                    
-                    if (archive.match.winRatio ?? 1) * betMoney > 500000.0 {
-                        startInvestigation = true
-                    }
+               
+                suspectsUUIDs.append(briberUUID)
+                
+                if (archive.match.winRatio ?? 1) * betMoney > 500000.0 {
+                    startInvestigation = true
                 }
+                
             }
         }
         if numberOfSuspectedMatches > 1 || startInvestigation {

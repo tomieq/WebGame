@@ -39,6 +39,10 @@ protocol FootballBookieDelegate {
 struct FootballBetArchive {
     let match: FootballMatch
     let bets: [FootballBet]
+    
+    func getBet(playerUUID: String) -> FootballBet? {
+        return self.bets.first{ $0.playerUUID == playerUUID }
+    }
 }
 
 class FootballBookie {
