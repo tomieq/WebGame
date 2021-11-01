@@ -21,6 +21,7 @@ enum UINotificationIcon: String, Codable {
     case property
     case betting
     case money
+    case moneyWarning
     case redFlag
     case bribe
 }
