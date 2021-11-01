@@ -45,7 +45,12 @@ class DataStoreMemoryProvider: DataStoreProvider {
         return playerQueue.sync {
             self.players.first { $0.uuid == uuid }.map{ Player($0) }
         }
-        
+    }
+    
+    func getAll() -> [Player] {
+        return playerQueue.sync {
+            self.players.map{ Player($0) }
+        }
     }
     
     func removePlayer(id: String) {
