@@ -18,11 +18,14 @@ class GameCalculator {
     }
 
     pow2ceil(v) {
+        return v;
+        /*
       var p = 2;
       while (v >>= 1) {
         p <<= 1;
       }
       return p;
+         */
     }
                             
     setupCanvas(canvas) {
