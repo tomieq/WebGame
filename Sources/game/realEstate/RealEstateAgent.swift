@@ -20,6 +20,7 @@ class RealEstateAgent {
     let propertyValuer: PropertyValuer
     var delegate: RealEstateAgentDelegate?
     let dataStore: DataStoreProvider
+    private let semaphore = DispatchSemaphore(value: 1)
     
     init(mapManager: GameMapManager, propertyValuer: PropertyValuer, centralBank: CentralBank, delegate: RealEstateAgentDelegate? = nil) {
         self.mapManager = mapManager
@@ -246,22 +247,27 @@ class RealEstateAgent {
     
     private func buyLandProperty(address: MapPoint, buyerUUID: String, netPrice: Double? = nil) throws {
         
+        self.semaphore.wait()
         guard let offer = self.landSaleOffer(address: address, buyerUUID: buyerUUID) else {
             Logger.error("RealEstateAgent", "buyLandProperty:offer not found")
+            self.semaphore.signal()
             throw BuyPropertyError.propertyNotForSale
         }
         if let netPrice = netPrice {
             guard offer.saleInvoice.netValue == netPrice else {
+                self.semaphore.signal()
                 throw BuyPropertyError.saleOfferHasChanged
             }
         }
         guard let land = offer.property as? Land else {
             Logger.error("RealEstateAgent", "buyLandProperty:land not found")
+            self.semaphore.signal()
             throw BuyPropertyError.propertyNotForSale
         }
         let sellerID = land.ownerUUID
         guard sellerID != buyerUUID else {
             Logger.error("RealEstateAgent", "buyLandProperty:seller the same as buyer")
+            self.semaphore.signal()
             throw BuyPropertyError.tryingBuyOwnProperty
         }
         Logger.info("RealEstateAgent", "New land sale transaction. @\(address.description)")
@@ -272,6 +278,7 @@ class RealEstateAgent {
              try self.centralBank.process(saleTransaction)
         } catch let error as FinancialTransactionError {
             Logger.error("RealEstateAgent", "buyLandProperty:sale invoice transaction problem")
+            self.semaphore.signal()
             throw BuyPropertyError.financialTransactionProblem(error)
         }
         let feeTransaction = FinancialTransaction(payerUUID: buyerUUID, recipientUUID: realEstateAgentID, invoice: offer.commissionInvoice, type: .services)
@@ -279,6 +286,7 @@ class RealEstateAgent {
              try self.centralBank.process(feeTransaction)
         } catch let error as FinancialTransactionError {
             Logger.error("RealEstateAgent", "buyLandProperty:commission invoice transaction problem")
+            self.semaphore.signal()
             throw BuyPropertyError.financialTransactionProblem(error)
         }
         if land.uuid.isEmpty {
@@ -297,6 +305,7 @@ class RealEstateAgent {
 
         self.mapManager.map.replaceTile(tile: land.mapTile)
         
+        self.semaphore.signal()
         self.delegate?.syncWalletChange(playerUUID: buyerUUID)
         self.delegate?.syncWalletChange(playerUUID: sellerID)
         self.delegate?.reloadMap()
@@ -305,24 +314,28 @@ class RealEstateAgent {
     }
     
     private func buyResidentialBuilding(address: MapPoint, buyerUUID: String, netPrice: Double? = nil) throws {
-        
+        self.semaphore.wait()
         guard let offer = self.residentialBuildingSaleOffer(address: address, buyerUUID: buyerUUID) else {
             Logger.error("RealEstateAgent", "buyResidentialBuilding:offer not found")
+            self.semaphore.signal()
             throw BuyPropertyError.propertyNotForSale
         }
         
         if let netPrice = netPrice {
             guard offer.saleInvoice.netValue == netPrice else {
+                self.semaphore.signal()
                 throw BuyPropertyError.saleOfferHasChanged
             }
         }
         guard let building = offer.property as? ResidentialBuilding else {
             Logger.error("RealEstateAgent", "buyResidentialBuilding:building not found")
+            self.semaphore.signal()
             throw BuyPropertyError.propertyNotForSale
         }
         let sellerID = building.ownerUUID
         guard sellerID != buyerUUID else {
             Logger.error("RealEstateAgent", "buyResidentialBuilding:seller the same as buyer")
+            self.semaphore.signal()
             throw BuyPropertyError.tryingBuyOwnProperty
         }
         Logger.info("RealEstateAgent", "New residentialBuilding sale transaction. @\(address.description)")
@@ -333,6 +346,7 @@ class RealEstateAgent {
              try self.centralBank.process(saleTransaction)
         } catch let error as FinancialTransactionError {
             Logger.error("RealEstateAgent", "buyResidentialBuilding:sale invoice transaction problem")
+            self.semaphore.signal()
             throw BuyPropertyError.financialTransactionProblem(error)
         }
         let feeTransaction = FinancialTransaction(payerUUID: buyerUUID, recipientUUID: realEstateAgentID, invoice: offer.commissionInvoice, type: .services)
@@ -340,6 +354,7 @@ class RealEstateAgent {
              try self.centralBank.process(feeTransaction)
         } catch let error as FinancialTransactionError {
             Logger.error("RealEstateAgent", "buyResidentialBuilding:commission invoice transaction problem")
+            self.semaphore.signal()
             throw BuyPropertyError.financialTransactionProblem(error)
         }
         let costs = building.investmentsNetValue + building.purchaseNetValue
@@ -350,6 +365,8 @@ class RealEstateAgent {
         modifications.append(.investmentsNetValue(offer.commissionInvoice.total))
         let mutation = ResidentialBuildingMutation(uuid: building.uuid, attributes: modifications)
         self.dataStore.update(mutation)
+        
+        self.semaphore.signal()
         
         self.delegate?.syncWalletChange(playerUUID: buyerUUID)
         self.delegate?.syncWalletChange(playerUUID: sellerID)
