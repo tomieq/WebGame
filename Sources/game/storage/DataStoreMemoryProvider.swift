@@ -8,8 +8,10 @@
 import Foundation
 
 class DataStoreMemoryProvider: DataStoreProvider {
+    
     private var players: [PlayerManagedObject]
     private var transactions: [CashFlowManagedObject]
+    private var register: [PropertyRegisterManagedObject]
     private var lands: [LandManagedObject]
     private var roads: [RoadManagedObject]
     private var buildings: [ResidentialBuildingManagedObject]
@@ -19,12 +21,14 @@ class DataStoreMemoryProvider: DataStoreProvider {
     private var cashQueue = DispatchQueue(label: "DataStore.CashFlow.queue", attributes: .concurrent)
     private var landQueue = DispatchQueue(label: "DataStore.Land.queue", attributes: .concurrent)
     private var roadQueue = DispatchQueue(label: "DataStore.Road.queue", attributes: .concurrent)
+    private var propertyQueue = DispatchQueue(label: "DataStore.Road.queue", attributes: .concurrent)
     private var residentialBuildingQueue = DispatchQueue(label: "DataStore.ResidentialBuilding.queue", attributes: .concurrent)
     private var queue = DispatchQueue(label: "DataStore.Other.queue", attributes: .concurrent)
 
     init() {
         self.players = []
         self.transactions = []
+        self.register = []
         self.lands = []
         self.roads = []
         self.buildings = []
@@ -285,6 +289,47 @@ class DataStoreMemoryProvider: DataStoreProvider {
     func removeSaleAdvert(address: MapPoint) {
         queue.sync(flags: .barrier) {
             self.adverts.removeAll{ $0.x == address.x && $0.y == address.y }
+        }
+    }
+    
+    
+    func create(_ register: PropertyRegister) -> String {
+        return propertyQueue.sync(flags: .barrier) {
+            let managedObject = PropertyRegisterManagedObject(register)
+            self.register.append(managedObject)
+            return managedObject.uuid
+        }
+    }
+    
+    func find(uuid: String) -> PropertyRegister? {
+        return propertyQueue.sync {
+            return self.register.first{ $0.uuid == uuid }.map{ PropertyRegister($0) }
+        }
+    }
+    
+    func get(playerUUID: String) -> [PropertyRegister] {
+        return propertyQueue.sync {
+            return self.register.filter{ $0.playerUUID == playerUUID }.map{ PropertyRegister($0) }
+        }
+    }
+    
+    func update(_ mutation: PropertyRegisterMutation) {
+        propertyQueue.sync(flags: .barrier) {
+            guard let managedObject = (self.register.first{ $0.uuid == mutation.uuid }) else { return }
+            for attribute in mutation.attributes {
+                switch attribute {
+                case .playerUUID(let value):
+                    managedObject.playerUUID = value
+                case .type(let value):
+                    managedObject.type = value
+                }
+            }
+        }
+    }
+    
+    func removePropertyRegister(uuid: String) {
+        propertyQueue.sync(flags: .barrier) {
+            self.register.removeAll{ $0.uuid == uuid }
         }
     }
 }

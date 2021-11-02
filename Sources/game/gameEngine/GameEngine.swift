@@ -96,7 +96,7 @@ class GameEngine {
        }
         
         self.syncWalletCoordinator.setSyncWalletChange { [weak self] playerUUID in
-            if let player = self?.dataStore.find(uuid: playerUUID) {
+            if let player: Player = self?.dataStore.find(uuid: playerUUID) {
                 for session in PlayerSessionManager.shared.getSessions(playerUUID: playerUUID){
                     self?.websocketHandler.sendTo(playerSessionID: session.id, command: .updateWallet(player.wallet.money))
                 }
@@ -108,7 +108,7 @@ class GameEngine {
         GameEventBus.gameEvents.asObservable().bind { [weak self] gameEvent in
             switch gameEvent.action {
             case .userConnected:
-                if let session = gameEvent.playerSession, let player = self?.dataStore.find(uuid: session.playerUUID) {
+                if let session = gameEvent.playerSession, let player: Player = self?.dataStore.find(uuid: session.playerUUID) {
                     self?.websocketHandler.sendTo(playerSessionID: session.id, command: .updateWallet(player.wallet.money))
                     if let text = self?.gameClock.time.text, let secondsLeft = self?.gameClock.secondsLeft {
                         self?.websocketHandler.sendTo(playerSessionID: session.id, command: .updateGameDate(UIGameDate(text: text, secondsLeft: secondsLeft)))

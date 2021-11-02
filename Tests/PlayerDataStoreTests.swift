@@ -15,7 +15,7 @@ final class PlayerDataStoreTests: XCTestCase {
         let dataStore = DataStoreMemoryProvider()
         let player = Player(login: "tester", wallet: 50)
         let id = dataStore.create(player)
-        let playerUpdated = dataStore.find(uuid: id)
+        let playerUpdated: Player? = dataStore.find(uuid: id)
         XCTAssertEqual(playerUpdated?.login, player.login)
     }
     
@@ -24,16 +24,19 @@ final class PlayerDataStoreTests: XCTestCase {
         let player = Player(uuid: "custom1", login: "tester", wallet: 50)
         let id = dataStore.create(player)
         XCTAssertEqual(id, "custom1")
-        XCTAssertNotNil(dataStore.find(uuid: "custom1"))
+        let retrievedPlayer: Player? = dataStore.find(uuid: "custom1")
+        XCTAssertNotNil(retrievedPlayer)
     }
     
     func test_delete() {
         let dataStore = DataStoreMemoryProvider()
         let player = Player(login: "tester", wallet: 50)
         let id = dataStore.create(player)
-        XCTAssertNotNil(dataStore.find(uuid: id))
+        var retrievedPlayer: Player? = dataStore.find(uuid: id)
+        XCTAssertNotNil(retrievedPlayer)
         dataStore.removePlayer(id: id)
-        XCTAssertNil(dataStore.find(uuid: id))
+        retrievedPlayer = dataStore.find(uuid: id)
+        XCTAssertNil(retrievedPlayer)
     }
     
     func test_updateWallet() {
@@ -41,7 +44,7 @@ final class PlayerDataStoreTests: XCTestCase {
         let player = Player(login: "tester", wallet: 50)
         let id = dataStore.create(player)
         dataStore.update(PlayerMutation(id: id, attributes: [.wallet(110)]))
-        let playerUpdated = dataStore.find(uuid: id)
+        let playerUpdated: Player? = dataStore.find(uuid: id)
         XCTAssertEqual(playerUpdated?.wallet, 110)
     }
 }

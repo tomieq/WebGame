@@ -31,7 +31,7 @@ public class WebApplication {
 
         server.GET["/"] = { request, responseHeaders in
             request.disableKeepAlive = true
-            guard let userID = request.queryParam("userID"), let player = self.dataStore.find(uuid: userID) else {
+            guard let userID = request.queryParam("userID"), let player: Player = self.dataStore.find(uuid: userID) else {
                     return .ok(.htmlBody("Invalid userID"))
             }
             let playerSession = PlayerSessionManager.shared.createPlayerSession(for: player)

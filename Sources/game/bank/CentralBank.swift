@@ -50,12 +50,12 @@ class CentralBank {
         }
         // let's block user's wallets so it won't be modified by anyone else
         self.semaphore.wait()
-        guard let payer = self.dataStore.find(uuid: transaction.payerUUID) else {
+        guard let payer: Player = self.dataStore.find(uuid: transaction.payerUUID) else {
             self.semaphore.signal()
             Logger.error("CentralBank", "Transaction rejected. Payer not found (\(transaction.payerUUID)")
             throw FinancialTransactionError.payerNotFound
         }
-        guard let recipient = self.dataStore.find(uuid: transaction.recipientUUID) else {
+        guard let recipient: Player = self.dataStore.find(uuid: transaction.recipientUUID) else {
             self.semaphore.signal()
             Logger.error("CentralBank", "Transaction rejected. Recipient not found (\(transaction.recipientUUID)")
             throw FinancialTransactionError.recipientNotFound
@@ -113,7 +113,7 @@ class CentralBank {
         let paidIncomeTax = (transaction.invoice.netValue * self.taxRates.incomeTax).rounded(toPlaces: 0)
         guard paidIncomeTax > 0 else { return }
 
-        if let payer = self.dataStore.find(uuid: transaction.recipientUUID) {
+        if let payer: Player = self.dataStore.find(uuid: transaction.recipientUUID) {
             
             var refund = 0.0
 

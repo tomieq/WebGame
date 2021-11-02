@@ -39,7 +39,7 @@ class PropertyManagerRestAPI: RestAPI {
                 return .badRequest(.html("Property at \(address.description) not found!"))
             }
             let ownerID = property.ownerUUID
-            let owner = self.dataStore.find(uuid: ownerID)
+            let owner: Player? = self.dataStore.find(uuid: ownerID)
             
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyInfo.html"))
             var data = [String:String]()

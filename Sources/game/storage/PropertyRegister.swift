@@ -26,3 +26,13 @@ struct PropertyRegister {
         self.type = managedObject.type
     }
 }
+
+struct PropertyRegisterMutation {
+    let uuid: String
+    let attributes: [PropertyRegisterMutation.Attribute]
+    
+    enum Attribute {
+        case playerUUID(String)
+        case type(PropertyType)
+    }
+}
