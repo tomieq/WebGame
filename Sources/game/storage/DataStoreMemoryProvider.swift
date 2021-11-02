@@ -318,7 +318,7 @@ class DataStoreMemoryProvider: DataStoreProvider {
             guard let managedObject = (self.register.first{ $0.uuid == mutation.uuid }) else { return }
             for attribute in mutation.attributes {
                 switch attribute {
-                case .playerUUID(let value):
+                case .ownerUUID(let value):
                     managedObject.ownerUUID = value
                 case .type(let value):
                     managedObject.type = value

@@ -36,7 +36,7 @@ struct PropertyRegisterMutation {
     let attributes: [PropertyRegisterMutation.Attribute]
     
     enum Attribute {
-        case playerUUID(String)
+        case ownerUUID(String)
         case type(PropertyType)
     }
 }
