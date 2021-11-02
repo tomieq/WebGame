@@ -97,6 +97,11 @@ class RealEstateAgent {
         guard let property = property else {
             throw RegisterOfferError.propertyDoesNotExist
         }
+        
+        if let register: PropertyRegister = self.dataStore.find(uuid: property.uuid), register.status == .blockedByDebtCollector {
+            throw RegisterOfferError.propertyBlockedByDebtCollector
+        }
+
         Logger.info("RealEstateAgent", "Registered new SaleOffer @\(address.description) \(property.type) \(property.name) \(netValue.money)")
         let advert = SaleAdvert(address: property.address, netPrice: netValue)
         self.dataStore.create(advert)
@@ -404,6 +409,7 @@ enum BuyPropertyError: Error, Equatable {
 enum RegisterOfferError: Error {
     case propertyDoesNotExist
     case advertAlreadyExists
+    case propertyBlockedByDebtCollector
 }
 
 enum UpdateOfferError: Error {

@@ -41,6 +41,23 @@ final class RealEstateAgentTests: XCTestCase {
         }
     }
     
+    func test_registerLandOffer_propertyBlockedByDebtCollector() {
+        let agent = self.makeAgent()
+
+        let address = MapPoint(x: 5, y: 3)
+        let land = Land(address: address, ownerUUID: "john")
+        let landUUID = agent.dataStore.create(land)
+        agent.mapManager.map.setTiles([GameMapTile(address: address, type: .soldLand)])
+        let register = PropertyRegister(uuid: landUUID, playerUUID: "john", type: .land)
+        agent.dataStore.create(register)
+        let mutation = PropertyRegisterMutation(uuid: landUUID, attributes: [.status(.blockedByDebtCollector)])
+        agent.dataStore.update(mutation)
+        
+        XCTAssertThrowsError(try agent.registerSaleOffer(address: address, netValue: 3000)){ error in
+            XCTAssertEqual(error as? RegisterOfferError, .propertyBlockedByDebtCollector)
+        }
+    }
+    
     func test_registerLandOffer_advertExists() {
         let agent = self.makeAgent()
 
