@@ -537,10 +537,10 @@ final class RealEstateAgentTests: XCTestCase {
         let propertyValuer = PropertyValuer(balanceCalculator: balanceCalculator, constructionServices: constructionServices)
         let agent = RealEstateAgent(mapManager: mapManager, propertyValuer: propertyValuer, centralBank: centralBank, delegate: nil)
         
-        let government = Player(uuid: SystemPlayer.government.uuid, login: "Big Uncle", wallet: 0)
+        let government = Player(uuid: SystemPlayer.government.uuid, login: SystemPlayer.government.login, wallet: 0)
         agent.dataStore.create(government)
         
-        let agency = Player(uuid: SystemPlayer.realEstateAgency.uuid, login: "Agency", wallet: 0)
+        let agency = Player(uuid: SystemPlayer.realEstateAgency.uuid, login: SystemPlayer.realEstateAgency.login, wallet: 0)
         agent.dataStore.create(agency)
         
         return agent

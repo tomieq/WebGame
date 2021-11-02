@@ -29,6 +29,7 @@ class GameEngine {
     let footballBookie: FootballBookie
     let court: Court
     let police: Police
+    let debtCollector: DebtCollector
     let reloadMapCoordinator: ReloadMapCoordinator
     let syncWalletCoordinator: SyncWalletCoordinator
     let disposeBag = DisposeBag()
@@ -41,7 +42,7 @@ class GameEngine {
         
         let government = Player(uuid: SystemPlayer.government.uuid, login: SystemPlayer.government.login, wallet: 0)
         let realEstateAgent = Player(uuid: SystemPlayer.realEstateAgency.uuid, login: SystemPlayer.realEstateAgency.login, wallet: 0)
-        let user1 = Player(uuid: "p1", login: "Mike Wachlewsky", wallet: 10000000)
+        let user1 = Player(uuid: "p1", login: "Tomasz Kucharski", wallet: 10000000)
         let user2 = Player(uuid: "p2", login: "Richard Smith", wallet: 10000000)
         self.dataStore.create(government)
         self.dataStore.create(realEstateAgent)
@@ -54,7 +55,7 @@ class GameEngine {
         let bookie = Player(uuid: SystemPlayer.bookie.uuid, login: SystemPlayer.bookie.login, wallet: 1000000000)
         self.dataStore.create(bookie)
         
-        self.gameMap = GameMap(width: 25, height: 25, scale: 0.30)
+        self.gameMap = GameMap(width: 35, height: 35, scale: 0.30)
         self.gameMapManager = GameMapManager(self.gameMap)
         self.gameMapManager.loadMapFrom(path: "maps/roadMap1")
         
@@ -78,6 +79,7 @@ class GameEngine {
         
         self.court = Court(centralbank: self.centralbank)
         self.police = Police(footballBookie: self.footballBookie, court: self.court)
+        self.debtCollector = DebtCollector(realEstateAgent: self.realEstateAgent)
         
         self.reloadMapCoordinator = ReloadMapCoordinator()
         self.syncWalletCoordinator = SyncWalletCoordinator()
@@ -88,6 +90,7 @@ class GameEngine {
         self.footballBookie.delegate = self
         self.court.delegate = self
         self.police.delegate = self
+        self.debtCollector.delegate = self
         
         self.reloadMapCoordinator.setFlushAction { [weak self] in
            self?.streetNavi.reload()
@@ -175,6 +178,7 @@ class GameEngine {
 
 extension GameEngine: CourtDelegate {}
 extension GameEngine: PoliceDelegate {}
+extension GameEngine: DebtCollectorDelegate {}
 extension GameEngine: FootballBookieDelegate {
     func notify(playerUUID: String, _ notification: UINotification) {
         for session in PlayerSessionManager.shared.getSessions(playerUUID: playerUUID){
@@ -203,6 +207,7 @@ extension GameEngine: GameClockDelegate {
         self.reloadMapCoordinator.hold()
         self.syncWalletCoordinator.hold()
         
+        self.debtCollector.executeDebts()
         self.constructionServices.finishInvestments()
         self.investorAI.purchaseBargains()
         self.footballBookie.nextMonth()
