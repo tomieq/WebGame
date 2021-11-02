@@ -65,7 +65,7 @@ class DataStoreMemoryProvider: DataStoreProvider {
 
     func update(_ mutation: PlayerMutation) {
         playerQueue.sync(flags: .barrier) {
-            guard let managedPlayer = (self.players.first{ $0.uuid == mutation.id }) else { return }
+            guard let managedPlayer = (self.players.first{ $0.uuid == mutation.uuid }) else { return }
             for attribute in mutation.attributes {
                 switch attribute {
                 case .wallet(let value):

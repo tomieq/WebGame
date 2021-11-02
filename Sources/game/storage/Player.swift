@@ -57,7 +57,7 @@ struct Player: Codable {
 }
 
 struct PlayerMutation {
-    let id: String
+    let uuid: String
     let attributes: [PlayerMutation.Attribute]
     
     enum Attribute {

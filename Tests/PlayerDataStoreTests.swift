@@ -43,7 +43,7 @@ final class PlayerDataStoreTests: XCTestCase {
         let dataStore = DataStoreMemoryProvider()
         let player = Player(login: "tester", wallet: 50)
         let id = dataStore.create(player)
-        dataStore.update(PlayerMutation(id: id, attributes: [.wallet(110)]))
+        dataStore.update(PlayerMutation(uuid: id, attributes: [.wallet(110)]))
         let playerUpdated: Player? = dataStore.find(uuid: id)
         XCTAssertEqual(playerUpdated?.wallet, 110)
     }

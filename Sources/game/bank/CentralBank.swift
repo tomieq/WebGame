@@ -146,11 +146,11 @@ class CentralBank {
 fileprivate extension Player {
     func decreaseWallet(amount: Double, _ dataStore: DataStoreProvider) {
         let value = (self.wallet - amount).rounded(toPlaces: 0)
-        dataStore.update(PlayerMutation(id: self.uuid, attributes: [.wallet(value)]))
+        dataStore.update(PlayerMutation(uuid: self.uuid, attributes: [.wallet(value)]))
     }
     
     func increaseWallet(amount: Double, _ dataStore: DataStoreProvider) {
         let value = (self.wallet + amount).rounded(toPlaces: 0)
-        dataStore.update(PlayerMutation(id: self.uuid, attributes: [.wallet(value)]))
+        dataStore.update(PlayerMutation(uuid: self.uuid, attributes: [.wallet(value)]))
     }
 }
