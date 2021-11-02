@@ -294,11 +294,10 @@ class RealEstateAgent {
             self.semaphore.signal()
             throw BuyPropertyError.financialTransactionProblem(error)
         }
+        var landUUID = land.uuid
         if land.uuid.isEmpty {
-            let landUUID = self.dataStore.create(land)
+            landUUID = self.dataStore.create(land)
             self.dataStore.update(LandMutation(uuid: landUUID, attributes: [.ownerUUID(buyerUUID), .investments(offer.commissionInvoice.total)]))
-            let register = PropertyRegister(uuid: landUUID, address: land.address, playerUUID: buyerUUID, type: .land)
-            self.dataStore.create(register)
         } else {
             let costs = land.investmentsNetValue + land.purchaseNetValue
             self.centralBank.refundIncomeTax(transaction: saleTransaction, costs: costs)
@@ -308,14 +307,14 @@ class RealEstateAgent {
             modifications.append(.investments(offer.commissionInvoice.total))
             let mutation = LandMutation(uuid: land.uuid, attributes: modifications)
             self.dataStore.update(mutation)
-            
-            if let register: PropertyRegister = self.dataStore.find(uuid: land.uuid) {
-                let mutation = PropertyRegisterMutation(uuid: register.uuid, attributes: [.ownerUUID(buyerUUID), .type(.land)])
-                self.dataStore.update(mutation)
-            } else {
-                let register = PropertyRegister(uuid: land.uuid, address: land.address, playerUUID: buyerUUID, type: .land)
-                self.dataStore.create(register)
-            }
+        }
+        
+        if let register: PropertyRegister = self.dataStore.find(uuid: landUUID) {
+            let mutation = PropertyRegisterMutation(uuid: register.uuid, attributes: [.ownerUUID(buyerUUID), .type(.land), .status(.normal)])
+            self.dataStore.update(mutation)
+        } else {
+            let register = PropertyRegister(uuid: landUUID, address: land.address, playerUUID: buyerUUID, type: .land)
+            self.dataStore.create(register)
         }
 
         self.mapManager.map.replaceTile(tile: land.mapTile)
@@ -382,7 +381,7 @@ class RealEstateAgent {
         self.dataStore.update(mutation)
         
         if let register: PropertyRegister = self.dataStore.find(uuid: building.uuid) {
-            let mutation = PropertyRegisterMutation(uuid: register.uuid, attributes: [.ownerUUID(buyerUUID), .type(.residentialBuilding)])
+            let mutation = PropertyRegisterMutation(uuid: register.uuid, attributes: [.ownerUUID(buyerUUID), .type(.residentialBuilding), .status(.normal)])
             self.dataStore.update(mutation)
         } else {
             let register = PropertyRegister(uuid: building.uuid, address: building.address, playerUUID: buyerUUID, type: .residentialBuilding)
