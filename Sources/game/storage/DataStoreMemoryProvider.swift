@@ -322,6 +322,8 @@ class DataStoreMemoryProvider: DataStoreProvider {
                     managedObject.ownerUUID = value
                 case .type(let value):
                     managedObject.type = value
+                case .status(let value):
+                    managedObject.status = value
                 }
             }
         }
