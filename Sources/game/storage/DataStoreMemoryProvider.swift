@@ -307,9 +307,9 @@ class DataStoreMemoryProvider: DataStoreProvider {
         }
     }
     
-    func get(playerUUID: String) -> [PropertyRegister] {
+    func get(ownerUUID: String) -> [PropertyRegister] {
         return propertyQueue.sync {
-            return self.register.filter{ $0.playerUUID == playerUUID }.map{ PropertyRegister($0) }
+            return self.register.filter{ $0.ownerUUID == ownerUUID }.map{ PropertyRegister($0) }
         }
     }
     
@@ -319,7 +319,7 @@ class DataStoreMemoryProvider: DataStoreProvider {
             for attribute in mutation.attributes {
                 switch attribute {
                 case .playerUUID(let value):
-                    managedObject.playerUUID = value
+                    managedObject.ownerUUID = value
                 case .type(let value):
                     managedObject.type = value
                 }

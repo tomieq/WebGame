@@ -15,14 +15,18 @@ enum PropertyType: String {
 
 struct PropertyRegister {
     let uuid: String
-    let playerUUID: String
-    let propertyUUID: String
+    let ownerUUID: String
     let type: PropertyType
+
+    init(uuid: String, playerUUID: String, type: PropertyType) {
+        self.uuid = uuid
+        self.ownerUUID = playerUUID
+        self.type = type
+    }
 
     init(_ managedObject: PropertyRegisterManagedObject) {
         self.uuid = managedObject.uuid
-        self.playerUUID = managedObject.playerUUID
-        self.propertyUUID = managedObject.propertyUUID
+        self.ownerUUID = managedObject.ownerUUID
         self.type = managedObject.type
     }
 }

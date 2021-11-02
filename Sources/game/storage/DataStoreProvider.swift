@@ -23,7 +23,7 @@ protocol DataStoreProvider {
     func find(address: MapPoint) -> ResidentialBuilding?
     func find(address: MapPoint) -> SaleAdvert?
     func getFinancialTransactions(userID: String) -> [CashFlow]
-    func get(playerUUID: String) -> [PropertyRegister]
+    func get(ownerUUID: String) -> [PropertyRegister]
     
     func getAll() -> [Player]
     func getAll() -> [Land]
