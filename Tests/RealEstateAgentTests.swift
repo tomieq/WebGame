@@ -48,7 +48,7 @@ final class RealEstateAgentTests: XCTestCase {
         let land = Land(address: address, ownerUUID: "john")
         let landUUID = agent.dataStore.create(land)
         agent.mapManager.map.setTiles([GameMapTile(address: address, type: .soldLand)])
-        let register = PropertyRegister(uuid: landUUID, playerUUID: "john", type: .land)
+        let register = PropertyRegister(uuid: landUUID, address: land.address, playerUUID: "john", type: .land)
         agent.dataStore.create(register)
         let mutation = PropertyRegisterMutation(uuid: landUUID, attributes: [.status(.blockedByDebtCollector)])
         agent.dataStore.update(mutation)
@@ -223,7 +223,7 @@ final class RealEstateAgentTests: XCTestCase {
         agent.dataStore.create(buyer)
         let land = Land(address: address, ownerUUID: seller.uuid, purchaseNetValue: 100)
         let landUUID = agent.dataStore.create(land)
-        let register = PropertyRegister(uuid: landUUID, playerUUID: seller.uuid, type: .land)
+        let register = PropertyRegister(uuid: landUUID, address: land.address, playerUUID: seller.uuid, type: .land)
         agent.dataStore.create(register)
         agent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
         
@@ -391,7 +391,7 @@ final class RealEstateAgentTests: XCTestCase {
         let address = MapPoint(x: 0, y: 0)
         let building = ResidentialBuilding(land: Land(address: address, ownerUUID: "seller", purchaseNetValue: 200), storeyAmount: 4)
         let buildingUUID = agent.dataStore.create(building)
-        let register = PropertyRegister(uuid: buildingUUID, playerUUID: seller.uuid, type: .residentialBuilding)
+        let register = PropertyRegister(uuid: buildingUUID, address: address, playerUUID: seller.uuid, type: .residentialBuilding)
         agent.dataStore.create(register)
         
 

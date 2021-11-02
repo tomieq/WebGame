@@ -297,7 +297,7 @@ class RealEstateAgent {
         if land.uuid.isEmpty {
             let landUUID = self.dataStore.create(land)
             self.dataStore.update(LandMutation(uuid: landUUID, attributes: [.ownerUUID(buyerUUID), .investments(offer.commissionInvoice.total)]))
-            let register = PropertyRegister(uuid: landUUID, playerUUID: buyerUUID, type: .land)
+            let register = PropertyRegister(uuid: landUUID, address: land.address, playerUUID: buyerUUID, type: .land)
             self.dataStore.create(register)
         } else {
             let costs = land.investmentsNetValue + land.purchaseNetValue
@@ -313,7 +313,7 @@ class RealEstateAgent {
                 let mutation = PropertyRegisterMutation(uuid: register.uuid, attributes: [.ownerUUID(buyerUUID), .type(.land)])
                 self.dataStore.update(mutation)
             } else {
-                let register = PropertyRegister(uuid: land.uuid, playerUUID: buyerUUID, type: .land)
+                let register = PropertyRegister(uuid: land.uuid, address: land.address, playerUUID: buyerUUID, type: .land)
                 self.dataStore.create(register)
             }
         }
@@ -385,7 +385,7 @@ class RealEstateAgent {
             let mutation = PropertyRegisterMutation(uuid: register.uuid, attributes: [.ownerUUID(buyerUUID), .type(.residentialBuilding)])
             self.dataStore.update(mutation)
         } else {
-            let register = PropertyRegister(uuid: building.uuid, playerUUID: buyerUUID, type: .residentialBuilding)
+            let register = PropertyRegister(uuid: building.uuid, address: building.address, playerUUID: buyerUUID, type: .residentialBuilding)
             self.dataStore.create(register)
         }
         

@@ -20,12 +20,14 @@ enum PropertyStatus: String {
 
 struct PropertyRegister {
     let uuid: String
+    let address: MapPoint
     let ownerUUID: String
     let type: PropertyType
     let status: PropertyStatus
 
-    init(uuid: String, playerUUID: String, type: PropertyType) {
+    init(uuid: String, address: MapPoint, playerUUID: String, type: PropertyType) {
         self.uuid = uuid
+        self.address = address
         self.ownerUUID = playerUUID
         self.type = type
         self.status = .normal
@@ -33,6 +35,7 @@ struct PropertyRegister {
 
     init(_ managedObject: PropertyRegisterManagedObject) {
         self.uuid = managedObject.uuid
+        self.address = managedObject.address
         self.ownerUUID = managedObject.ownerUUID
         self.type = managedObject.type
         self.status = managedObject.status
