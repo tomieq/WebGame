@@ -11,10 +11,12 @@ class PropertyRegisterManagedObject {
     let uuid: String
     var ownerUUID: String
     var type: PropertyType
+    var status: PropertyStatus
     
     init(_ register: PropertyRegister) {
         self.uuid = register.uuid
         self.ownerUUID = register.ownerUUID
         self.type = register.type
+        self.status = register.status
     }
 }
