@@ -71,13 +71,16 @@ class RealEstateAgent {
 
     func registerSaleOffer(address: MapPoint, netValue: Double) throws {
         guard self.mapManager.map.isAddressOnMap(address) else {
+            Logger.error("RealEstateAgent", "RegisterOfferError.propertyDoesNotExist \(address.description) - address is not on map")
             throw RegisterOfferError.propertyDoesNotExist
         }
         guard let propertyType = self.mapManager.map.getTile(address: address)?.propertyType else {
+            Logger.error("RealEstateAgent", "RegisterOfferError.propertyDoesNotExist \(address.description) - missing tile on map")
             throw RegisterOfferError.propertyDoesNotExist
         }
         let exists: SaleAdvert? = self.dataStore.find(address: address)
         guard exists == nil else {
+            Logger.error("RealEstateAgent", "RegisterOfferError.advertAlreadyExists \(address.description)")
             throw RegisterOfferError.advertAlreadyExists
         }
 
@@ -95,10 +98,12 @@ class RealEstateAgent {
             property = building
         }
         guard let property = property else {
+            Logger.error("RealEstateAgent", "RegisterOfferError.propertyDoesNotExist \(address.description) - missing property instance")
             throw RegisterOfferError.propertyDoesNotExist
         }
         
         if let register: PropertyRegister = self.dataStore.find(uuid: property.uuid), register.status == .blockedByDebtCollector {
+            Logger.error("RealEstateAgent", "RegisterOfferError.propertyBlockedByDebtCollector \(address.description)")
             throw RegisterOfferError.propertyBlockedByDebtCollector
         }
 
