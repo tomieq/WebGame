@@ -23,7 +23,7 @@ class InvestorArtifficialIntelligence {
     func purchaseBargains() {
         let offers = agent.getAllSaleOffers(buyerUUID: SystemPlayer.investor.uuid)
         for offer in offers {
-            if let estimatedValue = self.agent.propertyValuer.estimateValue(offer.property.address) {
+            if offer.property.ownerUUID != SystemPlayer.investor.uuid, let estimatedValue = self.agent.propertyValuer.estimateValue(offer.property.address) {
                 let acceptablePrice = estimatedValue * self.params.instantPurchaseToEstimatedValueFactor
                 if  offer.saleInvoice.netValue <= acceptablePrice {
                     try? self.agent.buyProperty(address: offer.property.address, buyerUUID: SystemPlayer.investor.uuid)
