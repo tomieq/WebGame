@@ -73,16 +73,9 @@ class DebtCollector {
                     let infoToOthers = "<b>\(player.login)</b> has financial problems. He need to pay his debts otherwise his properties will be put on sale"
                     self.delegate?.notifyEveryone(UINotification(text: infoToOthers, level: .info, duration: 15, icon: .redFlag), exceptUserUUIDs: [execution.playerUUID])
                 }
-                continue
-            }
-            
-            if execution.startExecutionMonth == self.time.month {
-                // block property and offer for sale
-                self.putPropertiesOnSale(execution)
-                continue
             }
 
-            if self.time.month > execution.startExecutionMonth {
+            if self.time.month >= execution.startExecutionMonth {
                 self.putPropertiesOnSale(execution)
             }
         }

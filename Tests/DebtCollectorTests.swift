@@ -42,17 +42,17 @@ class DebtCollectorTests: XCTestCase {
         let collector = self.makeDebtCollector()
         let delegate = DebtCollectorTestDelegate()
         collector.delegate = delegate
+        collector.params.startExecutionDelay = 1
         let time = collector.time
         let dataStore = collector.dataStore
         let address = MapPoint(x: 0, y: 0)
         
-        let register = PropertyRegister(uuid: "random", address: address, playerUUID: "player", type: .land)
-        dataStore.create(register)
+        dataStore.create(PropertyRegister(uuid: "random", address: address, playerUUID: "player", type: .land))
         collector.realEstateAgent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
         dataStore.create(Land(address: address, ownerUUID: "player"))
         
-        var updatedRegister: PropertyRegister? = dataStore.find(uuid: "random")
-        XCTAssertEqual(updatedRegister?.status, .normal)
+        var register: PropertyRegister? = dataStore.find(uuid: "random")
+        XCTAssertEqual(register?.status, .normal)
         
         XCTAssertEqual(delegate.notifuUUID.count, 0)
         collector.executeDebts()
@@ -64,8 +64,8 @@ class DebtCollectorTests: XCTestCase {
         collector.executeDebts()
         XCTAssertEqual(delegate.notifuUUID.count, 2)
         
-        updatedRegister = dataStore.find(uuid: "random")
-        XCTAssertEqual(updatedRegister?.status, .blockedByDebtCollector)
+        register = dataStore.find(uuid: "random")
+        XCTAssertEqual(register?.status, .blockedByDebtCollector)
     }
     
     func test_propertyPutOnSale() {
@@ -76,10 +76,8 @@ class DebtCollectorTests: XCTestCase {
         let dataStore = collector.dataStore
         let address = MapPoint(x: 0, y: 0)
         
-        let land = Land(address: address, name: "Some Name", ownerUUID: "player")
-        let landUUID = dataStore.create(land)
-        let register = PropertyRegister(uuid: landUUID, address: address, playerUUID: "player", type: .land)
-        dataStore.create(register)
+        let landUUID = dataStore.create(Land(address: address, name: "Some Name", ownerUUID: "player"))
+        dataStore.create(PropertyRegister(uuid: landUUID, address: address, playerUUID: "player", type: .land))
         collector.realEstateAgent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
         
         XCTAssertFalse(collector.realEstateAgent.isForSale(address: address))
@@ -110,6 +108,7 @@ class DebtCollectorTests: XCTestCase {
         let delegate = DebtCollectorTestDelegate()
         collector.delegate = delegate
         collector.params.montlyPropertyPriceReduction = 0.4
+        collector.params.startExecutionDelay = 0
         
         let time = collector.time
         let dataStore = collector.dataStore
@@ -117,10 +116,8 @@ class DebtCollectorTests: XCTestCase {
         
         for n in (0...2) {
             let address = addresses[n]
-            let land = Land(address: address, name: "Land \(n)", ownerUUID: "player")
-            let landUUID = dataStore.create(land)
-            let register = PropertyRegister(uuid: landUUID, address: address, playerUUID: "player", type: .land)
-            dataStore.create(register)
+            let landUUID = dataStore.create(Land(address: address, name: "Land \(n)", ownerUUID: "player"))
+            dataStore.create(PropertyRegister(uuid: landUUID, address: address, playerUUID: "player", type: .land))
             collector.realEstateAgent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
         }
         let landValue = collector.realEstateAgent.propertyValuer.estimateValue(addresses[0]) ?? 1
@@ -128,16 +125,18 @@ class DebtCollectorTests: XCTestCase {
         
         XCTAssertFalse(collector.realEstateAgent.isForSale(address: addresses[0]))
         XCTAssertFalse(collector.realEstateAgent.isForSale(address: addresses[1]))
-        for _ in (1...3) {
-            collector.executeDebts()
-            time.nextMonth()
-        }
+        
+        collector.executeDebts()
+        time.nextMonth()
+        collector.executeDebts()
         XCTAssertEqual(collector.realEstateAgent.getAllSaleOffers(buyerUUID: "buyer").count, 1)
-        collector.executeDebts()
+        
         time.nextMonth()
+        collector.executeDebts()
         XCTAssertEqual(collector.realEstateAgent.getAllSaleOffers(buyerUUID: "buyer").count, 2)
-        collector.executeDebts()
+
         time.nextMonth()
+        collector.executeDebts()
         XCTAssertEqual(collector.realEstateAgent.getAllSaleOffers(buyerUUID: "buyer").count, 2)
     }
     
