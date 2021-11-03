@@ -14,11 +14,11 @@ class DebtExecution {
     let startExecutionMonth: Int
     var executedProperties: [ExecutedProperty]
     
-    init(catchMonth: Int, playerUUID: String) {
+    init(catchMonth: Int, playerUUID: String, startExecutionDelay: Int) {
         self.catchMonth = catchMonth
         self.playerUUID = playerUUID
         self.notificationMonth = catchMonth + 1
-        self.startExecutionMonth = catchMonth + 2
+        self.startExecutionMonth = catchMonth + 1 + startExecutionDelay
         self.executedProperties = []
     }
 }
@@ -38,11 +38,15 @@ protocol DebtCollectorDelegate {
     func notifyEveryone(_ notification: UINotification, exceptUserUUIDs: [String])
 }
 
-class DebtCollector {
-    
+class DebtCollectorParams {
     var montlyPropertyPriceReduction = 0.05
     var initialPropertyValueRatio = 1.0
+    var startExecutionDelay: Int = 1
+}
 
+class DebtCollector {
+
+    let params: DebtCollectorParams
     let realEstateAgent: RealEstateAgent
     let dataStore: DataStoreProvider
     let time: GameTime
@@ -50,6 +54,7 @@ class DebtCollector {
     private var executions: [DebtExecution]
     
     init(realEstateAgent: RealEstateAgent) {
+        self.params = DebtCollectorParams()
         self.realEstateAgent = realEstateAgent
         self.dataStore = realEstateAgent.dataStore
         self.time = realEstateAgent.centralBank.time
@@ -93,7 +98,7 @@ class DebtCollector {
         for player in players {
             let isExecuted = self.isExecuted(playerUUID: player.uuid)
             if player.wallet < 0, !isExecuted {
-                let execution = DebtExecution(catchMonth: self.time.month, playerUUID: player.uuid)
+                let execution = DebtExecution(catchMonth: self.time.month, playerUUID: player.uuid, startExecutionDelay: self.params.startExecutionDelay)
                 self.executions.append(execution)
             }
             if player.wallet >= 0, isExecuted {
@@ -110,6 +115,8 @@ class DebtCollector {
             self.realEstateAgent.cancelSaleOffer(address: register.address)
         }
         self.executions.removeAll{ $0.playerUUID == playerUUID }
+        let text = "Debt Collector finished work with you. Now you have clean financial situation"
+        self.delegate?.notify(playerUUID: playerUUID, UINotification(text: text, level: .success, duration: 15, icon: .moneyWarning))
     }
     
     func putPropertiesOnSale(_ execution: DebtExecution) {
@@ -118,7 +125,7 @@ class DebtCollector {
     
         let allProperties = allRegisters.map { register -> PropertyForDebtExecution in
             let estimatedValue = self.realEstateAgent.propertyValuer.estimateValue(register.address) ?? 1
-            let sellPriceRatio = execution.executedProperties.first{ $0.register == register }?.nextSellPriceRatio ?? self.initialPropertyValueRatio
+            let sellPriceRatio = execution.executedProperties.first{ $0.register == register }?.nextSellPriceRatio ?? self.params.initialPropertyValueRatio
             let salePrice = estimatedValue * sellPriceRatio
             return PropertyForDebtExecution(register: register, value: salePrice)
         }
@@ -149,11 +156,11 @@ class DebtCollector {
             do {
                 if let executedProperty = (execution.executedProperties.first{ $0.register == register }) {
                     if executedProperty.nextSellPriceRatio > 0.5 {
-                        executedProperty.nextSellPriceRatio -= self.montlyPropertyPriceReduction
+                        executedProperty.nextSellPriceRatio -= self.params.montlyPropertyPriceReduction
                     }
                     try realEstateAgent.updateSaleOffer(address: register.address, netValue: salePrice)
                 } else {
-                    let nextSellPriceRatio = self.initialPropertyValueRatio - self.montlyPropertyPriceReduction
+                    let nextSellPriceRatio = self.params.initialPropertyValueRatio - self.params.montlyPropertyPriceReduction
                     execution.executedProperties.append(ExecutedProperty(register: register, nextSellPriceRatio: nextSellPriceRatio))
                     
                     

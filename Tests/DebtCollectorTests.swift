@@ -109,7 +109,7 @@ class DebtCollectorTests: XCTestCase {
         let collector = self.makeDebtCollector()
         let delegate = DebtCollectorTestDelegate()
         collector.delegate = delegate
-        collector.montlyPropertyPriceReduction = 0.4
+        collector.params.montlyPropertyPriceReduction = 0.4
         
         let time = collector.time
         let dataStore = collector.dataStore
