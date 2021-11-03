@@ -159,9 +159,9 @@ class GameEngine {
             case .notification(let payload):
                 switch gameEvent.playerSession {
                 case .none:
-                    self?.websocketHandler.sendToAll(command: .notification(payload))
+                    self?.notifyEveryone(payload)
                 case .some(let playerSession):
-                    self?.websocketHandler.sendTo(playerSessionID: playerSession.id, command: .notification(payload))
+                    self?.notify(playerUUID: playerSession.playerUUID, payload)
                 }
             default:
                 break
@@ -197,8 +197,11 @@ extension GameEngine: RealEstateAgentDelegate, ConstructionServicesDelegate {
     }
     
     func notifyEveryone(_ notification: UINotification) {
-        let announcementEvent = GameEvent(playerSession: nil, action: .notification(notification))
-        GameEventBus.gameEvents.onNext(announcementEvent)
+        self.websocketHandler.sendToAll(command: .notification(notification))
+    }
+
+    func notifyEveryone(_ notification: UINotification, exceptUserUUIDs: [String] = []) {
+        self.websocketHandler.sendToAll(command: .notification(notification), exceptUserUUIDs: exceptUserUUIDs)
     }
 }
 

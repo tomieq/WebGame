@@ -42,6 +42,16 @@ class WebsocketHandler {
         }
     }
     
+    func sendToAll(command: WebsocketOutCommand, exceptUserUUIDs: [String]) {
+        let json = command.json
+        Logger.info("WebsocketHandler", "Send to all: \(json) excluding \(exceptUserUUIDs.count) users")
+        for playerSession in self.activeSessions {
+            if let playerUUID = playerSession.playerSession?.playerUUID, !exceptUserUUIDs.contains(playerUUID) {
+                playerSession.websocketSession.writeText(json)
+            }
+        }
+    }
+    
     func handleMessage(websocketSession: WebSocketSession, text: String) {
         
         if let data = text.data(using: .utf8),
