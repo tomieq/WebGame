@@ -30,6 +30,7 @@ protocol DebtCollectorDelegate {
 
 class DebtCollector {
     
+    var montlyPropertyPriceReduction = 0.05
     let realEstateAgent: RealEstateAgent
     let dataStore: DataStoreProvider
     let time: GameTime
@@ -64,7 +65,7 @@ class DebtCollector {
             }
 
             if self.time.month > execution.startExecutionMonth, execution.sellPriceRatio > 0.5 {
-                execution.sellPriceRatio -= 0.05
+                execution.sellPriceRatio -= self.montlyPropertyPriceReduction
                 self.putPropertiesOnSale(execution, sellPriceRatio: execution.sellPriceRatio)
             }
         }
