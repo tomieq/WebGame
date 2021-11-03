@@ -12,14 +12,24 @@ class DebtExecution {
     let playerUUID: String
     let notificationMonth: Int
     let startExecutionMonth: Int
-    var sellPriceRatio: Double
+    var executedProperties: [ExecutedProperty]
     
     init(catchMonth: Int, playerUUID: String) {
         self.catchMonth = catchMonth
         self.playerUUID = playerUUID
         self.notificationMonth = catchMonth + 1
         self.startExecutionMonth = catchMonth + 2
-        self.sellPriceRatio = 0.9
+        self.executedProperties = []
+    }
+}
+
+class ExecutedProperty {
+    let register: PropertyRegister
+    var nextSellPriceRatio: Double
+    
+    init(register: PropertyRegister, nextSellPriceRatio: Double) {
+        self.register = register
+        self.nextSellPriceRatio = nextSellPriceRatio
     }
 }
 
@@ -31,6 +41,8 @@ protocol DebtCollectorDelegate {
 class DebtCollector {
     
     var montlyPropertyPriceReduction = 0.05
+    var initialPropertyValueRatio = 1.0
+
     let realEstateAgent: RealEstateAgent
     let dataStore: DataStoreProvider
     let time: GameTime
@@ -61,12 +73,12 @@ class DebtCollector {
             
             if execution.startExecutionMonth == self.time.month {
                 // block property and offer for sale
-                self.putPropertiesOnSale(execution, sellPriceRatio: execution.sellPriceRatio)
+                self.putPropertiesOnSale(execution)
+                continue
             }
 
-            if self.time.month > execution.startExecutionMonth, execution.sellPriceRatio > 0.5 {
-                execution.sellPriceRatio -= self.montlyPropertyPriceReduction
-                self.putPropertiesOnSale(execution, sellPriceRatio: execution.sellPriceRatio)
+            if self.time.month > execution.startExecutionMonth {
+                self.putPropertiesOnSale(execution)
             }
         }
     }
@@ -80,48 +92,81 @@ class DebtCollector {
         
         for player in players {
             let isExecuted = self.isExecuted(playerUUID: player.uuid)
-            if player.wallet < 1000, !isExecuted {
+            if player.wallet < 0, !isExecuted {
                 let execution = DebtExecution(catchMonth: self.time.month, playerUUID: player.uuid)
                 self.executions.append(execution)
             }
             if player.wallet >= 0, isExecuted {
-                let registers: [PropertyRegister] = self.dataStore.get(ownerUUID: player.uuid)
-                for register in registers {
-                    let mutation = PropertyRegisterMutation(uuid: register.uuid, attributes: [.status(.normal)])
-                    self.dataStore.update(mutation)
-                    self.realEstateAgent.cancelSaleOffer(address: register.address)
-                }
-                self.executions.removeAll{ $0.playerUUID == player.uuid }
+                self.stopExecutions(playerUUID: player.uuid)
             }
         }
     }
     
-    func putPropertiesOnSale(_ execution: DebtExecution, sellPriceRatio: Double) {
+    private func stopExecutions(playerUUID: String) {
+        let registers: [PropertyRegister] = self.dataStore.get(ownerUUID: playerUUID)
+        for register in registers {
+            let mutation = PropertyRegisterMutation(uuid: register.uuid, attributes: [.status(.normal)])
+            self.dataStore.update(mutation)
+            self.realEstateAgent.cancelSaleOffer(address: register.address)
+        }
+        self.executions.removeAll{ $0.playerUUID == playerUUID }
+    }
+    
+    func putPropertiesOnSale(_ execution: DebtExecution) {
         guard let player: Player = self.dataStore.find(uuid: execution.playerUUID) else { return }
-        let registers: [PropertyRegister] = self.dataStore.get(ownerUUID: execution.playerUUID)
-        let properties = registers.map { register -> PropertyForDebtExecution in
+        let allRegisters: [PropertyRegister] = self.dataStore.get(ownerUUID: execution.playerUUID)
+    
+        let allProperties = allRegisters.map { register -> PropertyForDebtExecution in
             let estimatedValue = self.realEstateAgent.propertyValuer.estimateValue(register.address) ?? 1
+            let sellPriceRatio = execution.executedProperties.first{ $0.register == register }?.nextSellPriceRatio ?? self.initialPropertyValueRatio
             let salePrice = estimatedValue * sellPriceRatio
             return PropertyForDebtExecution(register: register, value: salePrice)
         }
+        let registersOnSale = execution.executedProperties.map{ $0.register }
+        let propertiesOnSale = allProperties.filter{ registersOnSale.contains($0.register) }
+        
+        let saleTotalValue = propertiesOnSale.map{ $0.value }.reduce(0, +)
+        
         let debt = -1 * player.wallet
-        let propertiesForSale = self.chooseProperties(properties, debt: debt)
+        guard debt > 0 else {
+            self.stopExecutions(playerUUID: execution.playerUUID)
+            return
+        }
+        let uncoveredDebt = debt - saleTotalValue
+        var propertiesForSale = propertiesOnSale
+        if uncoveredDebt > 0 {
+            let propertiesNotForSale = allProperties.filter{ !registersOnSale.contains($0.register) }
+            propertiesForSale.append(contentsOf: self.chooseProperties(propertiesNotForSale, debt: uncoveredDebt))
+        }
         guard !propertiesForSale.isEmpty else { return }
+        Logger.info("DebtCollector", "Player \(player.login) with \(debt.money) debt: Put on sale properties \(propertiesForSale.map{$0.register.address.description}.joined(separator: ", "))")
         var informPlayer = false
         for property in propertiesForSale {
             
             let register = property.register
             let salePrice = property.value
+            
             do {
-                try self.realEstateAgent.registerSaleOffer(address: register.address, netValue: salePrice)
-                informPlayer = true
-            } catch RegisterOfferError.advertAlreadyExists {
-                try? realEstateAgent.updateSaleOffer(address: register.address, netValue: salePrice)
+                if let executedProperty = (execution.executedProperties.first{ $0.register == register }) {
+                    if executedProperty.nextSellPriceRatio > 0.5 {
+                        executedProperty.nextSellPriceRatio -= self.montlyPropertyPriceReduction
+                    }
+                    try realEstateAgent.updateSaleOffer(address: register.address, netValue: salePrice)
+                } else {
+                    let nextSellPriceRatio = self.initialPropertyValueRatio - self.montlyPropertyPriceReduction
+                    execution.executedProperties.append(ExecutedProperty(register: register, nextSellPriceRatio: nextSellPriceRatio))
+                    
+                    
+                    try self.realEstateAgent.registerSaleOffer(address: register.address, netValue: salePrice)
+                    informPlayer = true
+                    
+                    let mutation = PropertyRegisterMutation(uuid: register.uuid, attributes: [.status(.blockedByDebtCollector)])
+                    self.dataStore.update(mutation)
+                }
+
             } catch {
-                
+                Logger.error("DebtCollector", "Error: \(error)")
             }
-            let mutation = PropertyRegisterMutation(uuid: register.uuid, attributes: [.status(.blockedByDebtCollector)])
-            self.dataStore.update(mutation)
         }
         if informPlayer {
             let text = "Debt Collector estimated your properties' value and put them on sale"
@@ -143,7 +188,16 @@ class DebtCollector {
                 return [property]
             }
         }
-        return properties
+        var chosenProperties: [PropertyForDebtExecution] = []
+        var leftDebtToCover = netDebt
+        for property in properties {
+            chosenProperties.append(property)
+            leftDebtToCover -= property.value
+            if leftDebtToCover < 0 {
+                return chosenProperties
+            }
+        }
+        return chosenProperties
     }
     
     private func propertyValueMatches(_ property: PropertyForDebtExecution, debt: Double) -> Bool {
@@ -151,7 +205,11 @@ class DebtCollector {
     }
 }
 
-struct PropertyForDebtExecution {
+struct PropertyForDebtExecution: Equatable {
     let register: PropertyRegister
     let value: Double
+    
+    static func == (lhs: PropertyForDebtExecution, rhs: PropertyForDebtExecution) -> Bool {
+        lhs.register.uuid == rhs.register.uuid
+    }
 }
