@@ -87,6 +87,21 @@ class DebtCollectorTests: XCTestCase {
         XCTAssertTrue(collector.realEstateAgent.isForSale(address: address))
     }
     
+    func test_choosePropertyForExecution_bestMatch() {
+        let collector = self.makeDebtCollector()
+        
+        var options: [PropertyForDebtExecution] = []
+        
+        for i in (1...8) {
+            let register = PropertyRegister(uuid: i.string, address: MapPoint(x: i, y: 0), playerUUID: "player", type: .land)
+            let option = PropertyForDebtExecution(register: register, value: i.double * 10000)
+            options.append(option)
+        }
+        let chosenProperties = collector.chooseProperties(options, debt: 30000)
+        XCTAssertEqual(chosenProperties.count, 1)
+        XCTAssertEqual(chosenProperties[safeIndex: 0]?.value, 40000)
+    }
+    
     private func makeDebtCollector() -> DebtCollector {
         
         let dataStore = DataStoreMemoryProvider()

@@ -125,4 +125,29 @@ class DebtCollector {
             }
         }
     }
+    
+    func chooseProperties(_ properties: [PropertyForDebtExecution], debt: Double) -> [PropertyForDebtExecution] {
+
+        let netDebt = debt * 1.25
+        let properties = properties.filter{ $0.register.status == .normal }.sorted{ $0.value < $1.value }
+        guard properties.count > 1 else { return properties }
+        let valueOfAllProperties = properties.map{$0.value}.reduce(0, +)
+        guard valueOfAllProperties > netDebt else { return properties }
+
+        for property in properties {
+            if self.propertyValueMatches(property, debt: netDebt) {
+                return [property]
+            }
+        }
+        return properties
+    }
+    
+    private func propertyValueMatches(_ property: PropertyForDebtExecution, debt: Double) -> Bool {
+        return property.value > debt && property.value < (debt * 1.5)
+    }
+}
+
+struct PropertyForDebtExecution {
+    let register: PropertyRegister
+    let value: Double
 }
