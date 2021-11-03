@@ -42,6 +42,12 @@ struct PropertyRegister {
     }
 }
 
+extension PropertyRegister: Equatable {
+    static func == (lhs: PropertyRegister, rhs: PropertyRegister) -> Bool {
+        lhs.uuid == rhs.uuid
+    }
+}
+
 struct PropertyRegisterMutation {
     let uuid: String
     let attributes: [PropertyRegisterMutation.Attribute]
