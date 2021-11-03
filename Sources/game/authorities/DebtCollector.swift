@@ -11,14 +11,14 @@ class DebtExecution {
     let catchMonth: Int
     let playerUUID: String
     let notificationMonth: Int
-    let takePropertyMonth: Int
+    let startExecutionMonth: Int
     var sellPriceRatio: Double
     
     init(catchMonth: Int, playerUUID: String) {
         self.catchMonth = catchMonth
         self.playerUUID = playerUUID
         self.notificationMonth = catchMonth + 1
-        self.takePropertyMonth = catchMonth + 2
+        self.startExecutionMonth = catchMonth + 2
         self.sellPriceRatio = 0.9
     }
 }
@@ -58,45 +58,14 @@ class DebtCollector {
                 continue
             }
             
-            if execution.takePropertyMonth == self.time.month {
+            if execution.startExecutionMonth == self.time.month {
                 // block property and offer for sale
-                let registers: [PropertyRegister] = self.dataStore.get(ownerUUID: execution.playerUUID)
-                if !registers.isEmpty {
-                    for register in registers {
-                        
-                        let estimatedValue = self.realEstateAgent.propertyValuer.estimateValue(register.address) ?? 1
-                        let salePrice = estimatedValue * execution.sellPriceRatio
-                        do {
-                            try self.realEstateAgent.registerSaleOffer(address: register.address, netValue: salePrice)
-                        } catch RegisterOfferError.advertAlreadyExists {
-                            try? realEstateAgent.updateSaleOffer(address: register.address, netValue: salePrice)
-                        } catch {
-                            
-                        }
-                        let mutation = PropertyRegisterMutation(uuid: register.uuid, attributes: [.status(.blockedByDebtCollector)])
-                        self.dataStore.update(mutation)
-                    }
-                    
-                    let text = "Debt Collector estimated your properties' value and put them on sale"
-                    self.delegate?.notify(playerUUID: execution.playerUUID, UINotification(text: text, level: .warning, duration: 30, icon: .moneyWarning))
-                }
+                self.putPropertiesOnSale(execution, sellPriceRatio: execution.sellPriceRatio)
             }
 
-            if self.time.month > execution.takePropertyMonth, execution.sellPriceRatio > 0.5 {
-                let registers: [PropertyRegister] = self.dataStore.get(ownerUUID: execution.playerUUID)
-                execution.sellPriceRatio -= 0.1
-                for register in registers {
-                    
-                    let estimatedValue = self.realEstateAgent.propertyValuer.estimateValue(register.address) ?? 1
-                    let salePrice = estimatedValue * execution.sellPriceRatio
-                    do {
-                        try self.realEstateAgent.registerSaleOffer(address: register.address, netValue: salePrice)
-                    } catch RegisterOfferError.advertAlreadyExists {
-                        try? realEstateAgent.updateSaleOffer(address: register.address, netValue: salePrice)
-                    } catch {
-                        
-                    }
-                }
+            if self.time.month > execution.startExecutionMonth, execution.sellPriceRatio > 0.5 {
+                execution.sellPriceRatio -= 0.05
+                self.putPropertiesOnSale(execution, sellPriceRatio: execution.sellPriceRatio)
             }
         }
     }
@@ -126,10 +95,44 @@ class DebtCollector {
         }
     }
     
+    func putPropertiesOnSale(_ execution: DebtExecution, sellPriceRatio: Double) {
+        guard let player: Player = self.dataStore.find(uuid: execution.playerUUID) else { return }
+        let registers: [PropertyRegister] = self.dataStore.get(ownerUUID: execution.playerUUID)
+        let properties = registers.map { register -> PropertyForDebtExecution in
+            let estimatedValue = self.realEstateAgent.propertyValuer.estimateValue(register.address) ?? 1
+            let salePrice = estimatedValue * sellPriceRatio
+            return PropertyForDebtExecution(register: register, value: salePrice)
+        }
+        let debt = -1 * player.wallet
+        let propertiesForSale = self.chooseProperties(properties, debt: debt)
+        guard !propertiesForSale.isEmpty else { return }
+        var informPlayer = false
+        for property in propertiesForSale {
+            
+            let register = property.register
+            let salePrice = property.value
+            do {
+                try self.realEstateAgent.registerSaleOffer(address: register.address, netValue: salePrice)
+                informPlayer = true
+            } catch RegisterOfferError.advertAlreadyExists {
+                try? realEstateAgent.updateSaleOffer(address: register.address, netValue: salePrice)
+            } catch {
+                
+            }
+            let mutation = PropertyRegisterMutation(uuid: register.uuid, attributes: [.status(.blockedByDebtCollector)])
+            self.dataStore.update(mutation)
+        }
+        if informPlayer {
+            let text = "Debt Collector estimated your properties' value and put them on sale"
+            self.delegate?.notify(playerUUID: execution.playerUUID, UINotification(text: text, level: .warning, duration: 30, icon: .moneyWarning))
+        }
+        
+    }
+    
     func chooseProperties(_ properties: [PropertyForDebtExecution], debt: Double) -> [PropertyForDebtExecution] {
 
         let netDebt = debt * 1.25
-        let properties = properties.filter{ $0.register.status == .normal }.sorted{ $0.value < $1.value }
+        let properties = properties.sorted{ $0.value < $1.value }
         guard properties.count > 1 else { return properties }
         let valueOfAllProperties = properties.map{$0.value}.reduce(0, +)
         guard valueOfAllProperties > netDebt else { return properties }

@@ -44,9 +44,12 @@ class DebtCollectorTests: XCTestCase {
         collector.delegate = delegate
         let time = collector.time
         let dataStore = collector.dataStore
+        let address = MapPoint(x: 0, y: 0)
         
-        let register = PropertyRegister(uuid: "random", address: MapPoint(x: 0, y: 0), playerUUID: "player", type: .land)
+        let register = PropertyRegister(uuid: "random", address: address, playerUUID: "player", type: .land)
         dataStore.create(register)
+        collector.realEstateAgent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
+        dataStore.create(Land(address: address, ownerUUID: "player"))
         
         var updatedRegister: PropertyRegister? = dataStore.find(uuid: "random")
         XCTAssertEqual(updatedRegister?.status, .normal)
