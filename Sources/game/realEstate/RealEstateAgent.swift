@@ -114,8 +114,10 @@ class RealEstateAgent {
     
     func updateSaleOffer(address: MapPoint, netValue: Double) throws {
         guard let advert: SaleAdvert = self.dataStore.find(address: address) else {
+            Logger.error("RealEstateAgent", "UpdateOfferError.offerDoesNotExist \(address.description)")
             throw UpdateOfferError.offerDoesNotExist
         }
+        Logger.info("RealEstateAgent", "Updated SaleOffer @\(address.description) \(advert.netPrice.money) -> \(netValue.money)")
         let mutation = SaleAdvertMutation(address: address, attributes: [.netPrice(netValue)])
         self.dataStore.update(mutation)
     }
