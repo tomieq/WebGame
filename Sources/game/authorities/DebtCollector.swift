@@ -25,6 +25,7 @@ class DebtExecution {
 
 protocol DebtCollectorDelegate {
     func notify(playerUUID: String, _ notification: UINotification)
+    func notifyEveryone(_ notification: UINotification, exceptUserUUIDs: [String])
 }
 
 class DebtCollector {
@@ -50,6 +51,10 @@ class DebtCollector {
                 // send notification
                 let text = "You have debts. Start paying off before Government Debt Collector will take the case."
                 self.delegate?.notify(playerUUID: execution.playerUUID, UINotification(text: text, level: .warning, duration: 30, icon: .moneyWarning))
+                if let player: Player = self.dataStore.find(uuid: execution.playerUUID) {
+                    let infoToOthers = "<b>\(player.login)</b> has financial problems. He need to pay his debts otherwise his properties will be put on sale"
+                    self.delegate?.notifyEveryone(UINotification(text: infoToOthers, level: .info, duration: 15, icon: .redFlag), exceptUserUUIDs: [execution.playerUUID])
+                }
                 continue
             }
             

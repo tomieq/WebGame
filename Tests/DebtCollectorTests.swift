@@ -116,10 +116,14 @@ class DebtCollectorTests: XCTestCase {
 }
 
 fileprivate class DebtCollectorTestDelegate: DebtCollectorDelegate {
-
+    
     var notifuUUID: [(uuid: String, UINotification)] = []
     
     func notify(playerUUID: String, _ notification: UINotification) {
         self.notifuUUID.append((playerUUID, notification))
+    }
+    
+    func notifyEveryone(_ notification: UINotification, exceptUserUUIDs: [String]) {
+        
     }
 }
