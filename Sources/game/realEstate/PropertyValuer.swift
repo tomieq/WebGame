@@ -42,6 +42,16 @@ class PropertyValuer {
         return (self.estimateLandValue(address) * self.valueFactors.roadValueFactor).rounded(toPlaces: 0)
     }
     
+    private func estimateParkingValue(_ address: MapPoint) -> Double {
+        guard let parking: Parking = self.dataStore.find(address: address) else { return 0 }
+        let constructionOffer = self.constructionServices.parkingOffer(landName: "")
+        let monthlyCost = self.balanceCalculator.getParkingUnderConstructionMontlyCosts().map{ $0.netValue }.reduce(0, +)
+        let costs = constructionOffer.duration.double * monthlyCost
+        let basePrice = constructionOffer.invoice.netValue + costs + self.estimateLandValue(address)
+        // TODO: add taken places into the price
+        return basePrice.rounded(toPlaces: 0)
+    }
+    
     private func estimateResidentialBuildingValue(_ address: MapPoint) -> Double {
         guard let building: ResidentialBuilding = self.dataStore.find(address: address) else { return 0 }
         let constructionOffer = self.constructionServices.residentialBuildingOffer(landName: "", storeyAmount: building.storeyAmount)
@@ -64,6 +74,8 @@ class PropertyValuer {
             return self.estimateLandValue(address)
         case .road:
             return self.estimateRoadValue(address)
+        case .parking:
+            return self.estimateParkingValue(address)
         case .residentialBuilding:
             return self.estimateResidentialBuildingValue(address)
         }
