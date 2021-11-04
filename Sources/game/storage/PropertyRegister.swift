@@ -10,6 +10,7 @@ import Foundation
 enum PropertyType: String {
     case land
     case road
+    case parking
     case residentialBuilding
 }
 
