@@ -94,51 +94,51 @@ class GameMapManager {
         var mapTiles: [GameMapTile] = []
         for dataX in matrix {
             for dataY in dataX.value {
-                
+                let address = MapPoint(x: dataX.key, y: dataY.key)
                 switch dataY.value {
                     
                 case .localStreet:
-                    if let tile = self.evaluateLocalStreetMapTile(address: MapPoint(x: dataX.key, y: dataY.key)) {
+                    if let tile = self.evaluateLocalStreetMapTile(address: address) {
                         mapTiles.append(tile)
                     }
                 case .mainStreet:
-                    if let tile = self.evaluateMainStreetMapTile(address: MapPoint(x: dataX.key, y: dataY.key)) {
+                    if let tile = self.evaluateMainStreetMapTile(address: address) {
                         mapTiles.append(tile)
                     }
                 case .streetUnderConstruction:
-                    mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .streetUnderConstruction))
+                    mapTiles.append(GameMapTile(address: address, type: .streetUnderConstruction))
                 case .btsAntenna:
-                    mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .btsAntenna))
+                    mapTiles.append(GameMapTile(address: address, type: .btsAntenna))
                 case .hostital:
-                    mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .hospital))
+                    mapTiles.append(GameMapTile(address: address, type: .hospital))
                 case .school:
-                    mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .school))
+                    mapTiles.append(GameMapTile(address: address, type: .school))
                 case .cityCouncil:
-                    mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .cityCouncil))
+                    mapTiles.append(GameMapTile(address: address, type: .cityCouncil))
                 case .footballPitchLeftTop:
-                    mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .footballPitch(.leftTop)))
+                    mapTiles.append(GameMapTile(address: address, type: .footballPitch(.leftTop)))
                 case .footballPitchRightTop:
-                    mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .footballPitch(.rightTop)))
+                    mapTiles.append(GameMapTile(address: address, type: .footballPitch(.rightTop)))
                 case .footballPitchLeftBottom:
-                    mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .footballPitch(.leftBottom)))
+                    mapTiles.append(GameMapTile(address: address, type: .footballPitch(.leftBottom)))
                 case .footballPitchRightBottom:
-                    mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .footballPitch(.rightBottom)))
+                    mapTiles.append(GameMapTile(address: address, type: .footballPitch(.rightBottom)))
                 case .warehouse:
-                    mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .warehouse))
+                    mapTiles.append(GameMapTile(address: address, type: .warehouse))
                 case .building4:
-                    mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .building(size: 4)))
+                    mapTiles.append(GameMapTile(address: address, type: .building(size: 4)))
                 case .building6:
-                    mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .building(size: 6)))
+                    mapTiles.append(GameMapTile(address: address, type: .building(size: 6)))
                 case .building8:
-                    mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .building(size: 8)))
+                    mapTiles.append(GameMapTile(address: address, type: .building(size: 8)))
                 case .building10:
-                    mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .building(size: 10)))
+                    mapTiles.append(GameMapTile(address: address, type: .building(size: 10)))
                 case .tree1:
-                    mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .tree(type: 1)))
+                    mapTiles.append(GameMapTile(address: address, type: .tree(type: 1)))
                 case .tree2:
-                    mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .tree(type: 2)))
+                    mapTiles.append(GameMapTile(address: address, type: .tree(type: 2)))
                 case .tree3:
-                    mapTiles.append(GameMapTile(address: MapPoint(x: dataX.key, y: dataY.key), type: .tree(type: 3)))
+                    mapTiles.append(GameMapTile(address: address, type: .tree(type: 3)))
                 }
                 
             }
