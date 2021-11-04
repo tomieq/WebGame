@@ -168,23 +168,33 @@ class GameMapManager {
     
     private func evaluateParkingMapTile(address: MapPoint) -> GameMapTile? {
         
+        // better if parking entrance is from straight street line
+        func preferredParkingType() -> ParkingType? {
+            if let left = self.map.getTile(address: address.move(.left)), left.type == .street(type: .local(.localY)) {
+                return .leftConnection
+            }
+            if let right = self.map.getTile(address: address.move(.right)), right.type == .street(type: .local(.localY)) {
+                return .rightConnection
+            }
+            if let top = self.map.getTile(address: address.move(.up)), top.type == .street(type: .local(.localX)) {
+                return .topConnection
+            }
+            if let bottom = self.map.getTile(address: address.move(.down)), bottom.type == .street(type: .local(.localX)) {
+                return .bottomConnection
+            }
+            return nil
+        }
+        
+        if let parkingType = preferredParkingType() {
+            return GameMapTile(address: address, type: .parking(type: parkingType))
+        }
+        
         let topTile = self.streetCache.first{ $0.address == address.move(.up) }?.type
         let bottomTile = self.streetCache.first{ $0.address == address.move(.down) }?.type
         let leftTile = self.streetCache.first{ $0.address == address.move(.left) }?.type
         let righTile = self.streetCache.first{ $0.address == address.move(.right) }?.type
         
-        if leftTile == .localStreet {
-            return GameMapTile(address: address, type: .parking(type: .leftConnection))
-        }
-        if righTile == .localStreet {
-            return GameMapTile(address: address, type: .parking(type: .rightConnection))
-        }
-        if topTile == .localStreet {
-            return GameMapTile(address: address, type: .parking(type: .topConnection))
-        }
-        if bottomTile == .localStreet {
-            return GameMapTile(address: address, type: .parking(type: .bottomConnection))
-        }
+
         if topTile == .mainStreet {
             return GameMapTile(address: address, type: .parking(type: .Y))
         }
@@ -196,6 +206,18 @@ class GameMapManager {
         }
         if righTile == .mainStreet {
             return GameMapTile(address: address, type: .parking(type: .X))
+        }
+        if leftTile == .localStreet {
+            return GameMapTile(address: address, type: .parking(type: .leftConnection))
+        }
+        if righTile == .localStreet {
+            return GameMapTile(address: address, type: .parking(type: .rightConnection))
+        }
+        if topTile == .localStreet {
+            return GameMapTile(address: address, type: .parking(type: .topConnection))
+        }
+        if bottomTile == .localStreet {
+            return GameMapTile(address: address, type: .parking(type: .bottomConnection))
         }
         return nil
     }
