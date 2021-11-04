@@ -47,6 +47,12 @@ class ConstructionServices {
         return ConstructionOffer(invoice: invoice, duration: duration)
     }
     
+    func parkingOffer(landName: String) -> ConstructionOffer {
+        let invoice = Invoice(title: "Build parking lot on property \(landName)", netValue: self.priceList.buildParkingPrice, taxRate: self.centralBank.taxRates.investmentTax)
+        let duration = self.constructionDuration.parking
+        return ConstructionOffer(invoice: invoice, duration: duration)
+    }
+    
     func residentialBuildingOffer(landName: String, storeyAmount: Int) -> ConstructionOffer {
         let invoice = Invoice(title: "Build \(storeyAmount)-storey \(landName)", netValue: self.priceList.buildResidentialBuildingPrice(storey: storeyAmount), taxRate: self.centralBank.taxRates.investmentTax)
         let duration = self.constructionDuration.residentialBuilding(storey: storeyAmount)
@@ -82,6 +88,43 @@ class ConstructionServices {
         let investmentsNetValue = offer.invoice.netValue
         let road = Road(land: land, constructionFinishMonth: constructionFinishMonth, investmentsNetValue: investmentsNetValue)
         self.dataStore.create(road)
+        
+        let tile = GameMapTile(address: address, type: .streetUnderConstruction)
+        self.mapManager.map.replaceTile(tile: tile)
+
+        self.delegate?.syncWalletChange(playerUUID: playerUUID)
+        self.delegate?.reloadMap()
+    }
+    
+    func startParkingInvestment(address: MapPoint, playerUUID: String) throws {
+        
+        guard let land: Land = self.dataStore.find(address: address) else {
+            throw ConstructionServicesError.addressNotFound
+        }
+        guard land.ownerUUID == playerUUID else {
+            throw ConstructionServicesError.playerIsNotPropertyOwner
+        }
+
+        guard self.mapManager.map.hasDirectAccessToRoad(address: address) else {
+            throw ConstructionServicesError.noDirectAccessToRoad
+        }
+        let governmentID = SystemPlayer.government.uuid
+        let offer = self.parkingOffer(landName: land.name)
+
+        let transaction = FinancialTransaction(payerUUID: playerUUID, recipientUUID: governmentID, invoice: offer.invoice, type: .investments)
+        // process the transaction
+        do {
+             try self.centralBank.process(transaction)
+        } catch let error as FinancialTransactionError {
+            throw ConstructionServicesError.financialTransactionProblem(error)
+        }
+
+        self.dataStore.removeLand(uuid: land.uuid)
+
+        let constructionFinishMonth = self.time.month + offer.duration
+        let investmentsNetValue = offer.invoice.netValue
+        let parking = Parking(land: land, constructionFinishMonth: constructionFinishMonth, investmentsNetValue: investmentsNetValue)
+        self.dataStore.create(parking)
         
         let tile = GameMapTile(address: address, type: .streetUnderConstruction)
         self.mapManager.map.replaceTile(tile: tile)
@@ -137,6 +180,16 @@ class ConstructionServices {
                 self.dataStore.update(mutation)
                 
                 self.mapManager.addStreet(address: road.address)
+                updateMap = true
+            }
+        }
+        let parkings: [Parking] = self.dataStore.getUnderConstruction()
+        for parking in parkings {
+            if parking.constructionFinishMonth == self.time.month {
+                let mutation = ParkingMutation(uuid: parking.uuid, attributes: [.isUnderConstruction(false)])
+                self.dataStore.update(mutation)
+                
+                self.mapManager.addParking(address: parking.address)
                 updateMap = true
             }
         }
