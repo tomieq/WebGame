@@ -22,7 +22,7 @@ struct Parking: Property, Codable {
     init(land: Land, constructionFinishMonth: Int? = nil, investmentsNetValue: Double = 0) {
         self.uuid = land.uuid
         self.address = land.address
-        self.name = land.name
+        self.name = "\(land.name) Parking lot"
         self.ownerUUID = land.ownerUUID
         self.purchaseNetValue = land.purchaseNetValue
         self.investmentsNetValue = (land.investmentsNetValue + investmentsNetValue).rounded(toPlaces: 0)
@@ -51,5 +51,6 @@ struct ParkingMutation {
         case constructionFinishMonth(Int)
         case ownerUUID(String)
         case purchaseNetValue(Double)
+        case investments(Double)
     }
 }
