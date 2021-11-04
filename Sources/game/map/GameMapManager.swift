@@ -173,17 +173,17 @@ class GameMapManager {
         let leftTile = self.streetCache.first{ $0.address == address.move(.left) }?.type
         let righTile = self.streetCache.first{ $0.address == address.move(.right) }?.type
         
-        if topTile == .localStreet {
-            return GameMapTile(address: address, type: .parking(type: .topConnection))
-        }
-        if bottomTile == .localStreet {
-            return GameMapTile(address: address, type: .parking(type: .bottomConnection))
-        }
         if leftTile == .localStreet {
             return GameMapTile(address: address, type: .parking(type: .leftConnection))
         }
         if righTile == .localStreet {
             return GameMapTile(address: address, type: .parking(type: .rightConnection))
+        }
+        if topTile == .localStreet {
+            return GameMapTile(address: address, type: .parking(type: .topConnection))
+        }
+        if bottomTile == .localStreet {
+            return GameMapTile(address: address, type: .parking(type: .bottomConnection))
         }
         if topTile == .mainStreet {
             return GameMapTile(address: address, type: .parking(type: .Y))

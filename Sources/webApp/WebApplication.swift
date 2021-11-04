@@ -83,7 +83,7 @@ public class WebApplication {
                 variables["imageWidth"] = image.width.string
                 variables["imageHeight"] = image.height.string
 
-                if tile.isStreet() {
+                if tile.isStreet() || tile.isParking() {
                     template.assign(variables: variables, inNest: "street")
                 } else {
                     template.assign(variables: variables, inNest: "building")

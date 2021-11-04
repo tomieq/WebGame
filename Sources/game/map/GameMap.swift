@@ -88,6 +88,13 @@ extension GameMapTile {
         }
         return false
     }
+    
+    func isParking() -> Bool {
+        if case .parking(_) = self.type {
+            return true
+        }
+        return false
+    }
 
     func isStreetUnderConstruction() -> Bool {
         if case .streetUnderConstruction = self.type {
