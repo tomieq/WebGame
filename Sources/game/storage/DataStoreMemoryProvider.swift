@@ -14,6 +14,7 @@ class DataStoreMemoryProvider: DataStoreProvider {
     private var register: [PropertyRegisterManagedObject]
     private var lands: [LandManagedObject]
     private var roads: [RoadManagedObject]
+    private var parkings: [ParkingManagedObject]
     private var buildings: [ResidentialBuildingManagedObject]
     private var adverts: [SaleAdvertManagedObject]
     
@@ -31,6 +32,7 @@ class DataStoreMemoryProvider: DataStoreProvider {
         self.register = []
         self.lands = []
         self.roads = []
+        self.parkings = []
         self.buildings = []
         self.adverts = []
     }
@@ -332,6 +334,40 @@ class DataStoreMemoryProvider: DataStoreProvider {
     func removePropertyRegister(uuid: String) {
         propertyQueue.sync(flags: .barrier) {
             self.register.removeAll{ $0.uuid == uuid }
+        }
+    }
+    
+    func create(_ parking: Parking) -> String {
+        return roadQueue.sync(flags: .barrier) {
+            let managedObject = ParkingManagedObject(parking)
+            self.parkings.append(managedObject)
+            return managedObject.uuid
+        }
+    }
+    
+    func getUnderConstruction() -> [Parking] {
+        return roadQueue.sync {
+            self.parkings.filter{ $0.isUnderConstruction }.map { Parking($0) }
+        }
+    }
+    
+    func update(_ mutation: ParkingMutation) {
+        roadQueue.sync(flags: .barrier) {
+            guard let parking = (self.parkings.first{ $0.uuid == mutation.uuid }) else { return }
+
+            for attribute in mutation.attributes {
+                switch attribute {
+                    
+                case .isUnderConstruction(let value):
+                    parking.isUnderConstruction = value
+                case .constructionFinishMonth(let value):
+                    parking.constructionFinishMonth = value
+                case .ownerUUID(let value):
+                    parking.ownerUUID = value
+                case .purchaseNetValue(let value):
+                    parking.purchaseNetValue = value
+                }
+            }
         }
     }
 }

@@ -13,6 +13,7 @@ protocol DataStoreProvider {
     @discardableResult func create(_ transaction: CashFlow) -> String
     @discardableResult func create(_ land: Land) -> String
     @discardableResult func create(_ road: Road) -> String
+    @discardableResult func create(_ parking: Parking) -> String
     @discardableResult func create(_ building: ResidentialBuilding) -> String
     @discardableResult func create(_ advert: SaleAdvert) -> String
     
@@ -32,11 +33,13 @@ protocol DataStoreProvider {
     func getAll() -> [SaleAdvert]
     
     func getUnderConstruction() -> [Road]
+    func getUnderConstruction() -> [Parking]
     func getUnderConstruction() -> [ResidentialBuilding]
     
     func update(_ mutation: PlayerMutation)
     func update(_ mutation: LandMutation)
     func update(_ mutation: RoadMutation)
+    func update(_ mutation: ParkingMutation)
     func update(_ mutation: ResidentialBuildingMutation)
     func update(_ mutation: SaleAdvertMutation)
     func update(_ mutation: PropertyRegisterMutation)
