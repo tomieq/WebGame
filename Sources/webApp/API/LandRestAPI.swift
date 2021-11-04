@@ -150,6 +150,19 @@ class LandRestAPI: RestAPI {
             buildRoadData["actionTitle"] = "Start investment"
             template.assign(variables: buildRoadData, inNest: "investment")
             
+            var buildParkingData = [String:String]()
+            let parkingOffer = self.gameEngine.constructionServices.parkingOffer(landName: land.name)
+            
+            buildParkingData["name"] = "Parking lot"
+            buildParkingData["investmentCost"] = parkingOffer.invoice.netValue.money
+            buildParkingData["investmentTax"] = parkingOffer.invoice.tax.money
+            buildParkingData["investmentTotal"] = parkingOffer.invoice.total.money
+            buildParkingData["investmentDuration"] = "\(parkingOffer.duration) months"
+            buildParkingData["taxRate"] = (parkingOffer.invoice.taxRate * 100).rounded(toPlaces: 0).string
+            buildParkingData["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/startInvestment.js?type=parking&\(land.address.asQueryParams)"]).js
+            buildParkingData["actionTitle"] = "Start investment"
+            template.assign(variables: buildParkingData, inNest: "investment")
+            
             for storey in [4, 6, 8, 10] {
                 var buildHouseData = [String:String]()
                 
