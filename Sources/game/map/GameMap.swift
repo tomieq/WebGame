@@ -78,6 +78,7 @@ struct GameMapTile {
 enum GameMapPropertyType {
     case land
     case road
+    case parking
     case residentialBuilding
 }
 
@@ -131,6 +132,8 @@ extension GameMapTile {
             return .land
         case .street(_):
             return .road
+        case .parking(_):
+            return .parking
         case .streetUnderConstruction:
             return .road
         case .building(_):
