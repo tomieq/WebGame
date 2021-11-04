@@ -63,6 +63,9 @@ class RealEstateAgent {
         case .road:
             let road: Road? = self.dataStore.find(address: address)
             return road
+        case .parking:
+            let parking: Parking? = self.dataStore.find(address: address)
+            return parking
         case .residentialBuilding:
             let building: ResidentialBuilding? = self.dataStore.find(address: address)
             return building
@@ -93,6 +96,9 @@ class RealEstateAgent {
         case .road:
             let road: Road? = self.dataStore.find(address: address)
             property = road
+        case .parking:
+            let parking: Parking? = self.dataStore.find(address: address)
+            property = parking
         case .residentialBuilding:
             let building: ResidentialBuilding? = self.dataStore.find(address: address)
             property = building
@@ -139,6 +145,10 @@ class RealEstateAgent {
                     }
                 case .road:
                     break
+                case .parking:
+                    if let offer = self.parkingSaleOffer(address: advert.address, buyerUUID: buyerUUID) {
+                        offers.append(offer)
+                    }
                 case .residentialBuilding:
                     if let offer = self.residentialBuildingSaleOffer(address: advert.address, buyerUUID: buyerUUID) {
                         offers.append(offer)
@@ -161,6 +171,8 @@ class RealEstateAgent {
             return self.landSaleOffer(address: address, buyerUUID: buyerUUID)
         case .road:
             return nil
+        case .parking:
+            return self.parkingSaleOffer(address: address, buyerUUID: buyerUUID)
         case .residentialBuilding:
             return self.residentialBuildingSaleOffer(address: address, buyerUUID: buyerUUID)
         }
@@ -209,6 +221,29 @@ class RealEstateAgent {
         return SaleOffer(saleInvoice: saleInvoice, commissionInvoice: commissionInvoice, property: property)
     }
     
+
+    private func parkingSaleOffer(address: MapPoint, buyerUUID: String) -> SaleOffer? {
+        
+        guard let advert: SaleAdvert = self.dataStore.find(address: address) else {
+            return nil
+        }
+        
+        guard let parking: Parking = self.dataStore.find(address: address) else {
+            return nil
+        }
+        let price = advert.netPrice
+        
+        var commission = self.priceList.realEstateSellLandPropertyCommisionFee + price * self.priceList.realEstateSellPropertyCommisionRate
+        if commission > self.priceList.realEstateSellPropertyCommisionThreshold {
+            commission = self.priceList.realEstateSellPropertyCommisionThreshold + commission/10
+        }
+        
+        let saleInvoice = Invoice(title: "Purchase \(parking.name)", netValue: price, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
+        let commissionInvoice = Invoice(title: "Commission for purchase \(parking.name)", grossValue: commission, taxRate: self.centralBank.taxRates.propertyPurchaseTax)
+
+        return SaleOffer(saleInvoice: saleInvoice, commissionInvoice: commissionInvoice, property: parking)
+    }
+    
     private func residentialBuildingSaleOffer(address: MapPoint, buyerUUID: String) -> SaleOffer? {
         guard let tile = self.mapManager.map.getTile(address: address), tile.isBuilding() else {
             return nil
@@ -251,6 +286,8 @@ class RealEstateAgent {
             try self.buyLandProperty(address: address, buyerUUID: buyerUUID, netPrice: netPrice)
         case .road:
             throw BuyPropertyError.propertyNotForSale
+        case .parking:
+            try self.buyParkingProperty(address: address, buyerUUID: buyerUUID, netPrice: netPrice)
         case .residentialBuilding:
             try self.buyResidentialBuilding(address: address, buyerUUID: buyerUUID, netPrice: netPrice)
         }
@@ -332,6 +369,76 @@ class RealEstateAgent {
         self.delegate?.reloadMap()
         let playerName = self.dataStore.find(uuid: buyerUUID)?.login ?? ""
         self.delegate?.notifyEveryone(UINotification(text: "New transaction on the market. Player \(playerName) has just bought property `\(land.name)`", level: .info, duration: 10, icon: .property))
+    }
+    
+    private func buyParkingProperty(address: MapPoint, buyerUUID: String, netPrice: Double? = nil) throws {
+        
+        self.semaphore.wait()
+        guard let offer = self.parkingSaleOffer(address: address, buyerUUID: buyerUUID) else {
+            Logger.error("RealEstateAgent", "buyParkingProperty:offer not found")
+            self.semaphore.signal()
+            throw BuyPropertyError.propertyNotForSale
+        }
+        if let netPrice = netPrice {
+            guard offer.saleInvoice.netValue == netPrice else {
+                self.semaphore.signal()
+                throw BuyPropertyError.saleOfferHasChanged
+            }
+        }
+        guard let parking = offer.property as? Parking else {
+            Logger.error("RealEstateAgent", "buyParkingProperty:land not found")
+            self.semaphore.signal()
+            throw BuyPropertyError.propertyNotForSale
+        }
+        let sellerID = parking.ownerUUID
+        guard sellerID != buyerUUID else {
+            Logger.error("RealEstateAgent", "buyParkingProperty:seller the same as buyer")
+            self.semaphore.signal()
+            throw BuyPropertyError.tryingBuyOwnProperty
+        }
+        Logger.info("RealEstateAgent", "New parking sale transaction. @\(address.description)")
+        let realEstateAgentID = SystemPlayer.realEstateAgency.uuid
+        // process the transaction
+        let saleTransaction = FinancialTransaction(payerUUID: buyerUUID, recipientUUID: sellerID , invoice: offer.saleInvoice, type: .realEstateTrade)
+        do {
+             try self.centralBank.process(saleTransaction)
+        } catch let error as FinancialTransactionError {
+            Logger.error("RealEstateAgent", "buyParkingProperty:sale invoice transaction problem")
+            self.semaphore.signal()
+            throw BuyPropertyError.financialTransactionProblem(error)
+        }
+        let feeTransaction = FinancialTransaction(payerUUID: buyerUUID, recipientUUID: realEstateAgentID, invoice: offer.commissionInvoice, type: .services)
+        do {
+             try self.centralBank.process(feeTransaction)
+        } catch let error as FinancialTransactionError {
+            Logger.error("RealEstateAgent", "buyParkingProperty:commission invoice transaction problem")
+            self.semaphore.signal()
+            throw BuyPropertyError.financialTransactionProblem(error)
+        }
+
+        let costs = parking.investmentsNetValue + parking.purchaseNetValue
+        self.centralBank.refundIncomeTax(transaction: saleTransaction, costs: costs)
+        var modifications: [ParkingMutation.Attribute] = []
+        modifications.append(.purchaseNetValue(offer.saleInvoice.netValue))
+        modifications.append(.ownerUUID(buyerUUID))
+        modifications.append(.investments(offer.commissionInvoice.total))
+        let mutation = ParkingMutation(uuid: parking.uuid, attributes: modifications)
+        self.dataStore.update(mutation)
+        
+        
+        if let register: PropertyRegister = self.dataStore.find(uuid: parking.uuid) {
+            let mutation = PropertyRegisterMutation(uuid: register.uuid, attributes: [.ownerUUID(buyerUUID), .type(.parking), .status(.normal)])
+            self.dataStore.update(mutation)
+        } else {
+            let register = PropertyRegister(uuid: parking.uuid, address: parking.address, playerUUID: buyerUUID, type: .parking)
+            self.dataStore.create(register)
+        }
+        
+        self.semaphore.signal()
+        self.delegate?.syncWalletChange(playerUUID: buyerUUID)
+        self.delegate?.syncWalletChange(playerUUID: sellerID)
+        let playerName = self.dataStore.find(uuid: buyerUUID)?.login ?? ""
+        self.delegate?.notifyEveryone(UINotification(text: "New transaction on the market. Player <b>\(playerName)</b> has just bought property `\(parking.name)`", level: .info, duration: 10, icon: .property))
     }
     
     private func buyResidentialBuilding(address: MapPoint, buyerUUID: String, netPrice: Double? = nil) throws {
