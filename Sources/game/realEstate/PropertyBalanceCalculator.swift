@@ -58,6 +58,18 @@ class PropertyBalanceCalculator {
         return [water, electricity, maintenance]
     }
     
+    func getParkingUnderConstructionMontlyCosts() -> [Invoice] {
+        let water = Invoice(title: "Water bill", netValue: self.priceList.montlyParkingUnderConstructionWaterCost, taxRate: self.taxRates.waterBillTax)
+        let electricity = Invoice(title: "Electricity bill", netValue: self.priceList.monthlyResidentialBuildingOwnerIncomePerFlat, taxRate: self.taxRates.electricityBillTax)
+        return [water, electricity]
+    }
+    
+    func getParkingMontlyCosts() -> [Invoice] {
+        let security = Invoice(title: "Security costs", netValue: self.priceList.montlyParkingSecurityCost, taxRate: self.taxRates.waterBillTax)
+        let electricity = Invoice(title: "Electricity bill", netValue: self.priceList.montlyParkingElectricityCost, taxRate: self.taxRates.electricityBillTax)
+        return [security, electricity]
+    }
+    
     func getBuildingMontlyCosts(size: Int) -> [Invoice] {
         let water = Invoice(title: "Water bill", netValue: self.priceList.montlyResidentialBuildingWaterCost, taxRate: self.taxRates.waterBillTax)
         let electricity = Invoice(title: "Electricity bill", netValue: self.priceList.montlyResidentialBuildingElectricityCost, taxRate: self.taxRates.electricityBillTax)
@@ -81,6 +93,12 @@ class MonthlyCostPriceList {
     public var montlyLandMaintenanceCost: Double = 250
     // road
     public var montlyRoadMaintenanceCost: Double = 580.0
+    // parking under construction
+    public var montlyParkingUnderConstructionElectricityCost: Double = 540.0
+    public var montlyParkingUnderConstructionWaterCost: Double = 189.0
+    // parking
+    public var montlyParkingElectricityCost: Double = 210.0
+    public var montlyParkingSecurityCost: Double = 305.0
     // residential building under construction
     public var montlyResidentialBuildingUnderConstructionElectricityCost: Double = 3700.0
     public var montlyResidentialBuildingUnderConstructionWaterCost: Double = 1800
