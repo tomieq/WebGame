@@ -21,7 +21,6 @@ struct ResidentialBuilding: Property, Codable {
     let storeyAmount: Int
     let isUnderConstruction: Bool
     let constructionFinishMonth: Int
-    let accountantID: String?
     
     var numberOfFlats: Int {
         return self.numberOfFlatsPerStorey * self.storeyAmount
@@ -37,7 +36,6 @@ struct ResidentialBuilding: Property, Codable {
         self.investmentsNetValue = (land.investmentsNetValue + investmentsNetValue).rounded(toPlaces: 0)
         self.condition = 100.0
         self.isUnderConstruction = constructionFinishMonth == nil ? false : true
-        self.accountantID = land.accountantID
         self.constructionFinishMonth = constructionFinishMonth ?? 0
     }
     
@@ -50,7 +48,6 @@ struct ResidentialBuilding: Property, Codable {
         self.investmentsNetValue = managedObject.investmentsNetValue
         self.isUnderConstruction = managedObject.isUnderConstruction
         self.constructionFinishMonth = managedObject.constructionFinishMonth
-        self.accountantID = managedObject.accountantID
         self.condition = managedObject.condition
         self.storeyAmount = managedObject.storeyAmount
     }

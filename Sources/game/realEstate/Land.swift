@@ -17,7 +17,6 @@ struct Land: Property {
     let investmentsNetValue: Double
     let isUnderConstruction: Bool
     let constructionFinishMonth: Int
-    let accountantID: String?
 
     var type: String { return "Land property" }
     
@@ -29,7 +28,6 @@ struct Land: Property {
         self.investmentsNetValue = investmentsNetValue
         self.isUnderConstruction = false
         self.constructionFinishMonth = 0
-        self.accountantID = nil
         self.purchaseNetValue = purchaseNetValue
     }
     
@@ -42,7 +40,6 @@ struct Land: Property {
         self.investmentsNetValue = managedObject.investmentsNetValue
         self.isUnderConstruction = managedObject.isUnderConstruction
         self.constructionFinishMonth = managedObject.constructionFinishMonth
-        self.accountantID = managedObject.accountantID
     }
 }
 

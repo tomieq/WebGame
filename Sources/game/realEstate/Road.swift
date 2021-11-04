@@ -18,7 +18,6 @@ struct Road: Property, Codable {
     let investmentsNetValue: Double
     let isUnderConstruction: Bool
     let constructionFinishMonth: Int
-    let accountantID: String?
     
     init(land: Land, constructionFinishMonth: Int? = nil, investmentsNetValue: Double = 0) {
         self.uuid = land.uuid
@@ -29,7 +28,6 @@ struct Road: Property, Codable {
         self.investmentsNetValue = (land.investmentsNetValue + investmentsNetValue).rounded(toPlaces: 0)
         self.isUnderConstruction = constructionFinishMonth == nil ? false: true
         self.constructionFinishMonth = constructionFinishMonth ?? 0
-        self.accountantID = nil
     }
     
     init(_ managedObject: RoadManagedObject) {
@@ -41,7 +39,6 @@ struct Road: Property, Codable {
         self.investmentsNetValue = managedObject.investmentsNetValue
         self.isUnderConstruction = managedObject.isUnderConstruction
         self.constructionFinishMonth = managedObject.constructionFinishMonth
-        self.accountantID = managedObject.accountantID
     }
 }
 

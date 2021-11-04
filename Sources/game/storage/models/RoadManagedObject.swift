@@ -18,7 +18,6 @@ class RoadManagedObject: Codable {
     var investmentsNetValue: Double
     var isUnderConstruction: Bool
     var constructionFinishMonth: Int
-    var accountantID: String?
     
     init(_ road: Road) {
         self.uuid = UUID().uuidString
@@ -30,6 +29,5 @@ class RoadManagedObject: Codable {
         self.investmentsNetValue = road.investmentsNetValue
         self.isUnderConstruction = road.isUnderConstruction
         self.constructionFinishMonth = road.constructionFinishMonth
-        self.accountantID = road.accountantID
     }
 }

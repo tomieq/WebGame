@@ -17,5 +17,4 @@ protocol Property {
     var investmentsNetValue: Double { get }
     var isUnderConstruction: Bool { get }
     var constructionFinishMonth: Int { get }
-    var accountantID: String? { get }
 }

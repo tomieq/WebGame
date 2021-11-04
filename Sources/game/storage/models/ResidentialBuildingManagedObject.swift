@@ -18,7 +18,6 @@ class ResidentialBuildingManagedObject: Codable {
     var investmentsNetValue: Double
     var isUnderConstruction: Bool
     var constructionFinishMonth: Int
-    var accountantID: String?
     var condition: Double
     let storeyAmount: Int
 
@@ -32,7 +31,6 @@ class ResidentialBuildingManagedObject: Codable {
         self.investmentsNetValue = building.investmentsNetValue
         self.isUnderConstruction = building.isUnderConstruction
         self.constructionFinishMonth = building.constructionFinishMonth
-        self.accountantID = building.accountantID
         self.condition = building.condition
         self.storeyAmount = building.storeyAmount
     }
