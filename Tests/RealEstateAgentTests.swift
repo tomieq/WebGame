@@ -99,7 +99,7 @@ final class RealEstateAgentTests: XCTestCase {
         agent.dataStore.create(buyer)
         let land = Land(address: address, ownerUUID: "seller", purchaseNetValue: 600)
         agent.dataStore.create(land)
-        agent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
+        agent.mapManager.addPrivateLand(address: address)
         
         XCTAssertThrowsError(try agent.updateSaleOffer(address: address, netValue: 2500)){ error in
             XCTAssertEqual(error as? UpdateOfferError, .offerDoesNotExist)
@@ -118,7 +118,7 @@ final class RealEstateAgentTests: XCTestCase {
         agent.dataStore.create(buyer)
         let land = Land(address: address, ownerUUID: "seller", purchaseNetValue: 600)
         agent.dataStore.create(land)
-        agent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
+        agent.mapManager.addPrivateLand(address: address)
         
         XCTAssertNoThrow(try agent.registerSaleOffer(address: address, netValue: 2000))
         XCTAssertNoThrow(try agent.updateSaleOffer(address: address, netValue: 2500))
@@ -168,7 +168,7 @@ final class RealEstateAgentTests: XCTestCase {
         agent.dataStore.create(seller)
         let land = Land(address: address, ownerUUID: "seller", purchaseNetValue: 100)
         agent.dataStore.create(land)
-        agent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
+        agent.mapManager.addPrivateLand(address: address)
         
         XCTAssertNoThrow(try agent.registerSaleOffer(address: address, netValue: 660))
         XCTAssertThrowsError(try agent.buyProperty(address: address, buyerUUID: "seller")){ error in
@@ -184,7 +184,7 @@ final class RealEstateAgentTests: XCTestCase {
         agent.dataStore.create(seller)
         let land = Land(address: address, ownerUUID: "seller", purchaseNetValue: 100)
         agent.dataStore.create(land)
-        agent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
+        agent.mapManager.addPrivateLand(address: address)
         
         XCTAssertNoThrow(try agent.registerSaleOffer(address: address, netValue: 660))
         XCTAssertThrowsError(try agent.buyProperty(address: address, buyerUUID: "seller", netPrice: 680)){ error in
@@ -225,7 +225,7 @@ final class RealEstateAgentTests: XCTestCase {
         let landUUID = agent.dataStore.create(land)
         let register = PropertyRegister(uuid: landUUID, address: land.address, playerUUID: seller.uuid, type: .land)
         agent.dataStore.create(register)
-        agent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
+        agent.mapManager.addPrivateLand(address: address)
         
         XCTAssertNoThrow(try agent.registerSaleOffer(address: address, netValue: 660))
         XCTAssertNoThrow(try agent.buyProperty(address: address, buyerUUID: "buyer"))
@@ -250,7 +250,7 @@ final class RealEstateAgentTests: XCTestCase {
         agent.dataStore.create(buyer)
         let land = Land(address: address, ownerUUID: "seller", purchaseNetValue: 600, investmentsNetValue: 400)
         agent.dataStore.create(land)
-        agent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
+        agent.mapManager.addPrivateLand(address: address)
         
         XCTAssertNoThrow(try agent.registerSaleOffer(address: address, netValue: 2000))
         XCTAssertNoThrow(try agent.buyProperty(address: address, buyerUUID: "buyer"))
@@ -271,7 +271,7 @@ final class RealEstateAgentTests: XCTestCase {
         agent.dataStore.create(buyer)
         let land = Land(address: address, ownerUUID: "seller", purchaseNetValue: 600)
         let landID = agent.dataStore.create(land)
-        agent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
+        agent.mapManager.addPrivateLand(address: address)
         
         agent.dataStore.update(LandMutation(uuid: landID, attributes: [.investments(400)]))
         
@@ -452,7 +452,7 @@ final class RealEstateAgentTests: XCTestCase {
             let address = MapPoint(x: i, y: i)
             let land = Land(address: address, ownerUUID: "john")
             agent.dataStore.create(land)
-            agent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
+            agent.mapManager.addPrivateLand(address: address)
             XCTAssertEqual(agent.mapManager.map.getTile(address: address)?.propertyType, .land)
             XCTAssertNoThrow(try agent.registerSaleOffer(address: address, netValue: 3000))
         }
@@ -475,7 +475,7 @@ final class RealEstateAgentTests: XCTestCase {
         let address = MapPoint(x: 1, y: 1)
         let land = Land(address: address, ownerUUID: "owner")
         agent.dataStore.create(land)
-        agent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
+        agent.mapManager.addPrivateLand(address: address)
         
         XCTAssertEqual(agent.isForSale(address: address), false)
     }
@@ -485,7 +485,7 @@ final class RealEstateAgentTests: XCTestCase {
         let address = MapPoint(x: 1, y: 1)
         let land = Land(address: address, ownerUUID: "owner")
         agent.dataStore.create(land)
-        agent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
+        agent.mapManager.addPrivateLand(address: address)
         
         XCTAssertNoThrow(try agent.registerSaleOffer(address: address, netValue: 1000))
         XCTAssertEqual(agent.isForSale(address: address), true)

@@ -324,7 +324,7 @@ class RealEstateAgent {
             self.dataStore.create(register)
         }
 
-        self.mapManager.map.replaceTile(tile: land.mapTile)
+        self.mapManager.addPrivateLand(address: land.address)
         
         self.semaphore.signal()
         self.delegate?.syncWalletChange(playerUUID: buyerUUID)

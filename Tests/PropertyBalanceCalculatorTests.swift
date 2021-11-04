@@ -17,7 +17,7 @@ class PropertyBalanceCalculatorTests: XCTestCase {
         calculator.priceList.montlyLandMaintenanceCost = 600
         
         let address = MapPoint(x: 3, y: 3)
-        calculator.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
+        calculator.mapManager.addPrivateLand(address: address)
         let costs = calculator.getMontlyCosts(address: address)
         let sum = costs.map{$0.netValue}.reduce(0.0, +)
         XCTAssertEqual(sum, 1000)

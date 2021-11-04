@@ -46,7 +46,7 @@ final class ClickTileRouterTests: XCTestCase {
         let address = MapPoint(x: 0, y: 1)
         let land = Land(address: address, ownerUUID: "owner", purchaseNetValue: 900)
         router.agent.dataStore.create(land)
-        router.agent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
+        router.agent.mapManager.addPrivateLand(address: address)
         
         XCTAssertEqual(router.action(address: address, playerUUID: "visitor"), .landInfo)
     }
@@ -58,7 +58,7 @@ final class ClickTileRouterTests: XCTestCase {
         let address = MapPoint(x: 0, y: 1)
         let land = Land(address: address, ownerUUID: "owner", purchaseNetValue: 900)
         router.agent.dataStore.create(land)
-        router.agent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
+        router.agent.mapManager.addPrivateLand(address: address)
         
         XCTAssertEqual(router.action(address: address, playerUUID: "owner"), .landManager)
     }
@@ -70,7 +70,7 @@ final class ClickTileRouterTests: XCTestCase {
         let address = MapPoint(x: 0, y: 1)
         let land = Land(address: address, ownerUUID: "owner", purchaseNetValue: 900)
         router.agent.dataStore.create(land)
-        router.agent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
+        router.agent.mapManager.addPrivateLand(address: address)
         
         XCTAssertNoThrow(try router.agent.registerSaleOffer(address: address, netValue: 1200))
         

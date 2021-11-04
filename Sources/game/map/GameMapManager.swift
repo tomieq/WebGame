@@ -27,6 +27,10 @@ class GameMapManager {
         self.map.setTiles(self.initTiles(matrix: matrix))
     }
     
+    func addPrivateLand(address: MapPoint) {
+        self.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
+    }
+    
     func addStreet(address: MapPoint) {
         self.streetCache.append(StreetCache(address: address, type: .localStreet))
         if let tile = self.evaluateLocalStreetMapTile(address: address) {

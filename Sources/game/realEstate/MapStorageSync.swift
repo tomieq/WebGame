@@ -32,8 +32,7 @@ class MapStorageSync {
         
         let lands: [Land] = self.dataStore.getAll()
         for land in lands  {
-            let tile = GameMapTile(address: land.address, type: .soldLand)
-            self.mapManager.map.replaceTile(tile: tile)
+            self.mapManager.addPrivateLand(address: land.address)
         }
         let roads: [Road] = self.dataStore.getAll()
         for road in roads {

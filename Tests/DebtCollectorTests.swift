@@ -48,7 +48,7 @@ class DebtCollectorTests: XCTestCase {
         let address = MapPoint(x: 0, y: 0)
         
         dataStore.create(PropertyRegister(uuid: "random", address: address, playerUUID: "player", type: .land))
-        collector.realEstateAgent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
+        collector.realEstateAgent.mapManager.addPrivateLand(address: address)
         dataStore.create(Land(address: address, ownerUUID: "player"))
         
         var register: PropertyRegister? = dataStore.find(uuid: "random")
@@ -78,7 +78,7 @@ class DebtCollectorTests: XCTestCase {
         
         let landUUID = dataStore.create(Land(address: address, name: "Some Name", ownerUUID: "player"))
         dataStore.create(PropertyRegister(uuid: landUUID, address: address, playerUUID: "player", type: .land))
-        collector.realEstateAgent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
+        collector.realEstateAgent.mapManager.addPrivateLand(address: address)
         
         XCTAssertFalse(collector.realEstateAgent.isForSale(address: address))
         for _ in (1...3) {
@@ -118,7 +118,7 @@ class DebtCollectorTests: XCTestCase {
             let address = addresses[n]
             let landUUID = dataStore.create(Land(address: address, name: "Land \(n)", ownerUUID: "player"))
             dataStore.create(PropertyRegister(uuid: landUUID, address: address, playerUUID: "player", type: .land))
-            collector.realEstateAgent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
+            collector.realEstateAgent.mapManager.addPrivateLand(address: address)
         }
         let landValue = collector.realEstateAgent.propertyValuer.estimateValue(addresses[0]) ?? 1
         dataStore.update(PlayerMutation(uuid: "player", attributes: [.wallet(-1.0 * landValue * 0.7)]))

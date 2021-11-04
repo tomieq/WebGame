@@ -20,9 +20,6 @@ struct Land: Property {
     let accountantID: String?
 
     var type: String { return "Land property" }
-    var mapTile: GameMapTile {
-        return GameMapTile(address: address, type: .soldLand)
-    }
     
     init(address: MapPoint, name: String? = nil, ownerUUID: String = SystemPlayer.government.uuid, purchaseNetValue: Double = 0, investmentsNetValue: Double = 0) {
         self.uuid = ""
