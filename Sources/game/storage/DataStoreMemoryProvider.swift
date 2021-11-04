@@ -37,6 +37,7 @@ class DataStoreMemoryProvider: DataStoreProvider {
         self.adverts = []
     }
     
+    // MARK: Player
     @discardableResult
     func create(_ player: Player) -> String {
         
@@ -77,6 +78,7 @@ class DataStoreMemoryProvider: DataStoreProvider {
         }
     }
     
+    // MARK: CashFlow
     @discardableResult func create(_ transaction: CashFlow) -> String {
         
         return cashQueue.sync(flags: .barrier) {
@@ -103,6 +105,7 @@ class DataStoreMemoryProvider: DataStoreProvider {
         
     }
     
+    // MARK: Land
     func find(address: MapPoint) -> Land? {
         return landQueue.sync {
             self.lands.first{ $0.x == address.x && $0.y == address.y }.map { Land($0) }
@@ -143,7 +146,7 @@ class DataStoreMemoryProvider: DataStoreProvider {
         }
     }
     
-    
+    // MARK: Road
     @discardableResult
     func create(_ road: Road) -> String {
         return roadQueue.sync(flags: .barrier) {
@@ -198,6 +201,7 @@ class DataStoreMemoryProvider: DataStoreProvider {
         }
     }
 
+    // MARK: ResidentialBuilding
     @discardableResult
     func create(_ building: ResidentialBuilding) -> String {
         return residentialBuildingQueue.sync(flags: .barrier) {
@@ -253,7 +257,7 @@ class DataStoreMemoryProvider: DataStoreProvider {
         }
     }
     
-    
+    // MARK: SaleAdvert
     @discardableResult
     func create(_ advert: SaleAdvert) -> String {
         return queue.sync(flags: .barrier) {
@@ -294,7 +298,7 @@ class DataStoreMemoryProvider: DataStoreProvider {
         }
     }
     
-    
+    // MARK: PropertyRegister
     func create(_ register: PropertyRegister) -> String {
         return propertyQueue.sync(flags: .barrier) {
             let managedObject = PropertyRegisterManagedObject(register)
@@ -337,11 +341,18 @@ class DataStoreMemoryProvider: DataStoreProvider {
         }
     }
     
+    // MARK: Parking
     func create(_ parking: Parking) -> String {
         return roadQueue.sync(flags: .barrier) {
             let managedObject = ParkingManagedObject(parking)
             self.parkings.append(managedObject)
             return managedObject.uuid
+        }
+    }
+    
+    func find(address: MapPoint) -> Parking? {
+        return roadQueue.sync {
+            self.parkings.first{ $0.x == address.x && $0.y == address.y }.map { Parking($0) }
         }
     }
     
@@ -366,6 +377,8 @@ class DataStoreMemoryProvider: DataStoreProvider {
                     parking.ownerUUID = value
                 case .purchaseNetValue(let value):
                     parking.purchaseNetValue = value
+                case .investments(let value):
+                    parking.investmentsNetValue = value
                 }
             }
         }

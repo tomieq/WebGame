@@ -21,6 +21,7 @@ protocol DataStoreProvider {
     func find(uuid: String) -> PropertyRegister?
     func find(address: MapPoint) -> Land?
     func find(address: MapPoint) -> Road?
+    func find(address: MapPoint) -> Parking?
     func find(address: MapPoint) -> ResidentialBuilding?
     func find(address: MapPoint) -> SaleAdvert?
     func getFinancialTransactions(userID: String) -> [CashFlow]
