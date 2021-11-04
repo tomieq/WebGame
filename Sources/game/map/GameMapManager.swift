@@ -31,6 +31,12 @@ class GameMapManager {
         self.map.replaceTile(tile: GameMapTile(address: address, type: .soldLand))
     }
     
+    func addParking(address: MapPoint) {
+        if let tile = self.evaluateParkingMapTile(address: address) {
+            self.map.replaceTile(tile: tile)
+        }
+    }
+    
     func addStreet(address: MapPoint) {
         self.streetCache.append(StreetCache(address: address, type: .localStreet))
         if let tile = self.evaluateLocalStreetMapTile(address: address) {
@@ -82,11 +88,12 @@ class GameMapManager {
     private func initCache(matrix: MapMatrix) {
         for dataX in matrix {
             for dataY in dataX.value {
+                let address = MapPoint(x: dataX.key, y: dataY.key)
                 switch dataY.value {
                     case .localStreet:
-                        self.streetCache.append(StreetCache(address: MapPoint(x: dataX.key, y: dataY.key), type: .localStreet))
+                        self.streetCache.append(StreetCache(address: address, type: .localStreet))
                     case .mainStreet:
-                        self.streetCache.append(StreetCache(address: MapPoint(x: dataX.key, y: dataY.key), type: .mainStreet))
+                        self.streetCache.append(StreetCache(address: address, type: .mainStreet))
                     default:
                         break
                 }
@@ -111,6 +118,10 @@ class GameMapManager {
                     }
                 case .streetUnderConstruction:
                     mapTiles.append(GameMapTile(address: address, type: .streetUnderConstruction))
+                case .parking:
+                    if let tile = self.evaluateParkingMapTile(address: address) {
+                        mapTiles.append(tile)
+                    }
                 case .btsAntenna:
                     mapTiles.append(GameMapTile(address: address, type: .btsAntenna))
                 case .hostital:
@@ -153,6 +164,40 @@ class GameMapManager {
     
     private func wrap(_ address: MapPoint, _ streetType: StreetType) -> GameMapTile {
         return GameMapTile(address: address, type: .street(type: streetType))
+    }
+    
+    private func evaluateParkingMapTile(address: MapPoint) -> GameMapTile? {
+        
+        let topTile = self.streetCache.first{ $0.address == address.move(.up) }?.type
+        let bottomTile = self.streetCache.first{ $0.address == address.move(.down) }?.type
+        let leftTile = self.streetCache.first{ $0.address == address.move(.left) }?.type
+        let righTile = self.streetCache.first{ $0.address == address.move(.right) }?.type
+        
+        if topTile == .localStreet {
+            return GameMapTile(address: address, type: .parking(type: .topConnection))
+        }
+        if bottomTile == .localStreet {
+            return GameMapTile(address: address, type: .parking(type: .bottomConnection))
+        }
+        if leftTile == .localStreet {
+            return GameMapTile(address: address, type: .parking(type: .leftConnection))
+        }
+        if righTile == .localStreet {
+            return GameMapTile(address: address, type: .parking(type: .rightConnection))
+        }
+        if topTile == .mainStreet {
+            return GameMapTile(address: address, type: .parking(type: .Y))
+        }
+        if bottomTile == .mainStreet {
+            return GameMapTile(address: address, type: .parking(type: .Y))
+        }
+        if leftTile == .mainStreet {
+            return GameMapTile(address: address, type: .parking(type: .X))
+        }
+        if righTile == .mainStreet {
+            return GameMapTile(address: address, type: .parking(type: .X))
+        }
+        return nil
     }
     
     private func evaluateLocalStreetMapTile(address: MapPoint) -> GameMapTile? {
@@ -295,6 +340,7 @@ fileprivate enum GameMapFileEntry: String {
     case footballPitchRightTop = "f"
     case footballPitchLeftBottom = "P"
     case footballPitchRightBottom = "p"
+    case parking = "c"
 }
 
 fileprivate enum RoadType {
