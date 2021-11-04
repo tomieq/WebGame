@@ -38,6 +38,15 @@ class PropertyBalanceCalculator {
         case .road:
             let maintenance = Invoice(title: "Maintenance", netValue: self.priceList.montlyRoadMaintenanceCost, taxRate: self.taxRates.servicesTax)
             return [maintenance]
+        case .parking:
+            switch tile.type {
+            case .parking(_):
+                return self.getParkingMontlyCosts()
+            case .parkingUnderConstruction:
+                return self.getParkingUnderConstructionMontlyCosts()
+            default:
+                return []
+            }
         case .residentialBuilding:
             
             switch tile.type {
