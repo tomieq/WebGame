@@ -62,6 +62,9 @@ class ClickTileRouter {
                 return .roadManager
             }
             return .roadInfo
+        case .parking:
+            // TODO: impement UI
+            break
         case .residentialBuilding:
             if let building: ResidentialBuilding = self.dataStore.find(address: address) {
                 if building.ownerUUID == playerUUID {
