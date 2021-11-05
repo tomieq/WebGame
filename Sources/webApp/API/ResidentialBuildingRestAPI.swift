@@ -20,7 +20,7 @@ class ResidentialBuildingRestAPI: RestAPI {
                 return self.jsError("Invalid request! Missing address.")
             }
             let js = JSResponse()
-            js.add(.openWindow(name: "Residential Building", path: "/initBuildingManager.js".append(address), width: 0.7, height: 0.8, singletonID: address.asQueryParams))
+            js.add(.openWindow(name: "Residential Building", path: "/initBuildingManager.js".append(address), width: 680, height: 500, singletonID: address.asQueryParams))
             return js.response
         }
         
@@ -36,7 +36,6 @@ class ResidentialBuildingRestAPI: RestAPI {
             let js = JSResponse()
             js.add(.loadHtml(windowIndex, htmlPath: "/buildingManager.html?\(address.asQueryParams)"))
             js.add(.disableWindowResizing(windowIndex))
-            js.add(.centerWindow(windowIndex))
             return js.response
         }
 
@@ -61,61 +60,30 @@ class ResidentialBuildingRestAPI: RestAPI {
                 return self.htmlError("Property at \(address.description) is not yours!")
             }
             
-            let template = Template(raw: ResourceCache.shared.getAppResource("templates/buildingManager.html"))
-            var data = [String:String]()
+            let view = PropertyManagerTopView(windowIndex: windowIndex)
+            let domID = PropertyManagerTopView.domID(windowIndex)
+            view.addTab("Wallet balance", onclick: .loadHtmlInline(windowIndex, htmlPath: RestEndpoint.propertyWalletBalance.append(address), targetID: domID))
+            view.addTab("Sell options", onclick: .loadHtmlInline(windowIndex, htmlPath: RestEndpoint.propertySellStatus.append(address), targetID: domID))
+            view.addTab("Investments", onclick: .loadHtmlInline(windowIndex, htmlPath: "buildingInvestments.html".append(address), targetID: domID))
             
-            if let offer = self.gameEngine.realEstateAgent.saleOffer(address: address, buyerUUID: "check") {
-                var data = [String:String]()
-                data["price"] = offer.saleInvoice.netValue.money
-                data["cancelOfferJS"] = JSCode.runScripts(windowIndex, paths: [RestEndpoint.cancelSaleOffer.append(address)]).js
-                //data["editOfferJS"] = JSCode.runScripts(windowIndex, paths: [RestEndpoint.openEditSaleOffer.append(address)]).js
-                template.assign(variables: data, inNest: "forSale")
-            } else {
-                var data = [String:String]()
-                data["publishOfferJS"] = JSCode.runScripts(windowIndex, paths: ["/openPublishSaleOffer.js?\(address.asQueryParams)"]).js
-                template.assign(variables: data, inNest: "notForSale")
-            }
-            
-            let monthlyCosts = self.gameEngine.propertyBalanceCalculator.getMontlyCosts(address: address)
-            
-            data["name"] = building.name
-            data["type"] = building.type
-            data["purchasePrice"] = building.purchaseNetValue.rounded(toPlaces: 0).money
-            data["investmentsValue"] = building.investmentsNetValue.money
-            
-            for cost in monthlyCosts {
-                var data: [String:String] = [:]
-                data["name"] = cost.title
-                data["netValue"] = cost.netValue.money
-                data["taxRate"] = (cost.taxRate * 100).rounded(toPlaces: 0).string
-                data["taxValue"] = cost.tax.money
-                data["total"] = cost.total.money
-                template.assign(variables: data, inNest: "cost")
-            }
-            if monthlyCosts.count > 0 {
-                var data: [String:String] = [:]
-                data["netValue"] = monthlyCosts.map{$0.netValue}.reduce(0, +).money
-                data["taxValue"] = monthlyCosts.map{$0.tax}.reduce(0, +).money
-                data["total"] = monthlyCosts.map{$0.total}.reduce(0, +).money
-                template.assign(variables: data, inNest: "costTotal")
-            }
-            data["monthlyIncome"] = ""//property.monthlyIncome.money
-            data["taxRate"] = (self.gameEngine.taxRates.incomeTax*100).string
-            data["monthlyIncomeTax"] = ""//incomeTax.money
-            data["monthlyCosts"] = ""//property.monthlyMaintenanceCost.money
-            data["balance"] = ""//(property.monthlyIncome - property.monthlyMaintenanceCost - incomeTax).money
-            
-            let estimatedValue = 0.0//self.gameEngine.realEstateAgent.estimateValue(property.address)
-            data["estimatedValue"] = estimatedValue.money
-
             if building.isUnderConstruction {
-                data["tileUrl"] = TileType.buildingUnderConstruction(size: building.storeyAmount).image.path
+                view.setPropertyType("\(building.type) - under construction")
+                    .setTileImage(TileType.buildingUnderConstruction(size: building.storeyAmount).image.path)
+                
             } else {
-                data["tileUrl"] = TileType.building(size: building.storeyAmount).image.path
+                view.setPropertyType(building.type)
+                    .setTileImage(TileType.building(size: building.storeyAmount).image.path)
             }
             
-            template.assign(variables: data)
-            return .ok(.html(template.output()))
+            view.addTip("Earn money on renting apartments or sell them.")
+            
+            let balanceView = PropertyBalanceView()
+            balanceView.setMonthlyCosts(self.gameEngine.propertyBalanceCalculator.getMontlyCosts(address: address))
+            balanceView.setMonthlyIncome(self.gameEngine.propertyBalanceCalculator.getMonthlyIncome(address: address))
+            balanceView.setProperty(building)
+
+            view.setInitialContent(html: balanceView.output())
+            return view.output().asResponse
         }
     }
 }
