@@ -22,6 +22,7 @@ class GameEngine {
     let propertyValuer: PropertyValuer
     let realEstateAgent: RealEstateAgent
     let constructionServices: ConstructionServices
+    let parkingBusiness: ParkingBusiness
     let propertyBalanceCalculator: PropertyBalanceCalculator
     let gameClock: GameClock
     let clickRouter: ClickTileRouter
@@ -61,7 +62,8 @@ class GameEngine {
         
         MapStorageSync(mapManager: self.gameMapManager, dataStore: self.dataStore).syncMapWithDataStore()
         
-        self.propertyBalanceCalculator = PropertyBalanceCalculator(mapManager: self.gameMapManager, dataStore: self.dataStore, taxRates: self.taxRates)
+        self.parkingBusiness = ParkingBusiness(mapManager: self.gameMapManager, dataStore: self.dataStore)
+        self.propertyBalanceCalculator = PropertyBalanceCalculator(mapManager: self.gameMapManager, parkingBusiness: self.parkingBusiness, taxRates: self.taxRates)
         
         self.constructionServices = ConstructionServices(mapManager: self.gameMapManager, centralBank: self.centralbank, time: self.time)
         self.propertyValuer = PropertyValuer(balanceCalculator: self.propertyBalanceCalculator, constructionServices: self.constructionServices)

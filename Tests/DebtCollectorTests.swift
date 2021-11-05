@@ -150,7 +150,8 @@ class DebtCollectorTests: XCTestCase {
         let mapManager = GameMapManager(map)
         
         let constructionServices = ConstructionServices(mapManager: mapManager, centralBank: centralBank, time: time)
-        let balanceCalculator = PropertyBalanceCalculator(mapManager: mapManager, dataStore: dataStore, taxRates: taxRates)
+        let parkingBusiness = ParkingBusiness(mapManager: mapManager, dataStore: dataStore)
+        let balanceCalculator = PropertyBalanceCalculator(mapManager: mapManager, parkingBusiness: parkingBusiness, taxRates: taxRates)
         let propertyValuer = PropertyValuer(balanceCalculator: balanceCalculator, constructionServices: constructionServices)
         let agent = RealEstateAgent(mapManager: mapManager, propertyValuer: propertyValuer, centralBank: centralBank, delegate: nil)
         

@@ -10,13 +10,15 @@ import Foundation
 class PropertyBalanceCalculator {
     let mapManager: GameMapManager
     let dataStore: DataStoreProvider
+    let parkingBusiness: ParkingBusiness
     let costPriceList: MonthlyCostPriceList
     let incomePriceList: MontlyIncomePriceList
     let taxRates: TaxRates
     
-    init(mapManager: GameMapManager, dataStore: DataStoreProvider, taxRates: TaxRates) {
+    init(mapManager: GameMapManager, parkingBusiness: ParkingBusiness, taxRates: TaxRates) {
         self.mapManager = mapManager
-        self.dataStore = dataStore
+        self.dataStore = parkingBusiness.dataStore
+        self.parkingBusiness = parkingBusiness
         self.costPriceList = MonthlyCostPriceList()
         self.incomePriceList = MontlyIncomePriceList()
         self.taxRates = taxRates
@@ -127,65 +129,11 @@ class PropertyBalanceCalculator {
     }
     
     func getParkingMontlyIncome(address: MapPoint) -> [MonthlyIncome] {
-        let carsForParking = self.calculateCarsForParking(address: address)
+        let carsForParking = self.parkingBusiness.calculateCarsForParking(address: address)
         if carsForParking > 0 {
             return [MonthlyIncome(name: "Renting parking places", netValue: (carsForParking * self.incomePriceList.monthlyParkingIncomePerTakenPlace).rounded(toPlaces: 0))]
         }
         return []
-    }
-    
-    func calculateCarsForParking(address: MapPoint) -> Double {
-        
-        var carsPerAddress = self.getCarsAroundAddress(address)
-        let competitors = self.getParkingsAroundAddress(address)
-        
-        for competitor in competitors {
-            let carsInCompetitorRange = self.getCarsAroundAddress(competitor)
-            for sharedAddress in carsInCompetitorRange.keys {
-                carsPerAddress[sharedAddress]? /= 2
-            }
-        }
-    
-        return carsPerAddress.map{ $0.value }.reduce(0, +)
-    }
-    
-    private func getCarsAroundAddress(_ address: MapPoint) -> [MapPoint: Double] {
-        var carsPerAddress: [MapPoint: Double] = [:]
-        for radius in (1...2) {
-            for neighbour in self.mapManager.map.getNeighbourAddresses(to: address, radius: radius) {
-                if let tileType = self.mapManager.map.getTile(address: neighbour)?.type {
-                    switch tileType {
-                    case .building(let size):
-                        carsPerAddress[neighbour] = size.double
-                    case .cityCouncil:
-                        carsPerAddress[neighbour] = 5
-                    case .school:
-                        carsPerAddress[neighbour] = 5
-                    case .hospital:
-                        carsPerAddress[neighbour] = 9
-                    case .footballPitch(_):
-                        carsPerAddress[neighbour] = 5
-                    case .warehouse:
-                        carsPerAddress[neighbour] = 2
-                    default:
-                        break
-                    }
-                }
-            }
-        }
-        return carsPerAddress
-    }
-    
-    func getParkingsAroundAddress(_ address: MapPoint) -> [MapPoint] {
-        var parkings: [MapPoint] = []
-        for radius in (1...3) {
-            for neighbour in self.mapManager.map.getNeighbourAddresses(to: address, radius: radius) {
-                if self.mapManager.map.getTile(address: neighbour)?.isParking() ?? false {
-                    parkings.append(neighbour)
-                }
-            }
-        }
-        return parkings
     }
 }
 
