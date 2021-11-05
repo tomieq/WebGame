@@ -25,6 +25,11 @@ class MapStorageSync {
             case .building(let size):
                 let building = ResidentialBuilding(land: Land(address: tile.address, ownerUUID: SystemPlayer.government.uuid), storeyAmount: size)
                 buildingToAdd.append(building)
+            case .parking(_):
+                let parking = Parking(land: Land(address: tile.address, ownerUUID: SystemPlayer.investor.uuid))
+                let parkingUUID = self.dataStore.create(parking)
+                let register = PropertyRegister(uuid: parkingUUID, address: tile.address, playerUUID: SystemPlayer.investor.uuid, type: .parking)
+                self.dataStore.create(register)
             default:
                 break
             }
