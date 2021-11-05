@@ -11,6 +11,7 @@ import Swifter
 enum RestEndpoint {
     case openRoadInfo
     case openRoadManager
+    case openParkingManager
     case openLandManager
     case openBuildingManager
     case openSaleOffer
@@ -26,6 +27,8 @@ enum RestEndpoint {
             return "/openRoadInfo.js"
         case .openRoadManager:
             return "/openRoadManager.js"
+        case .openParkingManager:
+            return "/openParkingManager.js"
         case .openLandManager:
             return "/openLandManager.js"
         case .openBuildingManager:

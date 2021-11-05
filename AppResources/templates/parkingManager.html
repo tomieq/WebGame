@@ -1,0 +1,153 @@
+<div style="margin: 20px;">
+
+<div style="width: 105px; float: right;">
+    <div class="blue-border" style="width: 100px; text-align: center;">
+        <img src="{tileUrl}" style="width: 70px; height: auto;"/>
+        <br><span class="text-orange" style="font-size: 0.8em;">{type}</span>
+    </div>
+
+    
+    <br>
+    <div style="font-size: 0.8em;">
+    The more buildings/facilities around, the more customers you get.<br>
+    If there is more parkings in the area, the market is shared between parking lots.
+    <br><br>
+    It's best if your parking business is the only one in the area.
+    <br><br>
+    The range of your parking lot is marked with green and the competitors in red.
+    </div>
+</div>
+<p>
+<table class="detailsTable" style="width: 400px; margin: 5px; float: left">
+<tbody>
+<tr>
+    <td>Property name</td>
+    <td style="text-align: right;"><strong>{name}</strong></td>
+</tr>
+
+<tr>
+    <td>Type</td>
+    <td style="text-align: right;">{type}</td>
+</tr>
+<tr>
+    <td colspan=2><hr class="orange" /></td>
+</tr>
+<tr>
+    <td>Purchase price </td>
+    <td style="text-align: right;">{purchasePrice} (excl. tax)</td>
+</tr>
+
+<tr>
+    <td>Investments</td>
+    <td style="text-align: right;">{investmentsValue} (excl. tax)</td>
+</tr>
+<tr>
+    <td colspan=2><hr /></td>
+</tr>
+[START notForSale]
+<tr>
+    <td>Real Estate Market</td>
+    <td style="text-align: right;"><button class="btn btn-sm" onclick="{publishOfferJS}">Sell property</button></td>
+</tr>
+[END notForSale]
+[START forSale]
+<tr>
+    <td>Real Estate Market</td>
+    <td style="text-align: right;">On sale for <strong>{price}</strong></td>
+</tr>
+<tr>
+    <td colspan=2 style="text-align: right;">
+        <button class="btn btn-sm" onclick="{editOfferJS}">Edit offer</button>
+        <button class="btn btn-sm" onclick="{cancelOfferJS}">Cancell offer</button>
+    </td>
+</tr>
+[END forSale]
+<tr>
+    <td colspan=2><hr /></td>
+</tr>
+<tr>
+    <td colspan=2>
+        Monthly Costs<br/><br/>
+        <table class="priceTable">
+            <theader>
+                <th>Invoice</th>
+                <th>Net value</th>
+                <th>Tax rate</th>
+                <th>Tax value</th>
+                <th>Gross value</th>
+            </theader>
+            <tbody>
+                [START cost]
+                <tr>
+                    <td>{name}</td>
+                    <td>{netValue}</td>
+                    <td>{taxRate}%</td>
+                    <td>{taxValue}</td>
+                    <td>{total}</td>
+                </tr>
+                [END cost]
+                [START costTotal]
+                <tr><td colspan=5><hr/></td></tr>
+                <tr>
+                    <td>Total costs</td>
+                    <td>{netValue}</td>
+                    <td></td>
+                    <td>{taxValue}</td>
+                    <td>{total}</td>
+                </tr>
+                [END costTotal]
+            </tbody>
+        </table>
+    
+    
+    </td>
+</tr>
+<tr>
+    <td colspan=2><hr class="orange" /></td>
+</tr>
+<tr>
+    <td colspan=2>
+        Monthly income<br/><br/>
+        <table class="priceTable">
+            <theader>
+                <th>Title</th>
+                <th>Net value</th>
+            </theader>
+            <tbody>
+                [START income]
+                <tr>
+                    <td>{name}</td>
+                    <td>{netValue}</td>
+                </tr>
+                [END income]
+                [START incomeTotal]
+                <tr><td colspan=2><hr/></td></tr>
+                <tr>
+                    <td>Total income</td>
+                    <td>{netValue}</td>
+                </tr>
+                [END incomeTotal]
+            </tbody>
+        </table>
+    
+    
+    </td>
+</tr>
+</tbody>
+</table>
+<div style="clear: both;"></div>
+</p>
+
+
+    [START info]
+    <p>
+        {text}
+    </p>
+    [END info]
+
+    <div style="clear: both; margin-top:10px;"></div>
+</div>
+
+
+
+

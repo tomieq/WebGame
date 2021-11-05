@@ -17,6 +17,9 @@ enum ClickTileAction {
     case landManager
     case residentialBuildingManager
     case footballPitchInfo
+    case parkingInfo
+    case parkingManager
+    case buyParking
     case noAction
 }
 
@@ -63,8 +66,15 @@ class ClickTileRouter {
             }
             return .roadInfo
         case .parking:
-            // TODO: impement UI
-            break
+            if let parking: Parking = self.dataStore.find(address: address) {
+                if parking.ownerUUID == playerUUID {
+                    return .parkingManager
+                } else if self.agent.isForSale(address: address) {
+                    return .buyParking
+                } else {
+                    return .parkingInfo
+                }
+            }
         case .residentialBuilding:
             if let building: ResidentialBuilding = self.dataStore.find(address: address) {
                 if building.ownerUUID == playerUUID {
@@ -110,6 +120,16 @@ extension ClickTileAction {
             return [ .runScript(RestEndpoint.openBuildingManager.append(point))]
         case .footballPitchInfo:
             return [ .runScript(RestEndpoint.openFootballPitch.append(point)) ]
+        case .parkingInfo:
+            return [
+                .openWindow(OpenWindow(title: "Property info", width: 400, height: 200, initUrl: RestEndpoint.openPropertyInfo.base.append(point), address: point))
+            ]
+        case .parkingManager:
+            return  [ .runScript(RestEndpoint.openParkingManager.base.append(point))]
+        case .buyParking:
+            return [
+                .openWindow(OpenWindow(title: "Sale offer", width: 300, height: 270, initUrl: RestEndpoint.openSaleOffer.append(point), address: point))
+            ]
         case .noAction:
             return []
         }
