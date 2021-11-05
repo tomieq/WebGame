@@ -130,15 +130,11 @@ extension GameMapTile {
             
         case .soldLand:
             return .land
-        case .street(_):
+        case .street(_), .streetUnderConstruction:
             return .road
-        case .parking(_):
+        case .parking(_), .parkingUnderConstruction:
             return .parking
-        case .streetUnderConstruction:
-            return .road
-        case .building(_):
-            return .residentialBuilding
-        case .buildingUnderConstruction(_):
+        case .building(_), .buildingUnderConstruction(_):
             return .residentialBuilding
         default:
             return nil
