@@ -150,6 +150,7 @@ class PropertySalesAPI: RestAPI {
             data["price"] = property.purchaseNetValue.moneyFormat
             data["windowIndex"] = windowIndex
             data["submitUrl"] = "/publishSaleOffer.js".append(address)
+            data["evaluationJS"] = JSCode.loadHtmlInline(windowIndex, htmlPath: "/propertyValuation.html".append(address), targetID: "valuationContent").js
             template.assign(variables: data)
             return .ok(.html(template.output()))
         }
@@ -294,6 +295,33 @@ class PropertySalesAPI: RestAPI {
             let sellView = PropertySaleStatusView(property: property)
             sellView.setOffer(self.gameEngine.realEstateAgent.saleOffer(address: address, buyerUUID: "random"))
             return sellView.output(windowIndex: windowIndex).asResponse
+        }
+        
+        // MARK: newSaleOfferForm.html
+        server.GET["/propertyValuation.html"] = { request, _ in
+            request.disableKeepAlive = true
+            guard let address = request.mapPoint else {
+                return self.htmlError("Invalid request! Missing address.")
+            }
+            
+            guard let playerSessionID = request.queryParam("playerSessionID"),
+                  let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                      return self.htmlError("Invalid request! Missing sessionID.")
+            }
+            guard let property = self.gameEngine.realEstateAgent.getProperty(address: address) else {
+                return self.htmlError("Property not found!")
+            }
+            guard property.ownerUUID == session.playerUUID else {
+                return self.htmlError("You can valuate only your own property!")
+            }
+            // TODO: take money from user
+            guard let value = self.gameEngine.propertyValuer.estimateValue(address) else {
+                return self.htmlError("Problem with property valuation")
+            }
+            let instantSellValue = value * self.gameEngine.investorAI.params.instantPurchaseToEstimatedValueFactor
+            
+            let html = "The estimated value is <b>\(value.money)</b>. If you want to sell the property immediately, set the price under \(instantSellValue.money)."
+            return html.asResponse
         }
     }
 }
