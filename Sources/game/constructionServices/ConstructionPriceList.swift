@@ -10,7 +10,7 @@ import Foundation
 class ConstructionPriceList {
     
     var buildRoadPrice: Double = 410000
-    var buildParkingPrice: Double = 320000
+    var buildParkingPrice: Double = 130000
     var buildResidentialBuildingPrice: Double = 2300000
     var buildResidentialBuildingPricePerStorey: Double = 840000
     
