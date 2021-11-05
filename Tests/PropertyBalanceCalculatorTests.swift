@@ -12,9 +12,9 @@ import XCTest
 class PropertyBalanceCalculatorTests: XCTestCase {
     func test_landMonthlyCosts() {
         let calculator = self.makeCalculator()
-        calculator.priceList.montlyLandWaterCost = 100
-        calculator.priceList.montlyLandElectricityCost = 300
-        calculator.priceList.montlyLandMaintenanceCost = 600
+        calculator.costPriceList.montlyLandWaterCost = 100
+        calculator.costPriceList.montlyLandElectricityCost = 300
+        calculator.costPriceList.montlyLandMaintenanceCost = 600
         
         let address = MapPoint(x: 3, y: 3)
         calculator.mapManager.addPrivateLand(address: address)
@@ -25,7 +25,7 @@ class PropertyBalanceCalculatorTests: XCTestCase {
     
     func test_roadMonthlyCosts() {
         let calculator = self.makeCalculator()
-        calculator.priceList.montlyRoadMaintenanceCost = 800
+        calculator.costPriceList.montlyRoadMaintenanceCost = 800
         
         let address = MapPoint(x: 3, y: 3)
         calculator.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .street(type: .local(.localCross))))
@@ -36,9 +36,9 @@ class PropertyBalanceCalculatorTests: XCTestCase {
     
     func test_residentialBuildingMonthlyCosts() {
         let calculator = self.makeCalculator()
-        calculator.priceList.montlyResidentialBuildingWaterCost = 100
-        calculator.priceList.montlyResidentialBuildingElectricityCost = 300
-        calculator.priceList.montlyResidentialBuildingMaintenanceCostPerStorey = 1000
+        calculator.costPriceList.montlyResidentialBuildingWaterCost = 100
+        calculator.costPriceList.montlyResidentialBuildingElectricityCost = 300
+        calculator.costPriceList.montlyResidentialBuildingMaintenanceCostPerStorey = 1000
         
         let address = MapPoint(x: 3, y: 3)
         calculator.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .building(size: 6)))

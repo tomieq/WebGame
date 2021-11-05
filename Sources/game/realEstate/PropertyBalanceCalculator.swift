@@ -10,18 +10,51 @@ import Foundation
 class PropertyBalanceCalculator {
     let mapManager: GameMapManager
     let dataStore: DataStoreProvider
-    let priceList: MonthlyCostPriceList
+    let costPriceList: MonthlyCostPriceList
+    let incomePriceList: MontlyIncomePriceList
     let taxRates: TaxRates
     
     init(mapManager: GameMapManager, dataStore: DataStoreProvider, taxRates: TaxRates) {
         self.mapManager = mapManager
         self.dataStore = dataStore
-        self.priceList = MonthlyCostPriceList()
+        self.costPriceList = MonthlyCostPriceList()
+        self.incomePriceList = MontlyIncomePriceList()
         self.taxRates = taxRates
     }
     
     func getMonthlyIncome(address: MapPoint) -> [MonthlyIncome] {
-        return []
+        guard let tile = self.mapManager.map.getTile(address: address) else {
+            return []
+        }
+        guard let propertyType = tile.propertyType else {
+            return []
+        }
+        switch propertyType {
+            
+        case .land:
+            return []
+        case .road:
+            return []
+        case .parking:
+            switch tile.type {
+            case .parking(_):
+                return self.getParkingMontlyIncome(address: address)
+            case .parkingUnderConstruction:
+                return []
+            default:
+                return []
+            }
+        case .residentialBuilding:
+            
+            switch tile.type {
+            case .building(let size):
+                return []
+            case .buildingUnderConstruction(_):
+                return []
+            default:
+                return []
+            }
+        }
     }
     
     func getMontlyCosts(address: MapPoint) -> [Invoice] {
@@ -36,7 +69,7 @@ class PropertyBalanceCalculator {
         case .land:
             return self.getLandMontlyCosts()
         case .road:
-            let maintenance = Invoice(title: "Maintenance", netValue: self.priceList.montlyRoadMaintenanceCost, taxRate: self.taxRates.servicesTax)
+            let maintenance = Invoice(title: "Maintenance", netValue: self.costPriceList.montlyRoadMaintenanceCost, taxRate: self.taxRates.servicesTax)
             return [maintenance]
         case .parking:
             switch tile.type {
@@ -61,36 +94,98 @@ class PropertyBalanceCalculator {
     }
     
     func getLandMontlyCosts() -> [Invoice] {
-        let water = Invoice(title: "Water constant bill", netValue: self.priceList.montlyLandWaterCost, taxRate: self.taxRates.waterBillTax)
-        let electricity = Invoice(title: "Electricity constant bill", netValue: self.priceList.montlyLandElectricityCost, taxRate: self.taxRates.electricityBillTax)
-        let maintenance = Invoice(title: "Maintenance", netValue: self.priceList.montlyLandMaintenanceCost, taxRate: self.taxRates.servicesTax)
+        let water = Invoice(title: "Water constant bill", netValue: self.costPriceList.montlyLandWaterCost, taxRate: self.taxRates.waterBillTax)
+        let electricity = Invoice(title: "Electricity constant bill", netValue: self.costPriceList.montlyLandElectricityCost, taxRate: self.taxRates.electricityBillTax)
+        let maintenance = Invoice(title: "Maintenance", netValue: self.costPriceList.montlyLandMaintenanceCost, taxRate: self.taxRates.servicesTax)
         return [water, electricity, maintenance]
     }
     
     func getParkingUnderConstructionMontlyCosts() -> [Invoice] {
-        let water = Invoice(title: "Water bill", netValue: self.priceList.montlyParkingUnderConstructionWaterCost, taxRate: self.taxRates.waterBillTax)
-        let electricity = Invoice(title: "Electricity bill", netValue: self.priceList.monthlyResidentialBuildingOwnerIncomePerFlat, taxRate: self.taxRates.electricityBillTax)
+        let water = Invoice(title: "Water bill", netValue: self.costPriceList.montlyParkingUnderConstructionWaterCost, taxRate: self.taxRates.waterBillTax)
+        let electricity = Invoice(title: "Electricity bill", netValue: self.costPriceList.monthlyResidentialBuildingOwnerIncomePerFlat, taxRate: self.taxRates.electricityBillTax)
         return [water, electricity]
     }
     
     func getParkingMontlyCosts() -> [Invoice] {
-        let security = Invoice(title: "Security costs", netValue: self.priceList.montlyParkingSecurityCost, taxRate: self.taxRates.waterBillTax)
-        let electricity = Invoice(title: "Electricity bill", netValue: self.priceList.montlyParkingElectricityCost, taxRate: self.taxRates.electricityBillTax)
+        let security = Invoice(title: "Security costs", netValue: self.costPriceList.montlyParkingSecurityCost, taxRate: self.taxRates.servicesTax)
+        let electricity = Invoice(title: "Electricity bill", netValue: self.costPriceList.montlyParkingElectricityCost, taxRate: self.taxRates.electricityBillTax)
         return [security, electricity]
     }
     
     func getBuildingMontlyCosts(size: Int) -> [Invoice] {
-        let water = Invoice(title: "Water bill", netValue: self.priceList.montlyResidentialBuildingWaterCost, taxRate: self.taxRates.waterBillTax)
-        let electricity = Invoice(title: "Electricity bill", netValue: self.priceList.montlyResidentialBuildingElectricityCost, taxRate: self.taxRates.electricityBillTax)
-        let maintenance = Invoice(title: "Maintenance", netValue: self.priceList.montlyResidentialBuildingMaintenanceCostPerStorey  * size.double, taxRate: self.taxRates.servicesTax)
+        let water = Invoice(title: "Water bill", netValue: self.costPriceList.montlyResidentialBuildingWaterCost, taxRate: self.taxRates.waterBillTax)
+        let electricity = Invoice(title: "Electricity bill", netValue: self.costPriceList.montlyResidentialBuildingElectricityCost, taxRate: self.taxRates.electricityBillTax)
+        let maintenance = Invoice(title: "Maintenance", netValue: self.costPriceList.montlyResidentialBuildingMaintenanceCostPerStorey  * size.double, taxRate: self.taxRates.servicesTax)
         
         return [water, electricity, maintenance]
     }
     
     func getBuildingUnderConstructionMontlyCosts() -> [Invoice] {
-        let water = Invoice(title: "Water bill", netValue: self.priceList.montlyResidentialBuildingUnderConstructionWaterCost, taxRate: self.taxRates.waterBillTax)
-        let electricity = Invoice(title: "Electricity bill", netValue: self.priceList.montlyResidentialBuildingUnderConstructionElectricityCost, taxRate: self.taxRates.electricityBillTax)
+        let water = Invoice(title: "Water bill", netValue: self.costPriceList.montlyResidentialBuildingUnderConstructionWaterCost, taxRate: self.taxRates.waterBillTax)
+        let electricity = Invoice(title: "Electricity bill", netValue: self.costPriceList.montlyResidentialBuildingUnderConstructionElectricityCost, taxRate: self.taxRates.electricityBillTax)
         return [water, electricity]
+    }
+    
+    func getParkingMontlyIncome(address: MapPoint) -> [MonthlyIncome] {
+        let carsForParking = self.calculateCarsForParking(address: address)
+        if carsForParking > 0 {
+            return [MonthlyIncome(name: "Renting parking places", netValue: (carsForParking * self.incomePriceList.monthlyParkingIncomePerTakenPlace).rounded(toPlaces: 0))]
+        }
+        return []
+    }
+    
+    func calculateCarsForParking(address: MapPoint) -> Double {
+        
+        var carsPerAddress = self.getCarsAroundAddress(address)
+        let competitors = self.getParkingsAroundAddress(address)
+        
+        for competitor in competitors {
+            let carsInCompetitorRange = self.getCarsAroundAddress(competitor)
+            for sharedAddress in carsInCompetitorRange.keys {
+                carsPerAddress[sharedAddress]? /= 2
+            }
+        }
+    
+        return carsPerAddress.map{ $0.value }.reduce(0, +)
+    }
+    
+    private func getCarsAroundAddress(_ address: MapPoint) -> [MapPoint: Double] {
+        var carsPerAddress: [MapPoint: Double] = [:]
+        for radius in (1...2) {
+            for neighbour in self.mapManager.map.getNeighbourAddresses(to: address, radius: radius) {
+                if let tileType = self.mapManager.map.getTile(address: neighbour)?.type {
+                    switch tileType {
+                    case .building(let size):
+                        carsPerAddress[neighbour] = size.double
+                    case .cityCouncil:
+                        carsPerAddress[neighbour] = 5
+                    case .school:
+                        carsPerAddress[neighbour] = 5
+                    case .hospital:
+                        carsPerAddress[neighbour] = 9
+                    case .footballPitch(_):
+                        carsPerAddress[neighbour] = 5
+                    case .warehouse:
+                        carsPerAddress[neighbour] = 2
+                    default:
+                        break
+                    }
+                }
+            }
+        }
+        return carsPerAddress
+    }
+    
+    func getParkingsAroundAddress(_ address: MapPoint) -> [MapPoint] {
+        var parkings: [MapPoint] = []
+        for radius in (1...3) {
+            for neighbour in self.mapManager.map.getNeighbourAddresses(to: address, radius: radius) {
+                if self.mapManager.map.getTile(address: neighbour)?.isParking() ?? false {
+                    parkings.append(neighbour)
+                }
+            }
+        }
+        return parkings
     }
 }
 
@@ -121,6 +216,11 @@ class MonthlyCostPriceList {
     public var monthlyBillsForUnrentedApartment: Double = 180.0
     public var monthlyApartmentRentalFee: Double = 2300
     public var monthlyApartmentBuildingOwnerFee: Double = 930
+}
+
+class MontlyIncomePriceList {
+    // parking
+    public var monthlyParkingIncomePerTakenPlace: Double = 320
 }
 
 struct MonthlyIncome {
