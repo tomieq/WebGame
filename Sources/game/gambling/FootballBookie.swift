@@ -47,7 +47,7 @@ struct FootballBetArchive {
 
 class FootballBookie {
     let localTeam: String
-    let archiveCapacity = 5
+    var archiveCapacity = 5
     private var archive: [FootballBetArchive] = []
     private var match: FootballMatch
     private var bets: [FootballBet]
