@@ -66,7 +66,7 @@ class ParkingRestAPI: RestAPI {
             let view = PropertyManagerTopView(windowIndex: windowIndex)
             let domID = PropertyManagerTopView.domID(windowIndex)
             view.addTab("Wallet balance", onclick: .loadHtmlInline(windowIndex, htmlPath: "parkingBalance.html".append(address), targetID: domID))
-            view.addTab("Sell options", onclick: .loadHtmlInline(windowIndex, htmlPath: "parkingSell.html".append(address), targetID: domID))
+            view.addTab("Sell options", onclick: .loadHtmlInline(windowIndex, htmlPath: RestEndpoint.propertySellStatus.append(address), targetID: domID))
             view.addTab("Managing", onclick: .loadHtmlInline(windowIndex, htmlPath: "parkingManaging.html".append(address), targetID: domID))
             
             if parking.isUnderConstruction {
@@ -116,31 +116,6 @@ class ParkingRestAPI: RestAPI {
             balanceView.setMonthlyIncome(self.gameEngine.propertyBalanceCalculator.getMonthlyIncome(address: address))
             balanceView.setProperty(parking)
             return balanceView.output().asResponse
-        }
-        
-        // MARK: parkingSell.html
-        server.GET["/parkingSell.html"] = { request, _ in
-            request.disableKeepAlive = true
-            guard let playerSessionID = request.queryParam("playerSessionID"),
-                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                    return self.htmlError("Invalid request! Missing session ID.")
-            }
-            guard let windowIndex = request.queryParam("windowIndex") else {
-                return self.htmlError("Invalid request! Missing window context.")
-            }
-            guard let address = request.mapPoint else {
-                return self.htmlError("Invalid request! Missing address.")
-            }
-            guard let parking: Parking = self.dataStore.find(address: address) else {
-                return self.htmlError("Property at \(address.description) not found!")
-            }
-            let ownerID = parking.ownerUUID
-            guard session.playerUUID == ownerID else {
-                return self.htmlError("Property at \(address.description) is not yours!")
-            }
-            let sellView = PropertySaleStatusView(property: parking)
-            sellView.setOffer(self.gameEngine.realEstateAgent.saleOffer(address: address, buyerUUID: "random"))
-            return sellView.output(windowIndex: windowIndex).asResponse
         }
     }
 

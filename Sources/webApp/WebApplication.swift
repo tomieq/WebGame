@@ -23,7 +23,7 @@ public class WebApplication {
         var api: [RestAPI] = []
         api.append(RoadRestAPI(server, gameEngine: self.gameEngine))
         api.append(LandRestAPI(server, gameEngine: self.gameEngine))
-        api.append(RealEstateAgentRestAPI(server, gameEngine: self.gameEngine))
+        api.append(PropertySalesAPI(server, gameEngine: self.gameEngine))
         api.append(ResidentialBuildingRestAPI(server, gameEngine: self.gameEngine))
         api.append(PropertyManagerRestAPI(server, gameEngine: self.gameEngine))
         api.append(PublicPlacesAPI(server, gameEngine: self.gameEngine))

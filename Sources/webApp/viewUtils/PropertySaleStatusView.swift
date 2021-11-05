@@ -31,11 +31,11 @@ class PropertySaleStatusView {
             var data = [String:String]()
             data["price"] = offer.saleInvoice.netValue.money
             data["cancelOfferJS"] = JSCode.runScripts(windowIndex, paths: [RestEndpoint.cancelSaleOffer.append(self.property.address)]).js
-            data["editOfferJS"] = JSCode.runScripts(windowIndex, paths: [RestEndpoint.openEditSaleOffer.append(self.property.address)]).js
+            data["editOfferJS"] = JSCode.runScripts(windowIndex, paths: [RestEndpoint.loadEditSaleOfferForm.append(self.property.address)]).js
             template.assign(variables: data, inNest: "forSale")
         } else {
             var data = [String:String]()
-            data["publishOfferJS"] = JSCode.runScripts(windowIndex, paths: ["/openPublishSaleOffer.js".append(self.property.address)]).js
+            data["publishOfferJS"] = JSCode.runScripts(windowIndex, paths: [RestEndpoint.loadNewSaleOfferForm.append(property.address)]).js
             template.assign(variables: data, inNest: "notForSale")
         }
         return template.output()

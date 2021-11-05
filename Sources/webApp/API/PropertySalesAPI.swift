@@ -7,7 +7,7 @@
 
 import Foundation
 
-class RealEstateAgentRestAPI: RestAPI {
+class PropertySalesAPI: RestAPI {
     override func setupEndpoints() {
 
         // MARK: openSaleOffer
@@ -108,53 +108,48 @@ class RealEstateAgentRestAPI: RestAPI {
             return code.response
         }
         
-        // MARK: openPublishSaleOffer
-        server.GET[.openPublishSaleOffer] = { request, _ in
+        // MARK: loadNewSaleOfferForm
+        server.GET[.loadNewSaleOfferForm] = { request, _ in
             request.disableKeepAlive = true
             guard let windowIndex = request.queryParam("windowIndex") else {
-                return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
+                return self.jsError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
-                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
+                return self.jsError("Invalid request! Missing address.")
             }
             let js = JSResponse()
-            js.add(.loadHtml(windowIndex, htmlPath: "/publishSaleOffer.html?\(address.asQueryParams)"))
-            js.add(.disableWindowResizing(windowIndex))
-            js.add(.setWindowTitle(windowIndex, title: "Put property on sale"))
-            js.add(.resizeWindow(windowIndex, width: 600, height: 300))
-            js.add(.positionWindow(windowIndex, address))
+            js.add(.loadHtmlInline(windowIndex, htmlPath: "/newSaleOfferForm.html".append(address), targetID: PropertyManagerTopView.domID(windowIndex)))
             return js.response
         }
 
-        // MARK: publishSaleOffer.html
-        server.GET["/publishSaleOffer.html"] = { request, _ in
+        // MARK: newSaleOfferForm.html
+        server.GET["newSaleOfferForm.html"] = { request, _ in
             request.disableKeepAlive = true
             guard let windowIndex = request.queryParam("windowIndex") else {
-                return .badRequest(.html("Invalid request! Missing window context."))
+                return self.htmlError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
-                return .badRequest(.html("Invalid request! Missing address."))
+                return self.htmlError("Invalid request! Missing address.")
             }
             
             guard let playerSessionID = request.queryParam("playerSessionID"),
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                      return .badRequest(.html("Invalid request! Missing sessionID."))
+                      return self.htmlError("Invalid request! Missing sessionID.")
             }
             guard let property = self.gameEngine.realEstateAgent.getProperty(address: address) else {
-                return .badRequest(.html("Property not found!"))
+                return self.htmlError("Property not found!")
             }
             guard property.ownerUUID == session.playerUUID else {
-                return .badRequest(.html("You can sell only your own property!"))
+                return self.htmlError("You can sell only your own property!")
             }
 
-            let template = Template(raw: ResourceCache.shared.getAppResource("templates/publishSaleOffer.html"))
+            let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertySales/newSaleOfferForm.html"))
             var data = [String:String]()
             data["name"] = property.name
             data["type"] = property.type
             data["price"] = property.purchaseNetValue.moneyFormat
             data["windowIndex"] = windowIndex
-            data["tileUrl"] = self.gameEngine.gameMap.getTile(address: address)?.type.image.path ?? ""
-            data["submitUrl"] = "/publishSaleOffer.js?\(address.asQueryParams)"
+            data["submitUrl"] = "/publishSaleOffer.js".append(address)
             template.assign(variables: data)
             return .ok(.html(template.output()))
         }
@@ -163,41 +158,37 @@ class RealEstateAgentRestAPI: RestAPI {
         server.GET["/publishSaleOffer.js"] = { request, _ in
             request.disableKeepAlive = true
             guard let windowIndex = request.queryParam("windowIndex") else {
-                return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
+                return self.jsError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
-                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
+                return self.jsError("Invalid request! Missing address.")
             }
             guard let priceString = request.queryParam("price"), let price = Double(priceString) else {
-                return JSCode.showError(txt: "Invalid request! Missing price.", duration: 10).response
+                return self.jsError("Invalid request! Missing price.")
             }
             let js = JSResponse()
             
             do {
                 try self.gameEngine.realEstateAgent.registerSaleOffer(address: address, netValue: price)
                 js.add(.showSuccess(txt: "Sale offer published successfully", duration: 5))
-                js.add(.closeWindow(windowIndex))
+                js.add(.loadHtmlInline(windowIndex, htmlPath: RestEndpoint.propertySellStatus.append(address), targetID: PropertyManagerTopView.domID(windowIndex)))
             } catch {
-                return JSCode.showError(txt: "Problem with adding sale offer", duration: 10).response
+                return self.jsError("Problem with adding sale offer")
             }
             return js.response
         }
         
-        // MARK: openEditSaleOffer
-        server.GET[.openEditSaleOffer] = { request, _ in
+        // MARK: loadEditSaleOfferForm
+        server.GET[.loadEditSaleOfferForm] = { request, _ in
             request.disableKeepAlive = true
             guard let windowIndex = request.queryParam("windowIndex") else {
-                return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
+                return self.jsError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
-                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
+                return self.jsError("Invalid request! Missing address.")
             }
             let js = JSResponse()
-            js.add(.loadHtml(windowIndex, htmlPath: "/editSaleOffer.html?\(address.asQueryParams)"))
-            js.add(.disableWindowResizing(windowIndex))
-            js.add(.setWindowTitle(windowIndex, title: "Edit offer"))
-            js.add(.resizeWindow(windowIndex, width: 600, height: 250))
-            js.add(.positionWindow(windowIndex, address))
+            js.add(.loadHtmlInline(windowIndex, htmlPath: "/editSaleOffer.html".append(address), targetID: PropertyManagerTopView.domID(windowIndex)))
             return js.response
         }
 
@@ -205,27 +196,27 @@ class RealEstateAgentRestAPI: RestAPI {
         server.GET["/editSaleOffer.html"] = { request, _ in
             request.disableKeepAlive = true
             guard let windowIndex = request.queryParam("windowIndex") else {
-                return .badRequest(.html("Invalid request! Missing window context."))
+                return self.htmlError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
-                return .badRequest(.html("Invalid request! Missing address."))
+                return self.htmlError("Invalid request! Missing address.")
             }
             
             guard let playerSessionID = request.queryParam("playerSessionID"),
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                      return .badRequest(.html("Invalid request! Missing sessionID."))
+                      return self.htmlError("Invalid request! Missing sessionID.")
             }
             guard let property = self.gameEngine.realEstateAgent.getProperty(address: address) else {
-                return .badRequest(.html("Property not found!"))
+                return self.htmlError("Property not found!")
             }
             guard property.ownerUUID == session.playerUUID else {
-                return .badRequest(.html("You can sell only your own property!"))
+                return self.htmlError("You can sell only your own property!")
             }
             guard let offer = self.gameEngine.realEstateAgent.saleOffer(address: address, buyerUUID: "nobody") else {
-                return .badRequest(.html("The offer is not valid any more. Possibly somebody has just bought your property."))
+                return self.htmlError("The offer is not valid any more. Possibly somebody has just bought your property.")
             }
 
-            let template = Template(raw: ResourceCache.shared.getAppResource("templates/editSaleOffer.html"))
+            let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertySales/editSaleOfferForm.html"))
             var data = [String:String]()
             data["name"] = property.name
             data["type"] = property.type
@@ -233,7 +224,7 @@ class RealEstateAgentRestAPI: RestAPI {
             data["money"] = offer.saleInvoice.netValue.money
             data["windowIndex"] = windowIndex
             data["tileUrl"] = self.gameEngine.gameMap.getTile(address: address)?.type.image.path ?? ""
-            data["submitUrl"] = "/saveSaleOffer.js?\(address.asQueryParams)"
+            data["submitUrl"] = "/saveSaleOffer.js".append(address)
             template.assign(variables: data)
             return .ok(.html(template.output()))
         }
@@ -242,14 +233,14 @@ class RealEstateAgentRestAPI: RestAPI {
         server.GET["/saveSaleOffer.js"] = { request, _ in
             request.disableKeepAlive = true
             guard let windowIndex = request.queryParam("windowIndex") else {
-                return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
+                return self.jsError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
-                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
+                return self.jsError("Invalid request! Missing address.")
             }
             
             guard let priceString = request.queryParam("price"), let price = Double(priceString) else {
-                return JSCode.showError(txt: "Invalid request! Missing price.", duration: 10).response
+                return self.jsError("Invalid request! Missing price.")
             }
             let js = JSResponse()
             do {
@@ -257,11 +248,10 @@ class RealEstateAgentRestAPI: RestAPI {
             } catch UpdateOfferError.offerDoesNotExist {
                 return JSCode.showWarning(txt: "Looks like your offer is not valid any more. Probably someone has just bought your property", duration: 10).response
             } catch {
-                return JSCode.showError(txt: "Unknown error \(error)", duration: 10).response
+                return self.jsError("Unknown error \(error)")
             }
             js.add(.showSuccess(txt: "Sale offer updated successfully", duration: 5))
-            js.add(.closeWindow(windowIndex))
-            js.add(.clickMap(address))
+            js.add(.loadHtmlInline(windowIndex, htmlPath: RestEndpoint.propertySellStatus.append(address), targetID: PropertyManagerTopView.domID(windowIndex)))
             return js.response
         }
 
@@ -277,9 +267,33 @@ class RealEstateAgentRestAPI: RestAPI {
             let js = JSResponse()
             self.gameEngine.realEstateAgent.cancelSaleOffer(address: address)
             js.add(.showSuccess(txt: "Sale offer cancelled successfully", duration: 5))
-            js.add(.closeWindow(windowIndex))
-            js.add(.clickMap(address))
+            js.add(.loadHtmlInline(windowIndex, htmlPath: RestEndpoint.propertySellStatus.append(address), targetID: PropertyManagerTopView.domID(windowIndex)))
             return js.response
+        }
+        
+        // MARK: propertySellStatus
+        server.GET[.propertySellStatus] = { request, _ in
+            request.disableKeepAlive = true
+            guard let playerSessionID = request.queryParam("playerSessionID"),
+                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                    return self.htmlError("Invalid request! Missing session ID.")
+            }
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return self.htmlError("Invalid request! Missing window context.")
+            }
+            guard let address = request.mapPoint else {
+                return self.htmlError("Invalid request! Missing address.")
+            }
+            guard let property = self.gameEngine.realEstateAgent.getProperty(address: address) else {
+                return self.htmlError("Property at \(address.description) not found!")
+            }
+            let ownerID = property.ownerUUID
+            guard session.playerUUID == ownerID else {
+                return self.htmlError("Property at \(address.description) is not yours!")
+            }
+            let sellView = PropertySaleStatusView(property: property)
+            sellView.setOffer(self.gameEngine.realEstateAgent.saleOffer(address: address, buyerUUID: "random"))
+            return sellView.output(windowIndex: windowIndex).asResponse
         }
     }
 }
