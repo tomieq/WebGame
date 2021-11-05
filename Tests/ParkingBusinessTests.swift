@@ -35,16 +35,42 @@ class ParkingBusinessTests: XCTestCase {
         XCTAssertEqual(sut.calculateCarsForParking(address: MapPoint(x: 1, y: 1)), 5)
     }
     
-    func test_amountOfCars_twoParkingsOneBuilding() {
-        let sut = self.makeSUT()
-        sut.mapManager.loadMapFrom(content: "R,c\ns,s,s,s")
-        XCTAssertEqual(sut.calculateCarsForParking(address: MapPoint(x: 1, y: 1)), 10 / 2)
-    }
-    
     func test_amountOfparkingsInTheArea() {
         let sut = self.makeSUT()
         sut.mapManager.loadMapFrom(content: "s,s,s\nc,-,c")
         XCTAssertEqual(sut.getParkingsAroundAddress(MapPoint(x: 1, y: 1)).count, 2)
+    }
+    
+    func test_amountOfCars_twoParkingsOneBuilding() {
+        let sut = self.makeSUT()
+        let layout = """
+                    R,c,c
+                    s,s,s,s
+                    """
+        sut.mapManager.loadMapFrom(content: layout)
+        XCTAssertEqual(sut.calculateCarsForParking(address: MapPoint(x: 2, y: 0)), 10 / 2)
+    }
+    
+    func test_amountOfCars_threeParkingsOneBuilding() {
+        let sut = self.makeSUT()
+        let layout = """
+                    s,s,s,s,s,s,s,s,s
+                    -,c,-,B,-,c
+                    -,-,-,c,
+                    """
+        sut.mapManager.loadMapFrom(content: layout)
+        XCTAssertEqual(sut.calculateCarsForParking(address: MapPoint(x: 3, y: 2)), 6 / 3)
+    }
+    
+    func test_amountOfCars_threeParkingsTwoBuildings() {
+        let sut = self.makeSUT()
+        let layout = """
+                    s,s,s,s,s,s,s,s,s
+                    -,c,R,B,-,c
+                    -,-,-,c,
+                    """
+        sut.mapManager.loadMapFrom(content: layout)
+        XCTAssertEqual(sut.calculateCarsForParking(address: MapPoint(x: 3, y: 2)), 6 / 3 + 10 / 2)
     }
     
     private func makeSUT() -> ParkingBusiness {

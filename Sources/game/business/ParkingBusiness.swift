@@ -19,17 +19,27 @@ class ParkingBusiness {
     
     func calculateCarsForParking(address: MapPoint) -> Double {
         
-        var carsPerAddress = self.getCarsAroundAddress(address)
+        let carsPerAddress = self.getCarsAroundAddress(address)
         let competitors = self.getParkingsAroundAddress(address)
+        // sharedCars stores cars shared by multiple parkings. Address -> number of parkings
+        var sharedCars: [MapPoint: Int] = [:]
         
         for competitor in competitors {
             let carsInCompetitorRange = self.getCarsAroundAddress(competitor)
-            for sharedAddress in carsInCompetitorRange.keys {
-                carsPerAddress[sharedAddress]? /= 2
+            for address in carsInCompetitorRange.keys {
+                sharedCars[address] = (sharedCars[address] ?? 1) + 1
+            }
+        }
+        var amountOfCars: Double = 0
+        for (address, numberOfCars) in carsPerAddress {
+            if let amountOfCompetitors = sharedCars[address] {
+                amountOfCars += numberOfCars / amountOfCompetitors.double
+            } else {
+                amountOfCars += numberOfCars
             }
         }
     
-        return carsPerAddress.map{ $0.value }.reduce(0, +)
+        return amountOfCars
     }
     
     private func getCarsAroundAddress(_ address: MapPoint) -> [MapPoint: Double] {
@@ -46,7 +56,7 @@ class ParkingBusiness {
     
     func getParkingsAroundAddress(_ address: MapPoint) -> [MapPoint] {
         var parkings: [MapPoint] = []
-        for radius in (1...3) {
+        for radius in (1...4) {
             for parking in self.mapManager.map.getNeighbourAddresses(to: address, radius: radius) {
                 if self.mapManager.map.getTile(address: parking)?.isParking() ?? false {
                     parkings.append(parking)
