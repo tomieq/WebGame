@@ -148,7 +148,7 @@ enum ParkingSecurity: String, CaseIterable {
     }
 }
 
-enum ParkingAdvertising: String {
+enum ParkingAdvertising: String, CaseIterable {
     case none
     case leaflets
     case localNewspaperAd
@@ -180,7 +180,7 @@ enum ParkingAdvertising: String {
         case .radioAd:
             return "Advert in local radio station"
         case .tvSpot:
-            return "TV spot in local tv station"
+            return "TV spot in local station"
         }
     }
     var monthlyTrustGain: Double {

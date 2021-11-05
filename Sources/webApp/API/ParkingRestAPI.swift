@@ -19,7 +19,7 @@ class ParkingRestAPI: RestAPI {
                 return self.jsError("Invalid request! Missing address.")
             }
             let js = JSResponse()
-            js.add(.openWindow(name: "Parking Manager", path: "/initParkingManager.js".append(address), width: 580, height: 470, singletonID: address.asQueryParams))
+            js.add(.openWindow(name: "Parking Manager", path: "/initParkingManager.js".append(address), width: 580, height: 480, singletonID: address.asQueryParams))
             var points = self.gameEngine.gameMap.getNeighbourAddresses(to: address, radius: 1)
             points.append(contentsOf: self.gameEngine.gameMap.getNeighbourAddresses(to: address, radius: 2))
             js.add(.highlightPoints(points, color: "green"))
@@ -68,6 +68,7 @@ class ParkingRestAPI: RestAPI {
             view.addTab("Wallet balance", onclick: .loadHtmlInline(windowIndex, htmlPath: "parkingBalance.html".append(address), targetID: domID))
             view.addTab("Security", onclick: .loadHtmlInline(windowIndex, htmlPath: "parkingSecurity.html".append(address), targetID: domID))
             view.addTab("Damages", onclick: .loadHtmlInline(windowIndex, htmlPath: "parkingDamages.html".append(address), targetID: domID))
+            view.addTab("Advertising", onclick: .loadHtmlInline(windowIndex, htmlPath: "parkingAdvertising.html".append(address), targetID: domID))
             view.addTab("Sell options", onclick: .loadHtmlInline(windowIndex, htmlPath: RestEndpoint.propertySellStatus.append(address), targetID: domID))
             
             
@@ -224,7 +225,77 @@ class ParkingRestAPI: RestAPI {
             }
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManager/parking/parkingDamages.html"))
             var data: [String: String] = [:]
+            data["trustLevel"] = parking.trustLevel.rounded(toPlaces: 0).string
+            template.assign(variables: data)
             return template.asResponse()
+        }
+        
+        // MARK: parkingAdvertising.html
+        server.GET["/parkingAdvertising.html"] = { request, _ in
+            request.disableKeepAlive = true
+            guard let playerSessionID = request.queryParam("playerSessionID"),
+                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                    return self.htmlError("Invalid request! Missing session ID.")
+            }
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return self.htmlError("Invalid request! Missing window context.")
+            }
+            guard let address = request.mapPoint else {
+                return self.htmlError("Invalid request! Missing address.")
+            }
+            guard let parking: Parking = self.dataStore.find(address: address) else {
+                return self.htmlError("Property at \(address.description) not found!")
+            }
+            let ownerID = parking.ownerUUID
+            guard session.playerUUID == ownerID else {
+                return self.htmlError("Property at \(address.description) is not yours!")
+            }
+            let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManager/parking/parkingAdvertising.html"))
+            var data: [String: String] = [:]
+            data["windowIndex"] = windowIndex
+            data["submitUrl"] = "/updateParkingAdvertisement.js".append(address)
+            template.assign(variables: data)
+            
+            for advertising in ParkingAdvertising.allCases {
+                var data: [String: String] = [:]
+                data["name"] = advertising.name
+                data["value"] = advertising.rawValue
+                data["money"] = advertising.monthlyFee.money
+                if parking.advertising == advertising {
+                    data["checked"] = "checked"
+                }
+                template.assign(variables: data, inNest: "advert")
+            }
+            return template.asResponse()
+        }
+        
+        // MARK: updateParkingAdvertisement.js
+        server.POST["updateParkingAdvertisement.js"] = { request, _ in
+            request.disableKeepAlive = true
+            guard let playerSessionID = request.queryParam("playerSessionID"),
+                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                    return self.jsError("Invalid request! Missing session ID.")
+            }
+            guard let address = request.mapPoint else {
+                return self.jsError("Invalid request! Missing address.")
+            }
+            guard let parking: Parking = self.dataStore.find(address: address) else {
+                return self.jsError("Property at \(address.description) not found!")
+            }
+            let ownerID = parking.ownerUUID
+            guard session.playerUUID == ownerID else {
+                return self.jsError("Property at \(address.description) is not yours!")
+            }
+            
+            let formData = request.flatFormData()
+            guard let advertisementString = formData["advertisement"], let advertisement = ParkingAdvertising(rawValue: advertisementString) else {
+                return self.jsError("Advertisement value not set!")
+            }
+            let mutation = ParkingMutation(uuid: parking.uuid, attributes: [.advertising(advertisement)])
+            self.gameEngine.dataStore.update(mutation)
+            let js = JSResponse()
+            js.add(.showSuccess(txt: "New advertisemsnt options applied!", duration: 10))
+            return js.response
         }
     }
 

@@ -119,6 +119,9 @@ class PropertyBalanceCalculator {
             if parking.insurance.monthlyFee > 0 {
                 costs.append(Invoice(title: parking.insurance.name, netValue: parking.insurance.monthlyFee, taxRate: self.taxRates.servicesTax))
             }
+            if parking.advertising.monthlyFee > 0 {
+                costs.append(Invoice(title: parking.advertising.name, netValue: parking.advertising.monthlyFee, taxRate: self.taxRates.servicesTax))
+            }
         }
         return costs
     }
