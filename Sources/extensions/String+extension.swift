@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Swifter
 
 extension String {
     /// Splits a string into groups of `every` n characters, grouping from left-to-right by default. If `backwards` is true, right-to-left.
@@ -26,5 +27,9 @@ extension String {
         }
 
         return result
+    }
+    
+    public var asResponse: HttpResponse {
+        return .ok(.html(self))
     }
 }
