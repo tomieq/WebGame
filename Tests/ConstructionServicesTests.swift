@@ -88,8 +88,6 @@ final class ConstructionServicesTests: XCTestCase {
     }
     
     func test_startRoadInvestment_success() {
-        
-        
         let constructionServices = self.makeConstructionServices()
         
         constructionServices.mapManager.loadMapFrom(content: "s,s")
@@ -340,6 +338,115 @@ final class ConstructionServicesTests: XCTestCase {
         building = constructionServices.dataStore.find(address: address)
         XCTAssertEqual(building?.isUnderConstruction, false)
     }
+
+    func test_startParkingInvestment_addressNotFound() {
+        let constructionServices = self.makeConstructionServices()
+        XCTAssertThrowsError(try constructionServices.startParkingInvestment(address: MapPoint(x: 0, y: 0), playerUUID: "tester")){ error in
+            XCTAssertEqual(error as! ConstructionServicesError, .addressNotFound)
+        }
+    }
+    
+    func test_startParkingInvestment_playerIsNotTheOwner() {
+        
+        let constructionServices = self.makeConstructionServices()
+        let dataStore = constructionServices.dataStore
+        dataStore.create(Land(address: MapPoint(x: 0, y: 0), ownerUUID: "otherUser"))
+        
+        XCTAssertThrowsError(try constructionServices.startParkingInvestment(address: MapPoint(x: 0, y: 0), playerUUID: "tester")){ error in
+            XCTAssertEqual(error as! ConstructionServicesError, .playerIsNotPropertyOwner)
+        }
+    }
+    
+    func test_startParkingInvestment_noAccessToRoad() {
+        
+        let constructionServices = self.makeConstructionServices()
+        let dataStore = constructionServices.dataStore
+        dataStore.create(Land(address: MapPoint(x: 0, y: 0), ownerUUID: "tester"))
+        
+        XCTAssertThrowsError(try constructionServices.startParkingInvestment(address: MapPoint(x: 0, y: 0), playerUUID: "tester")){ error in
+            XCTAssertEqual(error as! ConstructionServicesError, .noDirectAccessToRoad)
+        }
+    }
+
+    func test_startParkingInvestment_noEnoughMoney() {
+        
+        let constructionServices = self.makeConstructionServices()
+        constructionServices.mapManager.loadMapFrom(content: "s,s")
+        let dataStore = constructionServices.dataStore
+        let address = MapPoint(x: 1, y: 1)
+        dataStore.create(Land(address: address, ownerUUID: "p1"))
+        
+        let player = Player(uuid: "p1", login: "tester", wallet: 200)
+        dataStore.create(player)
+        
+        constructionServices.priceList.buildParkingPrice = 500
+
+        XCTAssertThrowsError(try constructionServices.startParkingInvestment(address: address, playerUUID: "p1")){ error in
+            XCTAssertEqual(error as! ConstructionServicesError, .financialTransactionProblem(.notEnoughMoney))
+        }
+    }
+    
+    func test_startParkingInvestment_success() {
+        let constructionServices = self.makeConstructionServices()
+        constructionServices.mapManager.loadMapFrom(content: "s,s")
+        let dataStore = constructionServices.dataStore
+        let address = MapPoint(x: 0, y: 1)
+        
+        dataStore.create(Land(address: address, ownerUUID: "p1"))
+        
+        let player = Player(uuid: "p1", login: "tester", wallet: 1200)
+        dataStore.create(player)
+        
+        constructionServices.constructionDuration.parking = 5
+        constructionServices.priceList.buildParkingPrice = 500
+
+        XCTAssertNoThrow(try constructionServices.startParkingInvestment(address: address, playerUUID: "p1"))
+        XCTAssertEqual(constructionServices.mapManager.map.getTile(address: address)?.type, .parkingUnderConstruction)
+        let parking: Parking? = constructionServices.dataStore.find(address: address)
+        XCTAssertNotNil(parking)
+        XCTAssertEqual(parking?.isUnderConstruction, true)
+        let deletedLand: Land? = constructionServices.dataStore.find(address: address)
+        XCTAssertNil(deletedLand)
+    }
+    
+    func test_finishParkingInvestment() {
+        
+        let constructionServices = self.makeConstructionServices()
+        constructionServices.mapManager.loadMapFrom(content: "s,s")
+        
+        let dataStore = constructionServices.dataStore
+        let address = MapPoint(x: 0, y: 1)
+
+        constructionServices.dataStore.create(Land(address: address, ownerUUID: "p1"))
+        
+        let player = Player(uuid: "p1", login: "tester", wallet: 1200)
+        dataStore.create(player)
+
+        constructionServices.constructionDuration.parking = 2
+        constructionServices.priceList.buildParkingPrice = 500
+        
+        XCTAssertIdentical(constructionServices.time, constructionServices.time)
+
+        XCTAssertNoThrow(try constructionServices.startParkingInvestment(address: address, playerUUID: "p1"))
+        XCTAssertEqual(constructionServices.mapManager.map.getTile(address: address)?.type, .parkingUnderConstruction)
+        var parking: Parking? = constructionServices.dataStore.find(address: address)
+        XCTAssertEqual(parking?.isUnderConstruction, true)
+        XCTAssertEqual(parking?.constructionFinishMonth, 2)
+        
+        // first month
+        constructionServices.time.nextMonth()
+        constructionServices.finishInvestments()
+        parking = constructionServices.dataStore.find(address: address)
+        XCTAssertEqual(parking?.isUnderConstruction, true)
+        
+        // second month so the investment shoul finish
+        constructionServices.time.nextMonth()
+        XCTAssertEqual(constructionServices.time.month, 2)
+        constructionServices.finishInvestments()
+        parking = constructionServices.dataStore.find(address: address)
+        XCTAssertEqual(parking?.isUnderConstruction, false)
+        XCTAssertEqual(constructionServices.mapManager.map.getTile(address: address)?.type, .parking(type: .topConnection))
+    }
     
     private func makeConstructionServices() -> ConstructionServices {
         let map = GameMap(width: 2, height: 2, scale: 0.2)
@@ -356,4 +463,5 @@ final class ConstructionServicesTests: XCTestCase {
         let constructionServices = ConstructionServices(mapManager: mapManager, centralBank: centralBank, time: time)
         return constructionServices
     }
+    
 }
