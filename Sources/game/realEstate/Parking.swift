@@ -18,6 +18,8 @@ struct Parking: Property, Codable {
     let investmentsNetValue: Double
     let isUnderConstruction: Bool
     let constructionFinishMonth: Int
+    let insurance: ParkingInsurance
+    let security: ParkingSecurity
     
     init(land: Land, constructionFinishMonth: Int? = nil, investmentsNetValue: Double = 0) {
         self.uuid = land.uuid
@@ -28,6 +30,8 @@ struct Parking: Property, Codable {
         self.investmentsNetValue = (land.investmentsNetValue + investmentsNetValue).rounded(toPlaces: 0)
         self.isUnderConstruction = constructionFinishMonth == nil ? false: true
         self.constructionFinishMonth = constructionFinishMonth ?? 0
+        self.insurance = .none
+        self.security = .none
     }
     
     init(_ managedObject: ParkingManagedObject) {
@@ -39,6 +43,8 @@ struct Parking: Property, Codable {
         self.investmentsNetValue = managedObject.investmentsNetValue
         self.isUnderConstruction = managedObject.isUnderConstruction
         self.constructionFinishMonth = managedObject.constructionFinishMonth
+        self.insurance = managedObject.insurance
+        self.security = managedObject.security
     }
 }
 
@@ -52,5 +58,7 @@ struct ParkingMutation {
         case ownerUUID(String)
         case purchaseNetValue(Double)
         case investments(Double)
+        case insurance(ParkingInsurance)
+        case security(ParkingSecurity)
     }
 }

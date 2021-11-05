@@ -379,6 +379,10 @@ class DataStoreMemoryProvider: DataStoreProvider {
                     parking.purchaseNetValue = value
                 case .investments(let value):
                     parking.investmentsNetValue = value
+                case .insurance(let value):
+                    parking.insurance = value
+                case .security(let value):
+                    parking.security = value
                 }
             }
         }

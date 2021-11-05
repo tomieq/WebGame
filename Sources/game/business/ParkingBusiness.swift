@@ -87,3 +87,40 @@ extension TileType {
         }
     }
 }
+
+enum ParkingInsurance: String, Codable {
+    case none
+    case basic
+    case extended
+    case full
+    
+    var monthlyFee: Double {
+        switch self {
+        case .none:
+            return 0
+        case .basic:
+            return 280
+        case .extended:
+            return 620
+        case .full:
+            return 1380
+        }
+    }
+}
+
+enum ParkingSecurity: String, Codable {
+    case none
+    case cctv
+    case bodyguard
+    
+    var monthlyFee: Double {
+        switch self {
+        case .none:
+            return 0
+        case .cctv:
+            return 520
+        case .bodyguard:
+            return 4300
+        }
+    }
+}
