@@ -76,7 +76,7 @@ class PropertyBalanceCalculator {
         case .parking:
             switch tile.type {
             case .parking(_):
-                return self.getParkingMontlyCosts()
+                return self.getParkingMontlyCosts(address: address)
             case .parkingUnderConstruction:
                 return self.getParkingUnderConstructionMontlyCosts()
             default:
@@ -108,10 +108,19 @@ class PropertyBalanceCalculator {
         return [water, electricity]
     }
     
-    func getParkingMontlyCosts() -> [Invoice] {
-        let security = Invoice(title: "Security costs", netValue: self.costPriceList.montlyParkingSecurityCost, taxRate: self.taxRates.servicesTax)
-        let electricity = Invoice(title: "Electricity bill", netValue: self.costPriceList.montlyParkingElectricityCost, taxRate: self.taxRates.electricityBillTax)
-        return [security, electricity]
+    func getParkingMontlyCosts(address: MapPoint) -> [Invoice] {
+        var costs: [Invoice] = []
+        costs.append(Invoice(title: "Maintenance costs", netValue: self.costPriceList.montlyParkingMaintenanceCost, taxRate: self.taxRates.servicesTax))
+        costs.append(Invoice(title: "Electricity bill", netValue: self.costPriceList.montlyParkingElectricityCost, taxRate: self.taxRates.electricityBillTax))
+        if let parking: Parking = self.dataStore.find(address: address) {
+            if parking.security.monthlyFee > 0 {
+                costs.append(Invoice(title: parking.security.name, netValue: parking.security.monthlyFee, taxRate: self.taxRates.servicesTax))
+            }
+            if parking.insurance.monthlyFee > 0 {
+                costs.append(Invoice(title: parking.insurance.name, netValue: parking.insurance.monthlyFee, taxRate: self.taxRates.servicesTax))
+            }
+        }
+        return costs
     }
     
     func getBuildingMontlyCosts(size: Int) -> [Invoice] {
@@ -150,7 +159,7 @@ class MonthlyCostPriceList {
     public var montlyParkingUnderConstructionWaterCost: Double = 189.0
     // parking
     public var montlyParkingElectricityCost: Double = 210.0
-    public var montlyParkingSecurityCost: Double = 305.0
+    public var montlyParkingMaintenanceCost: Double = 305.0
     // residential building under construction
     public var montlyResidentialBuildingUnderConstructionElectricityCost: Double = 3700.0
     public var montlyResidentialBuildingUnderConstructionWaterCost: Double = 1800

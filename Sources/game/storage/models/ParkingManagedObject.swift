@@ -18,8 +18,8 @@ class ParkingManagedObject: Codable {
     var investmentsNetValue: Double
     var isUnderConstruction: Bool
     var constructionFinishMonth: Int
-    var insurance: ParkingInsurance
-    var security: ParkingSecurity
+    var insurance: String
+    var security: String
     
     init(_ parking: Parking) {
         self.uuid = UUID().uuidString
@@ -31,7 +31,7 @@ class ParkingManagedObject: Codable {
         self.investmentsNetValue = parking.investmentsNetValue
         self.isUnderConstruction = parking.isUnderConstruction
         self.constructionFinishMonth = parking.constructionFinishMonth
-        self.insurance = parking.insurance
-        self.security = parking.security
+        self.insurance = parking.insurance.rawValue
+        self.security = parking.security.rawValue
     }
 }

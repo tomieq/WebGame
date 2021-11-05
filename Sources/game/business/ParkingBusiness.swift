@@ -88,7 +88,7 @@ extension TileType {
     }
 }
 
-enum ParkingInsurance: String, Codable {
+enum ParkingInsurance: String, CaseIterable {
     case none
     case basic
     case extended
@@ -106,12 +106,25 @@ enum ParkingInsurance: String, Codable {
             return 1380
         }
     }
+    
+    var name: String {
+        switch self {
+        case .none:
+            return "No insurance"
+        case .basic:
+            return "Basic insurance"
+        case .extended:
+            return "Extended insurance"
+        case .full:
+            return "Full insurance"
+        }
+    }
 }
 
-enum ParkingSecurity: String, Codable {
+enum ParkingSecurity: String, CaseIterable {
     case none
     case cctv
-    case bodyguard
+    case securityGuard
     
     var monthlyFee: Double {
         switch self {
@@ -119,8 +132,18 @@ enum ParkingSecurity: String, Codable {
             return 0
         case .cctv:
             return 520
-        case .bodyguard:
+        case .securityGuard:
             return 4300
+        }
+    }
+    var name: String {
+        switch self {
+        case .none:
+            return "No security"
+        case .cctv:
+            return "CCTV"
+        case .securityGuard:
+            return "Security guard 24/7"
         }
     }
 }

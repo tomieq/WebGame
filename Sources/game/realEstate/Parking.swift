@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Parking: Property, Codable {
+struct Parking: Property {
     
     let uuid: String
     var type: String { return "Parking lot" }
@@ -43,8 +43,8 @@ struct Parking: Property, Codable {
         self.investmentsNetValue = managedObject.investmentsNetValue
         self.isUnderConstruction = managedObject.isUnderConstruction
         self.constructionFinishMonth = managedObject.constructionFinishMonth
-        self.insurance = managedObject.insurance
-        self.security = managedObject.security
+        self.insurance = ParkingInsurance(rawValue: managedObject.insurance) ?? .none
+        self.security = ParkingSecurity(rawValue: managedObject.security) ?? .none
     }
 }
 

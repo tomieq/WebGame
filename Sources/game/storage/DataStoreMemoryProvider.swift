@@ -380,9 +380,9 @@ class DataStoreMemoryProvider: DataStoreProvider {
                 case .investments(let value):
                     parking.investmentsNetValue = value
                 case .insurance(let value):
-                    parking.insurance = value
+                    parking.insurance = value.rawValue
                 case .security(let value):
-                    parking.security = value
+                    parking.security = value.rawValue
                 }
             }
         }

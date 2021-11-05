@@ -1,0 +1,31 @@
+
+<div style="font-size: 0.9em; margin: 5px; width: 400px;">
+    Running business like this requires some level of protection. Cars might get damaged accidentally or competitors
+    may try to eliminate you from the business.
+    <br><br>
+    You might be interested in some insurance options in case something happens (accidents).
+    <br><br>
+    You also might order some security systems or supervision to prevent from bad things to happen (copetitors' anger).
+    <hr>
+    <form onsubmit="event.preventDefault();  formSubmit({windowIndex}, '{submitUrl}', this);">
+        <b>Insurance</b>
+        [START insurance]
+        <div>
+          <input type="radio" name="insurance" id="{value}" value="{value}" {checked}>
+          <label for="{value}">{name} - {money} per month</label>
+        </div>
+        [END insurance]
+        <br><br>
+        <b>Security options</b>
+        [START security]
+        <div>
+          <input type="radio" name="security" id="{value}" value="{value}" {checked}>
+          <label for="{value}">{name} - {money} per month</label>
+        </div>
+        [END security]
+        <div>
+            <br>
+            <input type="submit" class="btn btn-sm" value="Order services"/>
+        </div>
+    </form>
+</div>
