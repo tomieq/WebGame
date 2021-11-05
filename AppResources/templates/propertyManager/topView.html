@@ -1,23 +1,7 @@
 <div style="margin: 20px;">
-
-
-    <div style="width: 105px; float: right;">
-        <div class="blue-border" style="width: 100px; text-align: center;">
-            <img src="{tileUrl}" style="width: 70px; height: auto;"/>
-            <br><span class="text-orange" style="font-size: 0.8em;">{type}</span>
-        </div>
-
-        <br>
-        <div style="font-size: 0.8em;">
-            [START tip]
-            {text}
-            <br><br>
-            [END tip]
-        </div>
-    </div>
     
-    
-    <div style="width: 410px;float: left">
+
+    <div style="width: 100%; ">
         
         <div class="tabContainer">
             [START tab]
@@ -26,11 +10,24 @@
             </div>
             [END tab]
         </div>
-        <div style="clear: both;"></div>
+        <div style="width: 105px; float: right;">
+            <div class="blue-border" style="width: 100px; text-align: center;">
+                <img src="{tileUrl}" style="width: 70px; height: auto;"/>
+                <br><span class="text-orange" style="font-size: 0.8em;">{type}</span>
+            </div>
+
+            <br>
+            <div style="font-size: 0.8em;">
+                [START tip]
+                {text}
+                <br><br>
+                [END tip]
+            </div>
+        </div>
+        
         
         <div class="tabDetails" id="{tabDetailsID}">
             {initialContent}
         </div>
     </div>
-
 </div>

@@ -79,7 +79,7 @@ class ParkingRestAPI: RestAPI {
             }
             
             view.addTip("The more buildings/facilities around, the more customers you get.")
-                .addTip("If there is more parkings in the area, the market is shared between parking lots.")
+                .addTip("If there is more parkings in the area, the market is shared between them.")
                 .addTip("It's best if your parking business is the only one in the area.")
                 .addTip("The area coverage of your parking lot is marked with green and the competitors in red.")
             

@@ -19,7 +19,7 @@ class LandRestAPI: RestAPI {
                 return self.jsError("Invalid request! Missing address.")
             }
             let js = JSResponse()
-            js.add(.openWindow(name: "Land Manager", path: "/initLandManager.js".append(address), width: 0.7, height: 0.8, singletonID: address.asQueryParams))
+            js.add(.openWindow(name: "Land Manager", path: "/initLandManager.js".append(address), width: 680, height: 500, singletonID: address.asQueryParams))
             return js.response
         }
         
@@ -35,7 +35,6 @@ class LandRestAPI: RestAPI {
             let js = JSResponse()
             js.add(.loadHtml(windowIndex, htmlPath: "/landManager.html".append(address)))
             js.add(.disableWindowResizing(windowIndex))
-            js.add(.centerWindow(windowIndex))
             return js.response
         }
 
@@ -60,75 +59,74 @@ class LandRestAPI: RestAPI {
                 return self.htmlError("Property at \(address.description) is not yours!")
             }
             
+            let view = PropertyManagerTopView(windowIndex: windowIndex)
+            let domID = PropertyManagerTopView.domID(windowIndex)
+            view.addTab("Wallet balance", onclick: .loadHtmlInline(windowIndex, htmlPath: "landBalance.html".append(address), targetID: domID))
+            view.addTab("Sell options", onclick: .loadHtmlInline(windowIndex, htmlPath: RestEndpoint.propertySellStatus.append(address), targetID: domID))
+            view.addTab("Investments", onclick: .loadHtmlInline(windowIndex, htmlPath: "landInvestments.html".append(address), targetID: domID))
+            
+            view.setPropertyType(land.type)
+                .setTileImage(TileType.soldLand.image.path)
+            
+            view.addTip("Own piece of land is a great start for making investments.")
+            
+            let balanceView = PropertyBalanceView()
+            balanceView.setMonthlyCosts(self.gameEngine.propertyBalanceCalculator.getMontlyCosts(address: address))
+            balanceView.setMonthlyIncome(self.gameEngine.propertyBalanceCalculator.getMonthlyIncome(address: address))
+            balanceView.setProperty(land)
+
+            view.setInitialContent(html: balanceView.output())
+            return view.output().asResponse
+        }
+        
+        // MARK: landBalance.html
+        server.GET["/landBalance.html"] = { request, _ in
+            request.disableKeepAlive = true
+            guard let playerSessionID = request.queryParam("playerSessionID"),
+                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                    return self.htmlError("Invalid request! Missing session ID.")
+            }
+            guard let address = request.mapPoint else {
+                return self.htmlError("Invalid request! Missing address.")
+            }
+            guard let property = self.gameEngine.realEstateAgent.getProperty(address: address) else {
+                return self.htmlError("Property at \(address.description) not found!")
+            }
+            let ownerID = property.ownerUUID
+            guard session.playerUUID == ownerID else {
+                return self.htmlError("Property at \(address.description) is not yours!")
+            }
+            let balanceView = PropertyBalanceView()
+            balanceView.setMonthlyCosts(self.gameEngine.propertyBalanceCalculator.getMontlyCosts(address: address))
+            balanceView.setMonthlyIncome(self.gameEngine.propertyBalanceCalculator.getMonthlyIncome(address: address))
+            balanceView.setProperty(property)
+            return balanceView.output().asResponse
+        }
+        
+        // MARK: landBalance.html
+        server.GET["/landInvestments.html"] = { request, _ in
+            request.disableKeepAlive = true
+            guard let playerSessionID = request.queryParam("playerSessionID"),
+                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                    return self.htmlError("Invalid request! Missing session ID.")
+            }
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return self.htmlError("Invalid request! Missing window context.")
+            }
+            guard let address = request.mapPoint else {
+                return self.htmlError("Invalid request! Missing address.")
+            }
+            guard let land: Land = self.dataStore.find(address: address) else {
+                return self.htmlError("Property at \(address.description) not found!")
+            }
+            let ownerID = land.ownerUUID
+            guard session.playerUUID == ownerID else {
+                return self.htmlError("Property at \(address.description) is not yours!")
+            }
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/landManager.html"))
-            var data = [String:String]()
-            
-            if let offer = self.gameEngine.realEstateAgent.saleOffer(address: address, buyerUUID: "check") {
-                var data = [String:String]()
-                data["price"] = offer.saleInvoice.netValue.money
-                data["cancelOfferJS"] = JSCode.runScripts(windowIndex, paths: [RestEndpoint.cancelSaleOffer.append(address)]).js
-                //data["editOfferJS"] = JSCode.runScripts(windowIndex, paths: [RestEndpoint.openEditSaleOffer.append(address)]).js
-                template.assign(variables: data, inNest: "forSale")
-            } else {
-                var data = [String:String]()
-                data["publishOfferJS"] = JSCode.runScripts(windowIndex, paths: ["/openPublishSaleOffer.js".append(address)]).js
-                template.assign(variables: data, inNest: "notForSale")
-            }
-            
-            data["name"] = land.name
-            data["type"] = land.type
-            data["purchasePrice"] = land.purchaseNetValue.rounded(toPlaces: 0).money
-            data["investmentsValue"] = land.investmentsNetValue.money
-            
-            let monthlyCosts = self.gameEngine.propertyBalanceCalculator.getMontlyCosts(address: address)
-            for cost in monthlyCosts {
-                var data: [String:String] = [:]
-                data["name"] = cost.title
-                data["netValue"] = cost.netValue.money
-                data["taxRate"] = (cost.taxRate * 100).rounded(toPlaces: 0).string
-                data["taxValue"] = cost.tax.money
-                data["total"] = cost.total.money
-                template.assign(variables: data, inNest: "cost")
-            }
-            let totalCosts = monthlyCosts.map{$0.total}.reduce(0, +)
-            var costData: [String:String] = [:]
-            costData["netValue"] = monthlyCosts.map{$0.netValue}.reduce(0, +).money
-            costData["taxValue"] = monthlyCosts.map{$0.tax}.reduce(0, +).money
-            costData["total"] = totalCosts.money
-            template.assign(variables: costData, inNest: "costTotal")
-            
-            let monthlyIncome = self.gameEngine.propertyBalanceCalculator.getMonthlyIncome(address: address)
 
-            for income in monthlyIncome {
-                var data: [String:String] = [:]
-                data["name"] = income.name
-                data["netValue"] = income.netValue.money
-                template.assign(variables: data, inNest: "income")
-            }
-            let balance = (-1 * totalCosts) + monthlyIncome.map{$0.netValue}.reduce(0, +)
-            var incomeData: [String:String] = [:]
-            incomeData["name"] = "Costs"
-            incomeData["netValue"] = (-1 * totalCosts).money
-            template.assign(variables: incomeData, inNest: "income")
-            incomeData = [:]
-            incomeData["netValue"] = balance.money
-            template.assign(variables: incomeData, inNest: "incomeTotal")
-            
-            data["monthlyIncome"] = ""//property.monthlyIncome.money
-            data["taxRate"] = (self.gameEngine.taxRates.incomeTax*100).string
-            data["monthlyIncomeTax"] = ""//incomeTax.money
-            data["monthlyCosts"] = ""//property.monthlyMaintenanceCost.money
-            data["balance"] = ""//(property.monthlyIncome - property.monthlyMaintenanceCost - incomeTax).money
-            
-            let estimatedValue = 0.0//self.gameEngine.realEstateAgent.estimateValue(property.address)
-            data["estimatedValue"] = estimatedValue.money
-
-            data["tileUrl"] = TileType.soldLand.image.path
-            
             self.landPropertyActions(template: template, land: land, windowIndex: windowIndex)
-            
-            template.assign(variables: data)
-            return .ok(.html(template.output()))
+            return template.asResponse()
         }
     }
     
