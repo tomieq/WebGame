@@ -10,7 +10,7 @@ import Foundation
 struct Parking: Property, Codable {
     
     let uuid: String
-    var type: String { return "Public street" }
+    var type: String { return "Parking lot" }
     let ownerUUID: String
     let address: MapPoint
     let name: String
