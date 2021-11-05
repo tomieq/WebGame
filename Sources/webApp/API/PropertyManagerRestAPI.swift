@@ -99,6 +99,30 @@ class PropertyManagerRestAPI: RestAPI {
             code.add(.closeWindow(windowIndex))
             return code.response
         }
+
+        // MARK: propertyWalletBalance
+        server.GET[.propertyWalletBalance] = { request, _ in
+            request.disableKeepAlive = true
+            guard let playerSessionID = request.queryParam("playerSessionID"),
+                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                    return self.htmlError("Invalid request! Missing session ID.")
+            }
+            guard let address = request.mapPoint else {
+                return self.htmlError("Invalid request! Missing address.")
+            }
+            guard let property = self.gameEngine.realEstateAgent.getProperty(address: address) else {
+                return self.htmlError("Property at \(address.description) not found!")
+            }
+            let ownerID = property.ownerUUID
+            guard session.playerUUID == ownerID else {
+                return self.htmlError("Property at \(address.description) is not yours!")
+            }
+            let balanceView = PropertyBalanceView()
+            balanceView.setMonthlyCosts(self.gameEngine.propertyBalanceCalculator.getMontlyCosts(address: address))
+            balanceView.setMonthlyIncome(self.gameEngine.propertyBalanceCalculator.getMonthlyIncome(address: address))
+            balanceView.setProperty(property)
+            return balanceView.output().asResponse
+        }
         
         server.GET["/loadApartmentDetails.js"] = { request, _ in
             request.disableKeepAlive = true

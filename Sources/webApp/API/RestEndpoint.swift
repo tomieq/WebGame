@@ -16,6 +16,7 @@ enum RestEndpoint {
     case openBuildingManager
     case openSaleOffer
     case openPropertyInfo
+    case propertyWalletBalance
     case propertySellStatus
     case loadNewSaleOfferForm
     case loadEditSaleOfferForm
@@ -38,6 +39,8 @@ enum RestEndpoint {
             return "/openSaleOffer.js"
         case .openPropertyInfo:
             return "/openPropertyInfo.js"
+        case .propertyWalletBalance:
+            return "/propertyWalletBalance.html"
         case .propertySellStatus:
             return "/propertySellStatus.html"
         case .loadNewSaleOfferForm:

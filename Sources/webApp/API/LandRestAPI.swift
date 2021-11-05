@@ -61,7 +61,7 @@ class LandRestAPI: RestAPI {
             
             let view = PropertyManagerTopView(windowIndex: windowIndex)
             let domID = PropertyManagerTopView.domID(windowIndex)
-            view.addTab("Wallet balance", onclick: .loadHtmlInline(windowIndex, htmlPath: "landBalance.html".append(address), targetID: domID))
+            view.addTab("Wallet balance", onclick: .loadHtmlInline(windowIndex, htmlPath: RestEndpoint.propertyWalletBalance.append(address), targetID: domID))
             view.addTab("Sell options", onclick: .loadHtmlInline(windowIndex, htmlPath: RestEndpoint.propertySellStatus.append(address), targetID: domID))
             view.addTab("Investments", onclick: .loadHtmlInline(windowIndex, htmlPath: "landInvestments.html".append(address), targetID: domID))
             
@@ -77,30 +77,6 @@ class LandRestAPI: RestAPI {
 
             view.setInitialContent(html: balanceView.output())
             return view.output().asResponse
-        }
-        
-        // MARK: landBalance.html
-        server.GET["/landBalance.html"] = { request, _ in
-            request.disableKeepAlive = true
-            guard let playerSessionID = request.queryParam("playerSessionID"),
-                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                    return self.htmlError("Invalid request! Missing session ID.")
-            }
-            guard let address = request.mapPoint else {
-                return self.htmlError("Invalid request! Missing address.")
-            }
-            guard let property = self.gameEngine.realEstateAgent.getProperty(address: address) else {
-                return self.htmlError("Property at \(address.description) not found!")
-            }
-            let ownerID = property.ownerUUID
-            guard session.playerUUID == ownerID else {
-                return self.htmlError("Property at \(address.description) is not yours!")
-            }
-            let balanceView = PropertyBalanceView()
-            balanceView.setMonthlyCosts(self.gameEngine.propertyBalanceCalculator.getMontlyCosts(address: address))
-            balanceView.setMonthlyIncome(self.gameEngine.propertyBalanceCalculator.getMonthlyIncome(address: address))
-            balanceView.setProperty(property)
-            return balanceView.output().asResponse
         }
         
         // MARK: landBalance.html
