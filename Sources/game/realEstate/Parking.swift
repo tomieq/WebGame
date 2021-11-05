@@ -20,6 +20,8 @@ struct Parking: Property {
     let constructionFinishMonth: Int
     let insurance: ParkingInsurance
     let security: ParkingSecurity
+    let advertising: ParkingAdvertising
+    let trustLevel: Double
     
     init(land: Land, constructionFinishMonth: Int? = nil, investmentsNetValue: Double = 0) {
         self.uuid = land.uuid
@@ -32,6 +34,8 @@ struct Parking: Property {
         self.constructionFinishMonth = constructionFinishMonth ?? 0
         self.insurance = .none
         self.security = .none
+        self.advertising = .none
+        self.trustLevel = 100
     }
     
     init(_ managedObject: ParkingManagedObject) {
@@ -45,6 +49,8 @@ struct Parking: Property {
         self.constructionFinishMonth = managedObject.constructionFinishMonth
         self.insurance = ParkingInsurance(rawValue: managedObject.insurance) ?? .none
         self.security = ParkingSecurity(rawValue: managedObject.security) ?? .none
+        self.advertising = ParkingAdvertising(rawValue: managedObject.advertising) ?? .none
+        self.trustLevel = managedObject.trustLevel
     }
 }
 
@@ -60,5 +66,7 @@ struct ParkingMutation {
         case investments(Double)
         case insurance(ParkingInsurance)
         case security(ParkingSecurity)
+        case advertising(ParkingAdvertising)
+        case trustLevel(Double)
     }
 }

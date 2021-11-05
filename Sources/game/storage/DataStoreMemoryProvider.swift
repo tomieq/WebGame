@@ -383,6 +383,10 @@ class DataStoreMemoryProvider: DataStoreProvider {
                     parking.insurance = value.rawValue
                 case .security(let value):
                     parking.security = value.rawValue
+                case .advertising(let value):
+                    parking.advertising = value.rawValue
+                case .trustLevel(let value):
+                    parking.trustLevel = value
                 }
             }
         }
