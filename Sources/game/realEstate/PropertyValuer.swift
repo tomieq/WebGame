@@ -43,12 +43,12 @@ class PropertyValuer {
     }
     
     private func estimateParkingValue(_ address: MapPoint) -> Double {
-        guard let parking: Parking = self.dataStore.find(address: address) else { return 0 }
         let constructionOffer = self.constructionServices.parkingOffer(landName: "")
         let monthlyCost = self.balanceCalculator.getParkingUnderConstructionMontlyCosts().map{ $0.netValue }.reduce(0, +)
         let costs = constructionOffer.duration.double * monthlyCost
         let basePrice = constructionOffer.invoice.netValue + costs + self.estimateLandValue(address)
-        // TODO: add taken places into the price
+        let carsOnTheparking = self.balanceCalculator.parkingBusiness.calculateCarsForParking(address: address)
+        basePrice += carsOnTheparking * self.balanceCalculator.incomePriceList.monthlyParkingIncomePerTakenPlace * 3
         return basePrice.rounded(toPlaces: 0)
     }
     
