@@ -1,0 +1,89 @@
+<table class="detailsTable" style="width: 400px;">
+<tbody>
+<tr>
+    <td>Property name</td>
+    <td style="text-align: right;"><strong>{name}</strong></td>
+</tr>
+
+<tr>
+    <td>Type</td>
+    <td style="text-align: right;">{type}</td>
+</tr>
+[START underConstruction]
+<tr>
+    <td>Planned investment finish time</td>
+    <td style="text-align: right;">{date}</td>
+</tr>
+[END underConstruction]
+
+<tr>
+    <td colspan=2><hr /></td>
+</tr>
+<tr>
+    <td colspan=2>
+        Monthly Costs<br/><br/>
+        <table class="priceTable">
+            <theader>
+                <th>Invoice</th>
+                <th>Net value</th>
+                <th>Tax rate</th>
+                <th>Tax value</th>
+                <th>Gross value</th>
+            </theader>
+            <tbody>
+                [START cost]
+                <tr>
+                    <td>{name}</td>
+                    <td>{netValue}</td>
+                    <td>{taxRate}%</td>
+                    <td>{taxValue}</td>
+                    <td>{total}</td>
+                </tr>
+                [END cost]
+                [START costTotal]
+                <tr><td colspan=5><hr/></td></tr>
+                <tr>
+                    <td>Total costs</td>
+                    <td>{netValue}</td>
+                    <td></td>
+                    <td>{taxValue}</td>
+                    <td>{total}</td>
+                </tr>
+                [END costTotal]
+            </tbody>
+        </table>
+    
+    
+    </td>
+</tr>
+<tr>
+    <td colspan=2><hr class="orange" /></td>
+</tr>
+<tr>
+    <td colspan=2>
+        Monthly income<br/><br/>
+        <table class="priceTable">
+            <theader>
+                <th>Title</th>
+                <th>Net value</th>
+            </theader>
+            <tbody>
+                [START income]
+                <tr>
+                    <td>{name}</td>
+                    <td>{netValue}</td>
+                </tr>
+                [END income]
+                [START incomeTotal]
+                <tr><td colspan=2><hr/></td></tr>
+                <tr>
+                    <td>Total income</td>
+                    <td>{netValue}</td>
+                </tr>
+                [END incomeTotal]
+            </tbody>
+        </table>
+    </td>
+</tr>
+</tbody>
+</table>

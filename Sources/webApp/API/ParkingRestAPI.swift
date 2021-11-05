@@ -63,8 +63,31 @@ class ParkingRestAPI: RestAPI {
             guard session.playerUUID == ownerID else {
                 return self.htmlError("Property at \(address.description) is not yours!")
             }
+            let view = PropertyManagerTopView(windowIndex: windowIndex)
             
-            let template = Template(raw: ResourceCache.shared.getAppResource("templates/parkingManager.html"))
+            view.addTab("Wallet balance", onclick: .loadHtmlInline(windowIndex, htmlPath: "parkingBalance.html".append(address), targetID: view.domID))
+            view.addTab("Sell options", onclick: .loadHtmlInline(windowIndex, htmlPath: "parkingSell.html".append(address), targetID: view.domID))
+            view.addTab("Managing", onclick: .loadHtmlInline(windowIndex, htmlPath: "parkingManaging.html".append(address), targetID: view.domID))
+            
+            if parking.isUnderConstruction {
+                view.setPropertyType("\(parking.type) - under construction")
+                    .setTileImage(TileType.parkingUnderConstruction.image.path)
+                
+            } else {
+                view.setPropertyType(parking.type)
+                    .setTileImage(TileType.parking(type: .leftConnection).image.path)
+            }
+            
+            view.addTip("The more buildings/facilities around, the more customers you get.")
+                .addTip("If there is more parkings in the area, the market is shared between parking lots.")
+                .addTip("It's best if your parking business is the only one in the area.")
+                .addTip("The area coverage of your parking lot is marked with green and the competitors in red.")
+            
+            let balanceView = PropertyBalanceView()
+            balanceView.setMonthlyCosts(self.gameEngine.propertyBalanceCalculator.getMontlyCosts(address: address))
+            balanceView.setMonthlyIncome(self.gameEngine.propertyBalanceCalculator.getMonthlyIncome(address: address))
+            balanceView.setProperty(parking)
+            /*
             var data = [String:String]()
             
             if let offer = self.gameEngine.realEstateAgent.saleOffer(address: address, buyerUUID: "check") {
@@ -81,67 +104,17 @@ class ParkingRestAPI: RestAPI {
             
             data["name"] = parking.name
             
-            if parking.isUnderConstruction {
-                data["type"] = "\(parking.type) - under construction"
-                data["tileUrl"] = TileType.parkingUnderConstruction.image.path
-                
-                let date = GameTime(parking.constructionFinishMonth)
-                template.assign(variables: ["date": date.text], inNest: "underConstruction")
-            } else {
-                data["type"] = parking.type
-                data["tileUrl"] = TileType.parking(type: .leftConnection).image.path
-            }
+
             data["purchasePrice"] = parking.purchaseNetValue.rounded(toPlaces: 0).money
             data["investmentsValue"] = parking.investmentsNetValue.money
             
-            let monthlyCosts = self.gameEngine.propertyBalanceCalculator.getMontlyCosts(address: address)
-            for cost in monthlyCosts {
-                var data: [String:String] = [:]
-                data["name"] = cost.title
-                data["netValue"] = cost.netValue.money
-                data["taxRate"] = (cost.taxRate * 100).rounded(toPlaces: 0).string
-                data["taxValue"] = cost.tax.money
-                data["total"] = cost.total.money
-                template.assign(variables: data, inNest: "cost")
-            }
-            let totalCosts = monthlyCosts.map{$0.total}.reduce(0, +)
-            var costData: [String:String] = [:]
-            costData["netValue"] = monthlyCosts.map{$0.netValue}.reduce(0, +).money
-            costData["taxValue"] = monthlyCosts.map{$0.tax}.reduce(0, +).money
-            costData["total"] = totalCosts.money
-            template.assign(variables: costData, inNest: "costTotal")
-            
-            let monthlyIncome = self.gameEngine.propertyBalanceCalculator.getMonthlyIncome(address: address)
-
-            for income in monthlyIncome {
-                var data: [String:String] = [:]
-                data["name"] = income.name
-                data["netValue"] = income.netValue.money
-                template.assign(variables: data, inNest: "income")
-            }
-            let balance = (-1 * totalCosts) + monthlyIncome.map{$0.netValue}.reduce(0, +)
-            var incomeData: [String:String] = [:]
-            incomeData["name"] = "Costs"
-            incomeData["netValue"] = (-1 * totalCosts).money
-            template.assign(variables: incomeData, inNest: "income")
-            incomeData = [:]
-            incomeData["netValue"] = balance.money
-            template.assign(variables: incomeData, inNest: "incomeTotal")
-            
-            data["monthlyIncome"] = ""//property.monthlyIncome.money
-            data["taxRate"] = (self.gameEngine.taxRates.incomeTax*100).string
-            data["monthlyIncomeTax"] = ""//incomeTax.money
-            data["monthlyCosts"] = ""//property.monthlyMaintenanceCost.money
-            data["balance"] = ""//(property.monthlyIncome - property.monthlyMaintenanceCost - incomeTax).money
-            
-            let estimatedValue = 0.0//self.gameEngine.realEstateAgent.estimateValue(property.address)
-            data["estimatedValue"] = estimatedValue.money
-
-            
-            
             
             template.assign(variables: data)
-            return .ok(.html(template.output()))
+             */
+            view.setInitialContent(html: balanceView.output())
+            
+            
+            return .ok(.html(view.output()))
         }
     }
 
