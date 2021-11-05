@@ -67,6 +67,7 @@ class ParkingRestAPI: RestAPI {
             let domID = PropertyManagerTopView.domID(windowIndex)
             view.addTab("Wallet balance", onclick: .loadHtmlInline(windowIndex, htmlPath: "parkingBalance.html".append(address), targetID: domID))
             view.addTab("Security", onclick: .loadHtmlInline(windowIndex, htmlPath: "parkingSecurity.html".append(address), targetID: domID))
+            view.addTab("Damages", onclick: .loadHtmlInline(windowIndex, htmlPath: "parkingDamages.html".append(address), targetID: domID))
             view.addTab("Sell options", onclick: .loadHtmlInline(windowIndex, htmlPath: RestEndpoint.propertySellStatus.append(address), targetID: domID))
             
             
@@ -199,6 +200,31 @@ class ParkingRestAPI: RestAPI {
             let js = JSResponse()
             js.add(.showSuccess(txt: "New security options applied!", duration: 10))
             return js.response
+        }
+        
+        // MARK: parkingDamages.html
+        server.GET["/parkingDamages.html"] = { request, _ in
+            request.disableKeepAlive = true
+            guard let playerSessionID = request.queryParam("playerSessionID"),
+                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                    return self.htmlError("Invalid request! Missing session ID.")
+            }
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return self.htmlError("Invalid request! Missing window context.")
+            }
+            guard let address = request.mapPoint else {
+                return self.htmlError("Invalid request! Missing address.")
+            }
+            guard let parking: Parking = self.dataStore.find(address: address) else {
+                return self.htmlError("Property at \(address.description) not found!")
+            }
+            let ownerID = parking.ownerUUID
+            guard session.playerUUID == ownerID else {
+                return self.htmlError("Property at \(address.description) is not yours!")
+            }
+            let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManager/parking/parkingDamages.html"))
+            var data: [String: String] = [:]
+            return template.asResponse()
         }
     }
 
