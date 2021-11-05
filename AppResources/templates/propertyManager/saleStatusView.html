@@ -1,0 +1,35 @@
+
+<table class="detailsTable" style="width: 400px; margin: 5px; float: left">
+    <tbody>
+        <tr>
+            <td>Purchase price </td>
+            <td style="text-align: right;">{purchasePrice} (excl. tax)</td>
+        </tr>
+
+        <tr>
+            <td>Investments</td>
+            <td style="text-align: right;">{investmentsValue} (excl. tax)</td>
+        </tr>
+        <tr>
+            <td colspan=2><hr /></td>
+        </tr>
+        [START notForSale]
+        <tr>
+            <td>Real Estate Market</td>
+            <td style="text-align: right;"><button class="btn btn-sm" onclick="{publishOfferJS}">Sell property</button></td>
+        </tr>
+        [END notForSale]
+        [START forSale]
+        <tr>
+            <td>Real Estate Market</td>
+            <td style="text-align: right;">On sale for <strong>{price}</strong></td>
+        </tr>
+        <tr>
+            <td colspan=2 style="text-align: right;">
+                <button class="btn btn-sm" onclick="{editOfferJS}">Edit offer</button>
+                <button class="btn btn-sm" onclick="{cancelOfferJS}">Cancell offer</button>
+            </td>
+        </tr>
+        [END forSale]
+    </tbody>
+</table>
