@@ -80,7 +80,17 @@ class ParkingRestAPI: RestAPI {
             }
             
             data["name"] = parking.name
-            data["type"] = parking.type
+            
+            if parking.isUnderConstruction {
+                data["type"] = "\(parking.type) - under construction"
+                data["tileUrl"] = TileType.parkingUnderConstruction.image.path
+                
+                let date = GameTime(parking.constructionFinishMonth)
+                template.assign(variables: ["date": date.text], inNest: "underConstruction")
+            } else {
+                data["type"] = parking.type
+                data["tileUrl"] = TileType.parking(type: .leftConnection).image.path
+            }
             data["purchasePrice"] = parking.purchaseNetValue.rounded(toPlaces: 0).money
             data["investmentsValue"] = parking.investmentsNetValue.money
             
@@ -127,7 +137,7 @@ class ParkingRestAPI: RestAPI {
             let estimatedValue = 0.0//self.gameEngine.realEstateAgent.estimateValue(property.address)
             data["estimatedValue"] = estimatedValue.money
 
-            data["tileUrl"] = TileType.parking(type: .leftConnection).image.path
+            
             
             
             template.assign(variables: data)
