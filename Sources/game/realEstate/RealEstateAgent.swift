@@ -390,34 +390,9 @@ class RealEstateAgent {
             self.semaphore.signal()
             throw BuyPropertyError.propertyNotForSale
         }
-        let sellerID = parking.ownerUUID
-        guard sellerID != buyerUUID else {
-            Logger.error("RealEstateAgent", "buyParkingProperty:seller the same as buyer")
-            self.semaphore.signal()
-            throw BuyPropertyError.tryingBuyOwnProperty
-        }
-        Logger.info("RealEstateAgent", "New parking sale transaction. @\(address.description)")
-        let realEstateAgentID = SystemPlayer.realEstateAgency.uuid
-        // process the transaction
-        let saleTransaction = FinancialTransaction(payerUUID: buyerUUID, recipientUUID: sellerID , invoice: offer.saleInvoice, type: .realEstateTrade)
-        do {
-             try self.centralBank.process(saleTransaction)
-        } catch let error as FinancialTransactionError {
-            Logger.error("RealEstateAgent", "buyParkingProperty:sale invoice transaction problem")
-            self.semaphore.signal()
-            throw BuyPropertyError.financialTransactionProblem(error)
-        }
-        let feeTransaction = FinancialTransaction(payerUUID: buyerUUID, recipientUUID: realEstateAgentID, invoice: offer.commissionInvoice, type: .services)
-        do {
-             try self.centralBank.process(feeTransaction)
-        } catch let error as FinancialTransactionError {
-            Logger.error("RealEstateAgent", "buyParkingProperty:commission invoice transaction problem")
-            self.semaphore.signal()
-            throw BuyPropertyError.financialTransactionProblem(error)
-        }
+        try self.processBuyTransaction(offer, buyerUUID: buyerUUID)
 
-        let costs = parking.investmentsNetValue + parking.purchaseNetValue
-        self.centralBank.refundIncomeTax(transaction: saleTransaction, costs: costs)
+        
         var modifications: [ParkingMutation.Attribute] = []
         modifications.append(.purchaseNetValue(offer.saleInvoice.netValue))
         modifications.append(.ownerUUID(buyerUUID))
@@ -436,9 +411,39 @@ class RealEstateAgent {
         
         self.semaphore.signal()
         self.delegate?.syncWalletChange(playerUUID: buyerUUID)
-        self.delegate?.syncWalletChange(playerUUID: sellerID)
+        self.delegate?.syncWalletChange(playerUUID: offer.property.ownerUUID)
         let playerName = self.dataStore.find(uuid: buyerUUID)?.login ?? ""
         self.delegate?.notifyEveryone(UINotification(text: "New transaction on the market. Player <b>\(playerName)</b> has just bought property `\(parking.name)`", level: .info, duration: 10, icon: .property))
+    }
+    
+    private func processBuyTransaction(_ offer: SaleOffer, buyerUUID: String) throws {
+        let sellerID = offer.property.ownerUUID
+        guard sellerID != buyerUUID else {
+            Logger.error("RealEstateAgent", "BuyPropertyError.tryingBuyOwnProperty")
+            self.semaphore.signal()
+            throw BuyPropertyError.tryingBuyOwnProperty
+        }
+        Logger.info("RealEstateAgent", "New \(type(of: offer.property)) sale transaction. @\(offer.property.address.description)")
+        let realEstateAgentID = SystemPlayer.realEstateAgency.uuid
+        // process the transaction
+        let saleTransaction = FinancialTransaction(payerUUID: buyerUUID, recipientUUID: sellerID , invoice: offer.saleInvoice, type: .realEstateTrade)
+        do {
+             try self.centralBank.process(saleTransaction)
+        } catch let error as FinancialTransactionError {
+            Logger.error("RealEstateAgent", "BuyPropertyError.financialTransactionProblem")
+            self.semaphore.signal()
+            throw BuyPropertyError.financialTransactionProblem(error)
+        }
+        let feeTransaction = FinancialTransaction(payerUUID: buyerUUID, recipientUUID: realEstateAgentID, invoice: offer.commissionInvoice, type: .services)
+        do {
+             try self.centralBank.process(feeTransaction)
+        } catch let error as FinancialTransactionError {
+            Logger.error("RealEstateAgent", "BuyPropertyError.financialTransactionProblem")
+            self.semaphore.signal()
+            throw BuyPropertyError.financialTransactionProblem(error)
+        }
+        let costs = offer.property.investmentsNetValue + offer.property.purchaseNetValue
+        self.centralBank.refundIncomeTax(transaction: saleTransaction, costs: costs)
     }
     
     private func buyResidentialBuilding(address: MapPoint, buyerUUID: String, netPrice: Double? = nil) throws {
@@ -460,33 +465,8 @@ class RealEstateAgent {
             self.semaphore.signal()
             throw BuyPropertyError.propertyNotForSale
         }
-        let sellerID = building.ownerUUID
-        guard sellerID != buyerUUID else {
-            Logger.error("RealEstateAgent", "buyResidentialBuilding:seller the same as buyer")
-            self.semaphore.signal()
-            throw BuyPropertyError.tryingBuyOwnProperty
-        }
-        Logger.info("RealEstateAgent", "New residentialBuilding sale transaction. @\(address.description)")
-        let realEstateAgentID = SystemPlayer.realEstateAgency.uuid
-        // process the transaction
-        let saleTransaction = FinancialTransaction(payerUUID: buyerUUID, recipientUUID: sellerID , invoice: offer.saleInvoice, type: .realEstateTrade)
-        do {
-             try self.centralBank.process(saleTransaction)
-        } catch let error as FinancialTransactionError {
-            Logger.error("RealEstateAgent", "buyResidentialBuilding:sale invoice transaction problem")
-            self.semaphore.signal()
-            throw BuyPropertyError.financialTransactionProblem(error)
-        }
-        let feeTransaction = FinancialTransaction(payerUUID: buyerUUID, recipientUUID: realEstateAgentID, invoice: offer.commissionInvoice, type: .services)
-        do {
-             try self.centralBank.process(feeTransaction)
-        } catch let error as FinancialTransactionError {
-            Logger.error("RealEstateAgent", "buyResidentialBuilding:commission invoice transaction problem")
-            self.semaphore.signal()
-            throw BuyPropertyError.financialTransactionProblem(error)
-        }
-        let costs = building.investmentsNetValue + building.purchaseNetValue
-        self.centralBank.refundIncomeTax(transaction: saleTransaction, costs: costs)
+        try self.processBuyTransaction(offer, buyerUUID: buyerUUID)
+        
         var modifications: [ResidentialBuildingMutation.Attribute] = []
         modifications.append(.ownerUUID(buyerUUID))
         modifications.append(.purchaseNetValue(offer.saleInvoice.netValue))
@@ -505,7 +485,7 @@ class RealEstateAgent {
         self.semaphore.signal()
         
         self.delegate?.syncWalletChange(playerUUID: buyerUUID)
-        self.delegate?.syncWalletChange(playerUUID: sellerID)
+        self.delegate?.syncWalletChange(playerUUID: offer.property.ownerUUID)
         let playerName = self.dataStore.find(uuid: buyerUUID)?.login ?? ""
         self.delegate?.notifyEveryone(UINotification(text: "New transaction on the market. Player \(playerName) has just bought property `\(building.name)`", level: .info, duration: 10, icon: .property))
     }
