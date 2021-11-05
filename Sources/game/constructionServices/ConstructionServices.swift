@@ -126,7 +126,7 @@ class ConstructionServices {
         let parking = Parking(land: land, constructionFinishMonth: constructionFinishMonth, investmentsNetValue: investmentsNetValue)
         self.dataStore.create(parking)
         
-        let tile = GameMapTile(address: address, type: .streetUnderConstruction)
+        let tile = GameMapTile(address: address, type: .parkingUnderConstruction)
         self.mapManager.map.replaceTile(tile: tile)
 
         self.delegate?.syncWalletChange(playerUUID: playerUUID)
