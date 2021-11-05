@@ -11,12 +11,14 @@ class PropertyManagerTopView {
     
     private var data: [String: String] = [:]
     private var tips: [String] = []
-    let domID: String
     private var tabs: [[String:String]] = []
     
     init(windowIndex: String) {
-        self.domID = "content\(windowIndex)"
-        data["tabDetailsID"] = self.domID
+        data["tabDetailsID"] = PropertyManagerTopView.domID(windowIndex)
+    }
+    
+    public static func domID(_ windowIndex: String) -> String {
+        return "content\(windowIndex)"
     }
     
     @discardableResult
