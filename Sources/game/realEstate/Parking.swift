@@ -35,7 +35,7 @@ struct Parking: Property {
         self.insurance = .none
         self.security = .none
         self.advertising = .none
-        self.trustLevel = 100
+        self.trustLevel = 1
     }
     
     init(_ managedObject: ParkingManagedObject) {

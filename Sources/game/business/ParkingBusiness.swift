@@ -188,13 +188,13 @@ enum ParkingAdvertising: String, CaseIterable {
         case .none:
             return 0
         case .leaflets:
-            return 5
+            return 0.05
         case .localNewspaperAd:
-            return 15
+            return 0.15
         case .radioAd:
-            return 25
+            return 0.25
         case .tvSpot:
-            return 35
+            return 0.35
         }
     }
 }

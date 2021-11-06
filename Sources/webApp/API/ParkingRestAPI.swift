@@ -225,7 +225,7 @@ class ParkingRestAPI: RestAPI {
             }
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManager/parking/parkingDamages.html"))
             var data: [String: String] = [:]
-            data["trustLevel"] = parking.trustLevel.rounded(toPlaces: 0).string
+            data["trustLevel"] = (parking.trustLevel * 100).rounded(toPlaces: 0).string
             template.assign(variables: data)
             return template.asResponse()
         }

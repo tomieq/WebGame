@@ -386,6 +386,9 @@ class DataStoreMemoryProvider: DataStoreProvider {
                 case .advertising(let value):
                     parking.advertising = value.rawValue
                 case .trustLevel(let value):
+                    var value = value
+                    if value > 1 { value = 1 }
+                    if value < 0 { value = 0 }
                     parking.trustLevel = value
                 }
             }
