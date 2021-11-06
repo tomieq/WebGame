@@ -294,7 +294,7 @@ class ParkingRestAPI: RestAPI {
             let mutation = ParkingMutation(uuid: parking.uuid, attributes: [.advertising(advertisement)])
             self.gameEngine.dataStore.update(mutation)
             let js = JSResponse()
-            js.add(.showSuccess(txt: "New advertisemsnt options applied!", duration: 10))
+            js.add(.showSuccess(txt: "New advertisement options applied!", duration: 10))
             return js.response
         }
     }
