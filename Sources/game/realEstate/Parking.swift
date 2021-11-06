@@ -23,7 +23,7 @@ struct Parking: Property {
     let advertising: ParkingAdvertising
     let trustLevel: Double
     
-    init(land: Land, constructionFinishMonth: Int? = nil, investmentsNetValue: Double = 0) {
+    init(land: Land, constructionFinishMonth: Int? = nil, investmentsNetValue: Double = 0, trustLevel: Double = 1.0) {
         self.uuid = land.uuid
         self.address = land.address
         self.name = "\(land.name) Parking lot"
@@ -35,7 +35,7 @@ struct Parking: Property {
         self.insurance = .none
         self.security = .none
         self.advertising = .none
-        self.trustLevel = 1
+        self.trustLevel = min(max(trustLevel, 0), 1)
     }
     
     init(_ managedObject: ParkingManagedObject) {
