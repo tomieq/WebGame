@@ -19,26 +19,35 @@ class ParkingBusiness {
     
     func calculateCarsForParking(address: MapPoint) -> Double {
         
-        let carsPerAddress = self.getCarsAroundAddress(address)
-        let competitors = self.getParkingsAroundAddress(address)
-        // sharedCars stores cars shared by multiple parkings. Address -> number of parkings
-        var sharedCars: [MapPoint: Int] = [:]
+        let parking: Parking? = self.dataStore.find(address: address)
+        let carsInTheArea = self.getCarsAroundAddress(address)
+        let competitorAddresses = self.getParkingsAroundAddress(address)
+        let competitors: [Parking] = competitorAddresses.compactMap{ self.dataStore.find(address: $0) }
+        // competitorTrusts stores a map of competitor's shares for address (competitors' parking trusts)
+        var competitorTrusts: [MapPoint: [Double]] = [:]
         
-        for competitor in competitors {
-            let carsInCompetitorRange = self.getCarsAroundAddress(competitor)
+        for competitorAddress in competitorAddresses {
+            let carsInCompetitorRange = self.getCarsAroundAddress(competitorAddress)
+            let competitorTrust = competitors.first{ $0.address == competitorAddress }?.trustLevel ?? 1.0
             for address in carsInCompetitorRange.keys {
-                sharedCars[address] = (sharedCars[address] ?? 1) + 1
+                if competitorTrusts[address] != nil {
+                    competitorTrusts[address]?.append(competitorTrust)
+                } else {
+                    competitorTrusts[address] = [competitorTrust]
+                }
             }
         }
+        let myTrust = parking?.trustLevel ?? 1.0
         var amountOfCars: Double = 0
-        for (address, numberOfCars) in carsPerAddress {
-            if let amountOfCompetitors = sharedCars[address] {
-                amountOfCars += numberOfCars / amountOfCompetitors.double
+        for (address, numberOfCars) in carsInTheArea {
+            if let trusts = competitorTrusts[address] {
+                let sumOfTrust = myTrust + trusts.reduce(0, +)
+                amountOfCars += numberOfCars * (myTrust / sumOfTrust)
             } else {
                 amountOfCars += numberOfCars
             }
         }
-    
+
         return amountOfCars
     }
     
@@ -47,7 +56,10 @@ class ParkingBusiness {
         for radius in (1...2) {
             for neighbour in self.mapManager.map.getNeighbourAddresses(to: address, radius: radius) {
                 if let tileType = self.mapManager.map.getTile(address: neighbour)?.type {
-                    carsPerAddress[neighbour] = tileType.carsOnProperty
+                    let carsOnProperty = tileType.carsOnProperty
+                    if carsOnProperty > 0 {
+                        carsPerAddress[neighbour] = tileType.carsOnProperty
+                    }
                 }
             }
         }

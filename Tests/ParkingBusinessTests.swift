@@ -73,6 +73,50 @@ class ParkingBusinessTests: XCTestCase {
         XCTAssertEqual(sut.calculateCarsForParking(address: MapPoint(x: 3, y: 2)), 6 / 3 + 10 / 2)
     }
     
+    func test_amountOfCarsTwoParkings_lowerTrust() {
+        let sut = self.makeSUT()
+        let dataStore = sut.dataStore
+        let layout = """
+                    s,s,s,s,s,s,s,s,s
+                    -,c,B,c
+                    """
+        sut.mapManager.loadMapFrom(content: layout)
+        let address1 = MapPoint(x: 1, y: 1)
+        let address2 = MapPoint(x: 3, y: 1)
+        
+        let uuid = dataStore.create(Parking(land: Land(address: address1)))
+        dataStore.create(Parking(land: Land(address: address2), trustLevel: 0.5))
+        
+        XCTAssertEqual(sut.calculateCarsForParking(address: address1), 4)
+        XCTAssertEqual(sut.calculateCarsForParking(address: address2), 2)
+        
+        dataStore.update(ParkingMutation(uuid: uuid, attributes: [.trustLevel(0.5)]))
+        XCTAssertEqual(sut.calculateCarsForParking(address: address1), 3)
+    }
+    
+    func test_amountOfCarsThreeParkings_lowerTrust() {
+        let sut = self.makeSUT()
+        let dataStore = sut.dataStore
+        let layout = """
+                    s,s,s,s,s,s,s,s,s
+                    -,c,B,c,c
+                    """
+        sut.mapManager.loadMapFrom(content: layout)
+        let address1 = MapPoint(x: 1, y: 1)
+        let address2 = MapPoint(x: 3, y: 1)
+        let address3 = MapPoint(x: 4, y: 1)
+        
+        dataStore.create(Parking(land: Land(address: address1)))
+        dataStore.create(Parking(land: Land(address: address2), trustLevel: 0.5))
+        dataStore.create(Parking(land: Land(address: address3), trustLevel: 0.5))
+        
+        XCTAssertEqual(sut.calculateCarsForParking(address: address1), 3)
+        XCTAssertEqual(sut.calculateCarsForParking(address: address2), 1.5)
+        XCTAssertEqual(sut.calculateCarsForParking(address: address3), 1.5)
+        
+        
+    }
+    
     private func makeSUT() -> ParkingBusiness {
         let dataStore = DataStoreMemoryProvider()
         let map = GameMap(width: 40, height: 40, scale: 1)
