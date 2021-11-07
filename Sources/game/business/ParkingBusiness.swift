@@ -119,6 +119,20 @@ enum ParkingInsurance: String, CaseIterable {
         }
     }
     
+    var damageCoverLimit: Double {
+        switch self {
+            
+        case .none:
+            return 0
+        case .basic:
+            return self.monthlyFee * 2
+        case .extended:
+            return self.monthlyFee * 3
+        case .full:
+            return 100000
+        }
+    }
+    
     var name: String {
         switch self {
         case .none:
