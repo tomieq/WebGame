@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum ParkingDamageType {
+enum ParkingDamageType: CaseIterable {
     case brokenMirror
     case tirePuncture
     case brokenWindow
@@ -39,15 +39,15 @@ enum ParkingDamageType {
         case .stolenCupWheels:
             return "stolen cup wheels"
         case .stolenWheels:
-            return "stolen wheels"
+            return "stolen car wheels"
         case .dentedCarRoof:
             return "dented car's roof"
         case .grafittiOnCar:
             return "grafitti on car's hood"
         case .stolenCar:
-            return "stolen"
+            return "car stolen"
         case .carArsonry:
-            return "arsoned"
+            return "car arsoned"
         }
     }
     
@@ -116,11 +116,13 @@ class ParkingDamage {
     let fixPrice: Double
     let accidentMonth: Int
     let criminalUUID: String?
+    let car: String
     
     init(type: ParkingDamageType, accidentMonth: Int, criminalUUID: String? = nil) {
         self.type = type
         self.fixPrice = type.fixPrice.rounded(toPlaces: 0)
         self.accidentMonth = accidentMonth
         self.criminalUUID = criminalUUID
+        self.car = CarGenerator.shared.ramdomCar()
     }
 }
