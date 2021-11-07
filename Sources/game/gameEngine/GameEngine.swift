@@ -93,6 +93,7 @@ class GameEngine {
         self.court.delegate = self
         self.police.delegate = self
         self.debtCollector.delegate = self
+        self.parkingBusiness.delegate = self
         
         self.reloadMapCoordinator.setFlushAction { [weak self] in
            self?.streetNavi.reload()
@@ -178,6 +179,7 @@ class GameEngine {
     }
 }
 
+extension GameEngine: ParkingBusinessDelegate {}
 extension GameEngine: CourtDelegate {}
 extension GameEngine: PoliceDelegate {}
 extension GameEngine: DebtCollectorDelegate {}

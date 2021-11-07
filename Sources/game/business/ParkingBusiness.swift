@@ -7,10 +7,14 @@
 
 import Foundation
 
+protocol ParkingBusinessDelegate {
+    func notify(playerUUID: String, _ notification: UINotification)
+}
 
 class ParkingBusiness {
     let mapManager: GameMapManager
     let dataStore: DataStoreProvider
+    var delegate: ParkingBusinessDelegate?
     private var damages: [MapPoint: [ParkingDamage]] = [:]
     
     init(mapManager: GameMapManager, dataStore: DataStoreProvider) {
