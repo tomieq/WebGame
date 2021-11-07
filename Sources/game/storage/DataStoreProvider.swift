@@ -30,6 +30,7 @@ protocol DataStoreProvider {
     func getAll() -> [Player]
     func getAll() -> [Land]
     func getAll() -> [Road]
+    func getAll() -> [Parking]
     func getAll() -> [ResidentialBuilding]
     func getAll() -> [SaleAdvert]
     

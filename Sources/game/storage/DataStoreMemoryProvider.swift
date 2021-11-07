@@ -356,6 +356,12 @@ class DataStoreMemoryProvider: DataStoreProvider {
         }
     }
     
+    func getAll() -> [Parking] {
+        return roadQueue.sync {
+            self.parkings.map { Parking($0) }
+        }
+    }
+    
     func getUnderConstruction() -> [Parking] {
         return roadQueue.sync {
             self.parkings.filter{ $0.isUnderConstruction }.map { Parking($0) }
