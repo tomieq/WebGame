@@ -487,7 +487,7 @@ class RealEstateAgent {
         self.delegate?.syncWalletChange(playerUUID: buyerUUID)
         self.delegate?.syncWalletChange(playerUUID: offer.property.ownerUUID)
         let playerName = self.dataStore.find(uuid: buyerUUID)?.login ?? ""
-        self.delegate?.notifyEveryone(UINotification(text: "New transaction on the market. Player \(playerName) has just bought property `\(building.name)`", level: .info, duration: 10, icon: .property))
+        self.delegate?.notifyEveryone(UINotification(text: "New transaction on the market. Player <b>\(playerName)</b> has just bought property `\(building.name)`", level: .info, duration: 10, icon: .property))
     }
  }
 
