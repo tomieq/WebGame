@@ -18,3 +18,9 @@ protocol Property {
     var isUnderConstruction: Bool { get }
     var constructionFinishMonth: Int { get }
 }
+
+extension Property {
+    var readableAddress: String {
+        return "East \(self.address.x), South \(self.address.y)"
+    }
+}

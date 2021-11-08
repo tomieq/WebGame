@@ -22,6 +22,7 @@ class PropertyBalanceView {
             self.data["type"] = property.type
         }
         self.data["name"] = property.name
+        self.data["address"] = property.readableAddress
         return self
     }
     

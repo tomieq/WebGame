@@ -63,7 +63,7 @@ class ParkingBusiness {
             if let damageType = damageTypes.shuffled().first {
                 let damage = ParkingDamage(type: damageType, accidentMonth: time.month)
                 self.addDamage(damage, address: parking.address)
-                let text = "Something wrong has just happen on your <b>\(parking.name)</b>! Customer's \(damage.car) got damaged - \(damage.type.name)."
+                let text = "Something wrong has just happen on your <b>\(parking.name)</b> located \(parking.readableAddress). Customer's \(damage.car) got damaged - \(damage.type.name)."
                 self.delegate?.notify(playerUUID: parking.ownerUUID, UINotification(text: text, level: .warning, duration: 30, icon: .carDamage))
                 untouchablePlayers.append(parking.ownerUUID)
             }
