@@ -198,9 +198,13 @@ class ParkingRestAPI: RestAPI {
             }
             let mutation = ParkingMutation(uuid: parking.uuid, attributes: [.security(security)])
             self.gameEngine.dataStore.update(mutation)
-            let text = "New security options applied for \(parking.name) located \(parking.readableAddress)"
-            self.gameEngine.notify(playerUUID: session.playerUUID, UINotification(text: text, level: .success, duration: 10, icon: .insurance))
             let js = JSResponse()
+            if security == .none {
+                js.add(.showWarning(txt: "Security policy cancelled for \(parking.name) located \(parking.readableAddress)", duration: 10))
+            } else {
+                let text = "New security options applied for \(parking.name) located \(parking.readableAddress)"
+                self.gameEngine.notify(playerUUID: session.playerUUID, UINotification(text: text, level: .success, duration: 10, icon: .security))
+            }
             return js.response
         }
         
@@ -269,7 +273,12 @@ class ParkingRestAPI: RestAPI {
             let mutation = ParkingMutation(uuid: parking.uuid, attributes: [.insurance(insurance)])
             self.gameEngine.dataStore.update(mutation)
             let js = JSResponse()
-            js.add(.showSuccess(txt: "New insurance options applied for \(parking.name) located \(parking.readableAddress)", duration: 10))
+            if insurance == .none {
+                js.add(.showWarning(txt: "Insurance policy cancelled for \(parking.name) located \(parking.readableAddress)", duration: 10))
+            } else {
+                let text = "New insurance options applied for \(parking.name) located \(parking.readableAddress)"
+                self.gameEngine.notify(playerUUID: session.playerUUID, UINotification(text: text, level: .success, duration: 10, icon: .insurance))
+            }
             return js.response
         }
         
