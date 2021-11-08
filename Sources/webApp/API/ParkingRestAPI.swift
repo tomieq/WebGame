@@ -315,6 +315,7 @@ class ParkingRestAPI: RestAPI {
                     template.assign(variables: ["html": html, "domID": "damage-\(damage.uuid)"], inNest: "damage")
                 }
             }
+            template.assign(variables: [:], inNest: "damages")
             return template.asResponse()
         }
         
@@ -475,14 +476,7 @@ class ParkingRestAPI: RestAPI {
         } else {
             data["css"] = "background-red"
             var payData: [String: String] = [:]
-            var moneyToPay = damage.fixPrice
-            switch damage.status {
-            case .partiallyCoveredByInsurance(let value):
-                moneyToPay -= value
-            default:
-                break
-            }
-            payData["money"] = moneyToPay.money
+            payData["money"] = damage.leftToPay.money
             payData["payJS"] = JSCode.runScripts(windowIndex, paths: ["/payForDamage.js?damageUUID=\(damage.uuid)".append(address)]).js
             template.assign(variables: payData, inNest: "payButton")
         }

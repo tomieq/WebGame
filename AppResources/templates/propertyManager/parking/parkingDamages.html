@@ -1,12 +1,14 @@
-<div style="font-size: 0.9em; margin: 5px; width: 400px; overflow: auto; height:400px;">
-    Your parking lot is trusted by <b>{trustLevel}%</b> customers (see Advertising tab).
-    <br><br>
+<div style="font-size: 0.9em; margin: 5px; width: 400px; overflow: auto; height:360px;">
 
     [START noDamages]
     Currently there are no damages to the cars on your parking lot. You don't have to compensate to anyone. You don't have to use the insurance to cover damages.
     <br>
     All clear.
     [END noDamages]
+    [START damages]
+    Pay for all the damages otherwise car owners may sue you.
+    <br><br>
+    [END damages]
     [START damage]
     <div id="{domID}">
     {html}

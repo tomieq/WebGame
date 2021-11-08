@@ -53,15 +53,8 @@ class ParkingBusiness {
         guard let parking: Parking = self.dataStore.find(address: address) else {
             throw PayParkingDamageError.damageNotFound
         }
-            
-        var value = damage.fixPrice
-        switch damage.status {
-        case .partiallyCoveredByInsurance(let paidAmount):
-            value -= paidAmount
-        default:
-            break
-        }
-        let invoice = Invoice(title: "Parking damage compensation, \(damage.car) - \(damage.type.name)", grossValue: value, taxRate: 0)
+
+        let invoice = Invoice(title: "Parking damage compensation, \(damage.car) - \(damage.type.name)", grossValue: damage.leftToPay, taxRate: 0)
         let transaction = FinancialTransaction(payerUUID: parking.ownerUUID, recipientUUID: SystemPlayer.government.uuid, invoice: invoice, type: .incomeTaxFree)
         do {
             try centralBank.process(transaction)
@@ -94,7 +87,8 @@ class ParkingBusiness {
                     level = .info
                 } else {
                     parkingDamage.status = .partiallyCoveredByInsurance(parking.insurance.damageCoverLimit)
-                    text.append("<br>Visit the place and cover the damage value")
+                    let fraction = (parking.insurance.damageCoverLimit/parkingDamage.fixPrice * 100).int
+                    text.append("<br>The good news is that you have insurance and it partially(\(fraction)%) covered the damage value")
                 }
             }
             self.delegate?.notify(playerUUID: parking.ownerUUID, UINotification(text: text, level: level, duration: 30, icon: .carDamage))

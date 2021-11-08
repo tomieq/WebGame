@@ -149,6 +149,17 @@ class ParkingDamage {
     let car: String
     var status: ParkingDamageStatus
     
+    var leftToPay: Double {
+        switch self.status {
+        case .partiallyCoveredByInsurance(let paidAmount):
+            return self.fixPrice - paidAmount
+        case .paid, .coveredByInsurance:
+            return 0
+        case .awaitingPayment:
+            return self.fixPrice
+        }
+    }
+    
     init(type: ParkingDamageType, accidentMonth: Int, criminalUUID: String? = nil) {
         self.uuid = UUID().uuidString
         self.type = type
