@@ -414,8 +414,14 @@ class ParkingRestAPI: RestAPI {
             }
             let mutation = ParkingMutation(uuid: parking.uuid, attributes: [.advertising(advertisement)])
             self.gameEngine.dataStore.update(mutation)
+            
             let js = JSResponse()
-            js.add(.showSuccess(txt: "New advertisement options applied!", duration: 10))
+            if advertisement == .none {
+                js.add(.showWarning(txt: "Marketing campaign cancelled for <b>\(parking.name)</b> located <i>\(parking.readableAddress)</i>", duration: 10))
+            } else {
+                let text = "Marketing campaign options applied for <b>\(parking.name)</b> located <i>\(parking.readableAddress)</i>"
+                self.gameEngine.notify(playerUUID: session.playerUUID, UINotification(text: text, level: .success, duration: 10, icon: .marketing))
+            }
             return js.response
         }
         
