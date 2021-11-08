@@ -31,10 +31,19 @@ class ParkingBusiness {
         if let parking: Parking = self.dataStore.find(address: address) {
             let trustLevel = parking.trustLevel - parkingDamage.type.trustLoose
             self.dataStore.update(ParkingMutation(uuid: parking.uuid, attributes: [.trustLevel(trustLevel)]))
-            if parking.insurance.damageCoverLimit > parkingDamage.fixPrice {
-                // TODO:
+            
+            if parking.insurance != .none {
+                if parking.insurance.damageCoverLimit >= parkingDamage.fixPrice {
+                    parkingDamage.status = .coveredByInsurance
+                } else {
+                    parkingDamage.status = .partiallyCoveredByInsurance(parking.insurance.damageCoverLimit)
+                }
             }
         }
+    }
+    
+    func getDamages(address: MapPoint) -> [ParkingDamage] {
+        return self.damages[address] ?? []
     }
     
     func randomDamage(time: GameTime) {

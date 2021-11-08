@@ -111,12 +111,42 @@ enum ParkingDamageType: CaseIterable {
     }
 }
 
+enum ParkingDamageStatus: Equatable {
+    case coveredByInsurance
+    case awaitingPayment
+    case partiallyCoveredByInsurance(Double)
+    case paid
+    
+    var name: String {
+        switch self {
+        case .coveredByInsurance:
+            return "Damage fully covered by insurance"
+        case .awaitingPayment:
+            return "Awaiting payment"
+        case .partiallyCoveredByInsurance(let value):
+            return "Insurance policy covered \(value.money)"
+        case .paid:
+            return "Fylly paid"
+        }
+    }
+    
+    var isClosed: Bool {
+        switch self {
+        case .paid, .coveredByInsurance:
+            return true
+        default:
+            return false
+        }
+    }
+}
+
 class ParkingDamage {
     let type: ParkingDamageType
     let fixPrice: Double
     let accidentMonth: Int
     let criminalUUID: String?
     let car: String
+    var status: ParkingDamageStatus
     
     init(type: ParkingDamageType, accidentMonth: Int, criminalUUID: String? = nil) {
         self.type = type
@@ -124,5 +154,6 @@ class ParkingDamage {
         self.accidentMonth = accidentMonth
         self.criminalUUID = criminalUUID
         self.car = CarGenerator.shared.ramdomCar()
+        self.status = .awaitingPayment
     }
 }
