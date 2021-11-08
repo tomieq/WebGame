@@ -141,6 +141,7 @@ enum ParkingDamageStatus: Equatable {
 }
 
 class ParkingDamage {
+    let uuid: String
     let type: ParkingDamageType
     let fixPrice: Double
     let accidentMonth: Int
@@ -149,6 +150,7 @@ class ParkingDamage {
     var status: ParkingDamageStatus
     
     init(type: ParkingDamageType, accidentMonth: Int, criminalUUID: String? = nil) {
+        self.uuid = UUID().uuidString
         self.type = type
         self.fixPrice = type.fixPrice.rounded(toPlaces: 0)
         self.accidentMonth = accidentMonth

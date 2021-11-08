@@ -306,6 +306,25 @@ class ParkingRestAPI: RestAPI {
             var data: [String: String] = [:]
             data["trustLevel"] = (parking.trustLevel * 100).int.string
             template.assign(variables: data)
+            let damages = self.gameEngine.parkingBusiness.getDamages(address: address)
+            if damages.isEmpty {
+                template.assign(variables: [:], inNest: "noDamages")
+            } else {
+                for damage in damages {
+                    var data: [String: String] = [:]
+                    data["date"] = GameTime(damage.accidentMonth).text
+                    data["car"] = damage.car
+                    data["type"] = damage.type.name
+                    data["money"] = damage.fixPrice.money
+                    data["status"] = damage.status.name
+                    if damage.status.isClosed {
+                        data["css"] = "background-green"
+                    } else {
+                        data["css"] = "background-red"
+                    }
+                    template.assign(variables: data, inNest: "damage")
+                }
+            }
             return template.asResponse()
         }
         
