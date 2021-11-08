@@ -21,6 +21,7 @@ class ParkingBusiness {
     let mapManager: GameMapManager
     let dataStore: DataStoreProvider
     var delegate: ParkingBusinessDelegate?
+    var damageArchivePeriod = 12
     private var damages: [MapPoint: [ParkingDamage]] = [:]
     
     init(mapManager: GameMapManager, dataStore: DataStoreProvider) {
@@ -172,6 +173,34 @@ class ParkingBusiness {
             }
         }
         return parkings
+    }
+    
+    func monthlyActions(time: GameTime) {
+        self.removeOldClosedDamages(time: time)
+        self.applyAdvertisementChanges(time: time)
+    }
+    
+    private func removeOldClosedDamages(time: GameTime) {
+        for address in self.damages.keys {
+            self.damages[address]?.removeAll{ $0.status.isClosed && $0.accidentMonth < time.month - self.damageArchivePeriod  }
+        }
+    }
+    
+    private func applyAdvertisementChanges(time: GameTime) {
+        let parkings: [Parking] = self.dataStore.getAll().shuffled()
+        let skippedPlayers = SystemPlayer.allCases.map{ $0.uuid }
+        for parking in parkings {
+            if skippedPlayers.contains(parking.ownerUUID) {
+                continue
+            }
+            if parking.advertising.monthlyTrustGain == 0 {
+                continue
+            }
+            if parking.trustLevel < 1.0 {
+                let updatedTrust = parking.trustLevel + parking.advertising.monthlyTrustGain
+                self.dataStore.update(ParkingMutation(uuid: parking.uuid, attributes: [.trustLevel(updatedTrust)]))
+            }
+        }
     }
 }
 
