@@ -94,8 +94,7 @@ class ParkingBusiness {
                     level = .info
                 } else {
                     parkingDamage.status = .partiallyCoveredByInsurance(parking.insurance.damageCoverLimit)
-                    let fraction = parking.insurance.damageCoverLimit/parkingDamage.fixPrice
-                    text.append("<br>The good news is that you have insurance and it partially(\(fraction.int)%) covered the damage value")
+                    text.append("<br>Visit the place and cover the damage value")
                 }
             }
             self.delegate?.notify(playerUUID: parking.ownerUUID, UINotification(text: text, level: level, duration: 30, icon: .carDamage))

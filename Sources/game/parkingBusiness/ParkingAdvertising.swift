@@ -51,9 +51,9 @@ enum ParkingAdvertising: String, CaseIterable {
         case .localNewspaperAd:
             return 0.15
         case .radioAd:
-            return 0.25
+            return 0.21
         case .tvSpot:
-            return 0.35
+            return 0.34
         }
     }
 }

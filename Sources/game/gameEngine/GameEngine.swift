@@ -62,7 +62,7 @@ class GameEngine {
         
         MapStorageSync(mapManager: self.gameMapManager, dataStore: self.dataStore).syncMapWithDataStore()
         
-        self.parkingBusiness = ParkingBusiness(mapManager: self.gameMapManager, dataStore: self.dataStore)
+        self.parkingBusiness = ParkingBusiness(mapManager: self.gameMapManager, dataStore: self.dataStore, time: self.time)
         self.propertyBalanceCalculator = PropertyBalanceCalculator(mapManager: self.gameMapManager, parkingBusiness: self.parkingBusiness, taxRates: self.taxRates)
         
         self.constructionServices = ConstructionServices(mapManager: self.gameMapManager, centralBank: self.centralbank, time: self.time)
