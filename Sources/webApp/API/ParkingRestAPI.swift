@@ -152,6 +152,7 @@ class ParkingRestAPI: RestAPI {
                 data["name"] = security.name
                 data["value"] = security.rawValue
                 data["money"] = security.monthlyFee.money
+                data["effectiveness"] = security.effectiveneness.string
                 if parking.security == security {
                     data["checked"] = "checked"
                 }
@@ -163,6 +164,7 @@ class ParkingRestAPI: RestAPI {
                 data["name"] = insurance.name
                 data["value"] = insurance.rawValue
                 data["money"] = insurance.monthlyFee.money
+                data["limit"] = insurance.damageCoverLimit.money
                 if parking.insurance == insurance {
                     data["checked"] = "checked"
                 }

@@ -8,18 +8,22 @@
     You also might order some security systems or supervision to prevent from bad things to happen (copetitors' anger).
     <hr>
     <form onsubmit="event.preventDefault();  formSubmit({windowIndex}, '{submitUrl}', this);">
-        <b>Insurance</b>
+        <b>Insurance packet</b>
+        <div class="float-right text-dark">Responsibility limit</div>
         [START insurance]
         <div>
           <input type="radio" name="insurance" id="{value}" value="{value}" {checked}>
+          <div class="float-right text-dark">{limit}</div>
           <label for="{value}">{name} - {money} per month</label>
         </div>
         [END insurance]
         <br><br>
         <b>Security options</b>
+        <div class="float-right text-dark">Effectiveness</div>
         [START security]
         <div>
           <input type="radio" name="security" id="{value}" value="{value}" {checked}>
+          <div class="float-right text-dark">{effectiveness}%</div>
           <label for="{value}">{name} - {money} per month</label>
         </div>
         [END security]

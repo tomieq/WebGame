@@ -45,11 +45,11 @@ class ParkingBusiness {
             if untouchablePlayers.contains(parking.ownerUUID) {
                 continue
             }
-            if parking.security == .securityGuard {
-                continue
-            }
-            if parking.security == .cctv, Int.random(in: 1...3) != 1 {
-                continue
+            if parking.security.effectiveneness > 0 {
+                let random = Int.random(in: 0...100)
+                if random < parking.security.effectiveneness {
+                    continue
+                }
             }
             // some time throttle
             let lastDamageTime = self.damages[parking.address]?.last?.accidentMonth ?? parking.constructionFinishMonth
@@ -158,6 +158,7 @@ enum ParkingInsurance: String, CaseIterable {
     case basic
     case extended
     case full
+    case sleepWell
     
     var monthlyFee: Double {
         switch self {
@@ -169,6 +170,8 @@ enum ParkingInsurance: String, CaseIterable {
             return 620
         case .full:
             return 1380
+        case .sleepWell:
+            return 2500
         }
     }
     
@@ -178,11 +181,13 @@ enum ParkingInsurance: String, CaseIterable {
         case .none:
             return 0
         case .basic:
-            return self.monthlyFee * 2
+            return 1000
         case .extended:
-            return self.monthlyFee * 3
+            return 10000
         case .full:
             return 100000
+        case .sleepWell:
+            return 1000000
         }
     }
     
@@ -196,6 +201,8 @@ enum ParkingInsurance: String, CaseIterable {
             return "Extended insurance"
         case .full:
             return "Full insurance"
+        case .sleepWell:
+            return "Sleep Well insurance"
         }
     }
 }
@@ -223,6 +230,17 @@ enum ParkingSecurity: String, CaseIterable {
             return "CCTV"
         case .securityGuard:
             return "Security guard 24/7"
+        }
+    }
+
+    var effectiveneness: Int {
+        switch self {
+        case .none:
+            return 0
+        case .cctv:
+            return 60
+        case .securityGuard:
+            return 99
         }
     }
 }
