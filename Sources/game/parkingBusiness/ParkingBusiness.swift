@@ -193,13 +193,17 @@ class ParkingBusiness {
             if skippedPlayers.contains(parking.ownerUUID) {
                 continue
             }
-            if parking.advertising.monthlyTrustGain == 0 {
+            var trustLevelChange = 0.0
+            if Int.random(in: 1...3) == 1 {
+                trustLevelChange -= Double.random(in: 0.01...0.03)
+            }
+            
+            if parking.advertising.monthlyTrustGain == 0, trustLevelChange == 0.0 {
                 continue
             }
-            if parking.trustLevel < 1.0 {
-                let updatedTrust = parking.trustLevel + parking.advertising.monthlyTrustGain
-                self.dataStore.update(ParkingMutation(uuid: parking.uuid, attributes: [.trustLevel(updatedTrust)]))
-            }
+            let updatedTrust = parking.trustLevel + trustLevelChange + parking.advertising.monthlyTrustGain
+            self.dataStore.update(ParkingMutation(uuid: parking.uuid, attributes: [.trustLevel(updatedTrust)]))
+            
         }
     }
 }
