@@ -32,7 +32,40 @@ class ParkingBusiness {
             let trustLevel = parking.trustLevel - parkingDamage.type.trustLoose
             self.dataStore.update(ParkingMutation(uuid: parking.uuid, attributes: [.trustLevel(trustLevel)]))
             if parking.insurance.damageCoverLimit > parkingDamage.fixPrice {
-                // TODO: 
+                // TODO:
+            }
+        }
+    }
+    
+    func randomDamage(time: GameTime) {
+        
+        let parkings: [Parking] = self.dataStore.getAll().shuffled()
+        var untouchablePlayers = SystemPlayer.allCases.map{ $0.uuid }
+        for parking in parkings {
+            if untouchablePlayers.contains(parking.ownerUUID) {
+                continue
+            }
+            if parking.security == .securityGuard {
+                continue
+            }
+            if parking.security == .cctv, Int.random(in: 1...3) != 1 {
+                continue
+            }
+            // some time throttle
+            let lastDamageTime = self.damages[parking.address]?.last?.accidentMonth ?? parking.constructionFinishMonth
+            if lastDamageTime + 1 >= time.month {
+                continue
+            }
+            var damageTypes = ParkingDamageType.allCases.filter{ $0.trustLoose < 0.15 }
+            if let lastDamageType = self.damages[parking.address]?.last?.type {
+                damageTypes.removeAll{ $0 == lastDamageType }
+            }
+            if let damageType = damageTypes.shuffled().first {
+                let damage = ParkingDamage(type: damageType, accidentMonth: time.month)
+                self.addDamage(damage, address: parking.address)
+                let text = "Something wrong has just happen on your <b>\(parking.name)</b>! Customer's \(damage.car) got damaged - \(damage.type.name)."
+                self.delegate?.notify(playerUUID: parking.ownerUUID, UINotification(text: text, level: .warning, duration: 30, icon: .carDamage))
+                untouchablePlayers.append(parking.ownerUUID)
             }
         }
     }

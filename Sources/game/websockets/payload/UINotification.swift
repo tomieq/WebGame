@@ -24,6 +24,7 @@ enum UINotificationIcon: String, Codable {
     case moneyWarning
     case redFlag
     case bribe
+    case carDamage
 }
 
 struct UINotification: Codable {

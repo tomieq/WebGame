@@ -225,6 +225,15 @@ extension GameEngine: GameClockDelegate {
         self.reloadMapCoordinator.flush()
         self.syncWalletCoordinator.flush()
         self.websocketHandler.sendToAll(command: .updateGameDate(UIGameDate(text: self.time.text, secondsLeft: self.gameClock.secondsLeft)))
+        
+        let delay = Int.random(in: 3...(self.gameClock.secondsPerMonth - 3))
+        Observable<Int>.interval(.seconds(delay), scheduler: MainScheduler.instance)
+            .take(1)
+            .bind { [weak self] number in
+                guard let `self` = self else { return }
+                self.parkingBusiness.randomDamage(time: self.time)
+            
+        }.disposed(by: self.disposeBag)
     }
 
     func syncTime() {
