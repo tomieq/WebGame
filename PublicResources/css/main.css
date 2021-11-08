@@ -79,12 +79,12 @@ hr.orange {
     background-color: #9BAA4A;
 }
 
-.light {
+.text-light {
     color: #a1f1fe;
 }
 
-.hand {
-    cursor: pointer;
+.text-dark {
+    color: #347285;
 }
 
 .btn {
@@ -126,6 +126,10 @@ hr.orange {
 
 .float-right {
     float: right;
+}
+
+.w100 {
+    width: 100%;
 }
 
 input[type=text] {

@@ -14,11 +14,12 @@
     <form onsubmit="event.preventDefault();  formSubmit({windowIndex}, '{submitUrl}', this);">
         <b>Insurance policy</b>
         <div class="float-right text-dark">Responsibility limit</div>
+        <br><br>
         [START insurance]
-        <div>
+        <div class="w100" style="border-bottom: 1px solid #003649;">
           <input type="radio" name="insurance" id="{value}" value="{value}" {checked}>
-          <div class="float-right text-dark">{limit}</div>
           <label for="{value}">{name} - {money} per month</label>
+          <div class="float-right text-dark">{limit}</div>
         </div>
         [END insurance]
         <div>

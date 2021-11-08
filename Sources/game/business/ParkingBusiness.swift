@@ -210,6 +210,7 @@ enum ParkingInsurance: String, CaseIterable {
 enum ParkingSecurity: String, CaseIterable {
     case none
     case cctv
+    case nightGuard
     case securityGuard
     
     var monthlyFee: Double {
@@ -218,6 +219,8 @@ enum ParkingSecurity: String, CaseIterable {
             return 0
         case .cctv:
             return 520
+        case .nightGuard:
+            return 2180
         case .securityGuard:
             return 4300
         }
@@ -228,6 +231,8 @@ enum ParkingSecurity: String, CaseIterable {
             return "No security"
         case .cctv:
             return "CCTV"
+        case .nightGuard:
+            return "Night security guard"
         case .securityGuard:
             return "Security guard 24/7"
         }
@@ -238,7 +243,9 @@ enum ParkingSecurity: String, CaseIterable {
         case .none:
             return 0
         case .cctv:
-            return 60
+            return 61
+        case .nightGuard:
+            return 83
         case .securityGuard:
             return 99
         }
