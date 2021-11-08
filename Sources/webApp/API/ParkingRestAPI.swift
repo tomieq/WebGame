@@ -304,7 +304,7 @@ class ParkingRestAPI: RestAPI {
             }
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManager/parking/parkingDamages.html"))
             var data: [String: String] = [:]
-            data["trustLevel"] = (parking.trustLevel * 100).rounded(toPlaces: 0).string
+            data["trustLevel"] = (parking.trustLevel * 100).int.string
             template.assign(variables: data)
             return template.asResponse()
         }
@@ -333,6 +333,7 @@ class ParkingRestAPI: RestAPI {
             var data: [String: String] = [:]
             data["windowIndex"] = windowIndex
             data["submitUrl"] = "/updateParkingAdvertisement.js".append(address)
+            data["trustLevel"] = (parking.trustLevel * 100).int.string
             template.assign(variables: data)
             
             for advertising in ParkingAdvertising.allCases {
@@ -340,6 +341,8 @@ class ParkingRestAPI: RestAPI {
                 data["name"] = advertising.name
                 data["value"] = advertising.rawValue
                 data["money"] = advertising.monthlyFee.money
+                let effectiveness = (advertising.monthlyTrustGain * 100).int
+                data["effectiveness"] = effectiveness > 0 ? "~\(effectiveness)" : effectiveness.string
                 if parking.advertising == advertising {
                     data["checked"] = "checked"
                 }

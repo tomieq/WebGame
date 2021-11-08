@@ -1,6 +1,8 @@
 
 
 <div style="font-size: 0.9em; margin: 5px; width: 400px;">
+    Your parking lot is trusted by <b>{trustLevel}%</b> customers.
+    <br><br>
     When there are accidents (or damages on purpose) customers tend to loose trust to businesses.
     People even might forget about services if you will not invest enough in marketing and advertisement.
     To get on the track and remind people about your business and make them trust in your services, invest in advertisement!
@@ -8,10 +10,12 @@
     <br>
     <form onsubmit="event.preventDefault();  formSubmit({windowIndex}, '{submitUrl}', this);">
         <b>Advertisement</b>
+        <div class="float-right text-dark">Effectiveness</div>
         [START advert]
-        <div>
+        <div class="w100" style="border-bottom: 1px solid #003649;">
           <input type="radio" name="advertisement" id="{value}" value="{value}" {checked}>
           <label for="{value}">{name} - {money} per month</label>
+          <div class="float-right text-dark">{effectiveness}%</div>
         </div>
         [END advert]
         <div>
