@@ -67,9 +67,10 @@ class ParkingRestAPI: RestAPI {
             let domID = PropertyManagerTopView.domID(windowIndex)
             view.addTab("Wallet balance", onclick: .loadHtmlInline(windowIndex, htmlPath: "parkingBalance.html".append(address), targetID: domID))
             view.addTab("Security", onclick: .loadHtmlInline(windowIndex, htmlPath: "parkingSecurity.html".append(address), targetID: domID))
+            view.addTab("Insurance", onclick: .loadHtmlInline(windowIndex, htmlPath: "parkingInsurance.html".append(address), targetID: domID))
             view.addTab("Damages", onclick: .loadHtmlInline(windowIndex, htmlPath: "parkingDamages.html".append(address), targetID: domID))
             view.addTab("Advertising", onclick: .loadHtmlInline(windowIndex, htmlPath: "parkingAdvertising.html".append(address), targetID: domID))
-            view.addTab("Sell options", onclick: .loadHtmlInline(windowIndex, htmlPath: RestEndpoint.propertySellStatus.append(address), targetID: domID))
+            view.addTab("Sell", onclick: .loadHtmlInline(windowIndex, htmlPath: RestEndpoint.propertySellStatus.append(address), targetID: domID))
             
             
             if parking.isUnderConstruction {
@@ -195,13 +196,80 @@ class ParkingRestAPI: RestAPI {
             guard let securityString = formData["security"], let security = ParkingSecurity(rawValue: securityString) else {
                 return self.jsError("Security value not set!")
             }
+            let mutation = ParkingMutation(uuid: parking.uuid, attributes: [.security(security)])
+            self.gameEngine.dataStore.update(mutation)
+            let text = "New security options applied for \(parking.name) located \(parking.readableAddress)"
+            self.gameEngine.notify(playerUUID: session.playerUUID, UINotification(text: text, level: .success, duration: 10, icon: .insurance))
+            let js = JSResponse()
+            return js.response
+        }
+        
+        // MARK: parkingInsurance.html
+        server.GET["/parkingInsurance.html"] = { request, _ in
+            request.disableKeepAlive = true
+            guard let playerSessionID = request.queryParam("playerSessionID"),
+                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                    return self.htmlError("Invalid request! Missing session ID.")
+            }
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return self.htmlError("Invalid request! Missing window context.")
+            }
+            guard let address = request.mapPoint else {
+                return self.htmlError("Invalid request! Missing address.")
+            }
+            guard let parking: Parking = self.dataStore.find(address: address) else {
+                return self.htmlError("Property at \(address.description) not found!")
+            }
+            let ownerID = parking.ownerUUID
+            guard session.playerUUID == ownerID else {
+                return self.htmlError("Property at \(address.description) is not yours!")
+            }
+            let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManager/parking/parkingInsurance.html"))
+            var data: [String: String] = [:]
+            data["windowIndex"] = windowIndex
+            data["submitUrl"] = "/updateParkingInsurance.js".append(address)
+            template.assign(variables: data)
+            
+            for insurance in ParkingInsurance.allCases {
+                var data: [String: String] = [:]
+                data["name"] = insurance.name
+                data["value"] = insurance.rawValue
+                data["money"] = insurance.monthlyFee.money
+                data["limit"] = insurance.damageCoverLimit.money
+                if parking.insurance == insurance {
+                    data["checked"] = "checked"
+                }
+                template.assign(variables: data, inNest: "insurance")
+            }
+            return template.asResponse()
+        }
+        
+        // MARK: updateParkingInsurance.js
+        server.POST["updateParkingInsurance.js"] = { request, _ in
+            request.disableKeepAlive = true
+            guard let playerSessionID = request.queryParam("playerSessionID"),
+                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                    return self.jsError("Invalid request! Missing session ID.")
+            }
+            guard let address = request.mapPoint else {
+                return self.jsError("Invalid request! Missing address.")
+            }
+            guard let parking: Parking = self.dataStore.find(address: address) else {
+                return self.jsError("Property at \(address.description) not found!")
+            }
+            let ownerID = parking.ownerUUID
+            guard session.playerUUID == ownerID else {
+                return self.jsError("Property at \(address.description) is not yours!")
+            }
+            
+            let formData = request.flatFormData()
             guard let insuranceString = formData["insurance"], let insurance = ParkingInsurance(rawValue: insuranceString) else {
                 return self.jsError("Insurance value not set!")
             }
-            let mutation = ParkingMutation(uuid: parking.uuid, attributes: [.insurance(insurance), .security(security)])
+            let mutation = ParkingMutation(uuid: parking.uuid, attributes: [.insurance(insurance)])
             self.gameEngine.dataStore.update(mutation)
             let js = JSResponse()
-            js.add(.showSuccess(txt: "New security options applied!", duration: 10))
+            js.add(.showSuccess(txt: "New insurance options applied for \(parking.name) located \(parking.readableAddress)", duration: 10))
             return js.response
         }
         
