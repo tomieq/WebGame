@@ -176,7 +176,8 @@ class ParkingBusinessTests: XCTestCase {
         let dataStore = DataStoreMemoryProvider()
         let map = GameMap(width: 40, height: 40, scale: 1)
         let mapManager = GameMapManager(map)
-        let parkingBusiness = ParkingBusiness(mapManager: mapManager, dataStore: dataStore)
+        let time = GameTime()
+        let parkingBusiness = ParkingBusiness(mapManager: mapManager, dataStore: dataStore, time: time)
         return parkingBusiness
     }
     

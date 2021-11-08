@@ -129,7 +129,7 @@ final class PropertyValuerTests: XCTestCase {
         let taxRates = TaxRates()
         let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates, time: time)
         let constructionServices = ConstructionServices(mapManager: mapManager, centralBank: centralBank, time: time)
-        let parkingBusiness = ParkingBusiness(mapManager: mapManager, dataStore: dataStore)
+        let parkingBusiness = ParkingBusiness(mapManager: mapManager, dataStore: dataStore, time: time)
         let balanceCalculator = PropertyBalanceCalculator(mapManager: mapManager, parkingBusiness: parkingBusiness, taxRates: taxRates)
         let valuer = PropertyValuer(balanceCalculator: balanceCalculator, constructionServices: constructionServices)
         return valuer

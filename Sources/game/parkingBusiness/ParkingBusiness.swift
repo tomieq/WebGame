@@ -21,12 +21,14 @@ class ParkingBusiness {
     let mapManager: GameMapManager
     let dataStore: DataStoreProvider
     var delegate: ParkingBusinessDelegate?
+    let time: GameTime
     var damageArchivePeriod = 12
     private var damages: [MapPoint: [ParkingDamage]] = [:]
     
-    init(mapManager: GameMapManager, dataStore: DataStoreProvider) {
+    init(mapManager: GameMapManager, dataStore: DataStoreProvider, time: GameTime) {
         self.mapManager = mapManager
         self.dataStore = dataStore
+        self.time = time
     }
     
     func payForDamage(address: MapPoint, damageUUID: String, centralBank: CentralBank) throws {
@@ -81,7 +83,7 @@ class ParkingBusiness {
         return self.damages[address] ?? []
     }
     
-    func randomDamage(time: GameTime) {
+    func randomDamage() {
         
         let parkings: [Parking] = self.dataStore.getAll().shuffled()
         var untouchablePlayers = SystemPlayer.allCases.map{ $0.uuid }
@@ -97,7 +99,7 @@ class ParkingBusiness {
             }
             // some time throttle
             let lastDamageTime = self.damages[parking.address]?.last?.accidentMonth ?? parking.constructionFinishMonth
-            if lastDamageTime + 1 >= time.month {
+            if lastDamageTime + 1 >= self.time.month {
                 continue
             }
             var damageTypes = ParkingDamageType.allCases.filter{ $0.trustLoose < 0.15 }
@@ -105,7 +107,7 @@ class ParkingBusiness {
                 damageTypes.removeAll{ $0 == lastDamageType }
             }
             if let damageType = damageTypes.shuffled().first {
-                let damage = ParkingDamage(type: damageType, accidentMonth: time.month)
+                let damage = ParkingDamage(type: damageType, accidentMonth: self.time.month)
                 self.addDamage(damage, address: parking.address)
                 let text = "Something wrong has just happen on your <b>\(parking.name)</b> located \(parking.readableAddress). Customer's \(damage.car) got damaged - \(damage.type.name)."
                 self.delegate?.notify(playerUUID: parking.ownerUUID, UINotification(text: text, level: .warning, duration: 30, icon: .carDamage))
@@ -175,18 +177,18 @@ class ParkingBusiness {
         return parkings
     }
     
-    func monthlyActions(time: GameTime) {
-        self.removeOldClosedDamages(time: time)
-        self.applyAdvertisementChanges(time: time)
+    func monthlyActions() {
+        self.removeOldClosedDamages()
+        self.applyAdvertisementChanges()
     }
     
-    private func removeOldClosedDamages(time: GameTime) {
+    private func removeOldClosedDamages() {
         for address in self.damages.keys {
-            self.damages[address]?.removeAll{ $0.status.isClosed && $0.accidentMonth < time.month - self.damageArchivePeriod  }
+            self.damages[address]?.removeAll{ $0.status.isClosed && $0.accidentMonth < self.time.month - self.damageArchivePeriod  }
         }
     }
     
-    private func applyAdvertisementChanges(time: GameTime) {
+    private func applyAdvertisementChanges() {
         let parkings: [Parking] = self.dataStore.getAll().shuffled()
         let skippedPlayers = SystemPlayer.allCases.map{ $0.uuid }
         for parking in parkings {
