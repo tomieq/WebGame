@@ -11,6 +11,12 @@ protocol ParkingBusinessDelegate {
     func notify(playerUUID: String, _ notification: UINotification)
 }
 
+enum PayParkingDamageError: Error {
+    case damageNotFound
+    case alreadyPaid
+    case financialProblem(FinancialTransactionError)
+}
+
 class ParkingBusiness {
     let mapManager: GameMapManager
     let dataStore: DataStoreProvider
@@ -20,6 +26,34 @@ class ParkingBusiness {
     init(mapManager: GameMapManager, dataStore: DataStoreProvider) {
         self.mapManager = mapManager
         self.dataStore = dataStore
+    }
+    
+    func payForDamage(address: MapPoint, damageUUID: String, centralBank: CentralBank) throws {
+        guard let damage = (self.damages[address]?.first{ $0.uuid == damageUUID }) else {
+            throw PayParkingDamageError.damageNotFound
+        }
+        guard !damage.status.isClosed else {
+            throw PayParkingDamageError.alreadyPaid
+        }
+        guard let parking: Parking = self.dataStore.find(address: address) else {
+            throw PayParkingDamageError.damageNotFound
+        }
+            
+        var value = damage.fixPrice
+        switch damage.status {
+        case .partiallyCoveredByInsurance(let paidAmount):
+            value -= paidAmount
+        default:
+            break
+        }
+        let invoice = Invoice(title: "Parking damage compensation, \(damage.car) - \(damage.type.name)", grossValue: value, taxRate: 0)
+        let transaction = FinancialTransaction(payerUUID: parking.ownerUUID, recipientUUID: SystemPlayer.government.uuid, invoice: invoice, type: .incomeTaxFree)
+        do {
+            try centralBank.process(transaction)
+            damage.status = .paid
+        } catch let error as FinancialTransactionError {
+            throw PayParkingDamageError.financialProblem(error)
+        }
     }
     
     func addDamage(_ parkingDamage: ParkingDamage, address: MapPoint) {
