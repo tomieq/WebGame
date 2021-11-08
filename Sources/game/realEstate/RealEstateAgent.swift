@@ -368,7 +368,7 @@ class RealEstateAgent {
         self.delegate?.syncWalletChange(playerUUID: sellerID)
         self.delegate?.reloadMap()
         let playerName = self.dataStore.find(uuid: buyerUUID)?.login ?? ""
-        self.delegate?.notifyEveryone(UINotification(text: "New transaction on the market. Player <b>\(playerName)</b> has just bought property '\(land.name)' located \(land.readableAddress)", level: .info, duration: 10, icon: .property))
+        self.delegate?.notifyEveryone(UINotification(text: "New transaction on the market. Player <b>\(playerName)</b> has just bought property '\(land.name)' located <i>\(land.readableAddress)</i>", level: .info, duration: 10, icon: .property))
     }
     
     private func buyParkingProperty(address: MapPoint, buyerUUID: String, netPrice: Double? = nil) throws {
@@ -413,7 +413,7 @@ class RealEstateAgent {
         self.delegate?.syncWalletChange(playerUUID: buyerUUID)
         self.delegate?.syncWalletChange(playerUUID: offer.property.ownerUUID)
         let playerName = self.dataStore.find(uuid: buyerUUID)?.login ?? ""
-        self.delegate?.notifyEveryone(UINotification(text: "New transaction on the market. Player <b>\(playerName)</b> has just bought property '\(parking.name)' located \(parking.readableAddress)", level: .info, duration: 10, icon: .property))
+        self.delegate?.notifyEveryone(UINotification(text: "New transaction on the market. Player <b>\(playerName)</b> has just bought property '\(parking.name)' located <i>\(parking.readableAddress)</i>", level: .info, duration: 10, icon: .property))
     }
     
     private func processBuyTransaction(_ offer: SaleOffer, buyerUUID: String) throws {
@@ -487,7 +487,7 @@ class RealEstateAgent {
         self.delegate?.syncWalletChange(playerUUID: buyerUUID)
         self.delegate?.syncWalletChange(playerUUID: offer.property.ownerUUID)
         let playerName = self.dataStore.find(uuid: buyerUUID)?.login ?? ""
-        self.delegate?.notifyEveryone(UINotification(text: "New transaction on the market. Player <b>\(playerName)</b> has just bought property '\(building.name)' located \(building.readableAddress)", level: .info, duration: 10, icon: .property))
+        self.delegate?.notifyEveryone(UINotification(text: "New transaction on the market. Player <b>\(playerName)</b> has just bought property '\(building.name)' located <i>\(building.readableAddress)</i>", level: .info, duration: 10, icon: .property))
     }
  }
 

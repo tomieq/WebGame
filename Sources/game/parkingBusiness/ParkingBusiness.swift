@@ -82,13 +82,23 @@ class ParkingBusiness {
             let trustLevel = parking.trustLevel - parkingDamage.type.trustLoose
             self.dataStore.update(ParkingMutation(uuid: parking.uuid, attributes: [.trustLevel(trustLevel)]))
             
-            if parking.insurance != .none {
+            var level = UINotificationLevel.warning
+            var text = "Ups! There was an incident on your <b>\(parking.name)</b> located <i>\(parking.readableAddress)</i>. Customer's \(parkingDamage.car) got damaged - \(parkingDamage.type.name)."
+            if parking.insurance == .none {
+                text.append("<br>Visit the place and cover the damage value")
+                level = .error
+            } else {
                 if parking.insurance.damageCoverLimit >= parkingDamage.fixPrice {
                     parkingDamage.status = .coveredByInsurance
+                    text.append("<br>The good news is that you have insurance and it fully covered the damage value")
+                    level = .info
                 } else {
                     parkingDamage.status = .partiallyCoveredByInsurance(parking.insurance.damageCoverLimit)
+                    let fraction = parking.insurance.damageCoverLimit/parkingDamage.fixPrice
+                    text.append("<br>The good news is that you have insurance and it partially(\(fraction.int)%) covered the damage value")
                 }
             }
+            self.delegate?.notify(playerUUID: parking.ownerUUID, UINotification(text: text, level: level, duration: 30, icon: .carDamage))
         }
     }
     
@@ -122,8 +132,6 @@ class ParkingBusiness {
             if let damageType = damageTypes.shuffled().first {
                 let damage = ParkingDamage(type: damageType, accidentMonth: self.time.month)
                 self.addDamage(damage, address: parking.address)
-                let text = "Something wrong has just happen on your <b>\(parking.name)</b> located \(parking.readableAddress). Customer's \(damage.car) got damaged - \(damage.type.name)."
-                self.delegate?.notify(playerUUID: parking.ownerUUID, UINotification(text: text, level: .warning, duration: 30, icon: .carDamage))
                 untouchablePlayers.append(parking.ownerUUID)
             }
         }

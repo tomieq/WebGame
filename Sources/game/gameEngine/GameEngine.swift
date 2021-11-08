@@ -221,6 +221,7 @@ extension GameEngine: GameClockDelegate {
         
         self.police.checkFootballMatches()
         self.court.processTrials()
+        self.parkingBusiness.monthlyActions()
         
         self.reloadMapCoordinator.flush()
         self.syncWalletCoordinator.flush()
@@ -231,7 +232,7 @@ extension GameEngine: GameClockDelegate {
             .take(1)
             .bind { [weak self] number in
                 guard let `self` = self else { return }
-                self.parkingBusiness.randomDamage(time: self.time)
+                self.parkingBusiness.randomDamage()
             
         }.disposed(by: self.disposeBag)
     }
