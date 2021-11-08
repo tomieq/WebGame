@@ -56,13 +56,14 @@ class GameEngine {
         let bookie = Player(uuid: SystemPlayer.bookie.uuid, login: SystemPlayer.bookie.login, wallet: 1000000000)
         self.dataStore.create(bookie)
         
-        self.gameMap = GameMap(width: 35, height: 35, scale: 0.30)
+        self.gameMap = GameMap(width: 25, height: 25, scale: 0.40)
         self.gameMapManager = GameMapManager(self.gameMap)
         self.gameMapManager.loadMapFrom(path: "maps/roadMap1")
         
         MapStorageSync(mapManager: self.gameMapManager, dataStore: self.dataStore).syncMapWithDataStore()
         
-        self.parkingBusiness = ParkingBusiness(mapManager: self.gameMapManager, dataStore: self.dataStore, time: self.time)
+        self.court = Court(centralbank: self.centralbank)
+        self.parkingBusiness = ParkingBusiness(mapManager: self.gameMapManager, court: self.court)
         self.propertyBalanceCalculator = PropertyBalanceCalculator(mapManager: self.gameMapManager, parkingBusiness: self.parkingBusiness, taxRates: self.taxRates)
         
         self.constructionServices = ConstructionServices(mapManager: self.gameMapManager, centralBank: self.centralbank, time: self.time)

@@ -147,6 +147,7 @@ class ParkingDamage {
     let accidentMonth: Int
     let criminalUUID: String?
     let car: String
+    let carOwner: String
     var status: ParkingDamageStatus
     
     var leftToPay: Double {
@@ -167,6 +168,7 @@ class ParkingDamage {
         self.accidentMonth = accidentMonth
         self.criminalUUID = criminalUUID
         self.car = CarGenerator.shared.ramdomCar()
+        self.carOwner = RandomPersonGenerator.getName()
         self.status = .awaitingPayment
     }
 }

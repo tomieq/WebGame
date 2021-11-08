@@ -310,12 +310,13 @@ class ParkingRestAPI: RestAPI {
             if damages.isEmpty {
                 template.assign(variables: [:], inNest: "noDamages")
             } else {
+                template.assign(variables: [:], inNest: "damages")
                 for damage in damages {
                     let html = self.damageItemHTML(damage, windowIndex: windowIndex, address: address)
                     template.assign(variables: ["html": html, "domID": "damage-\(damage.uuid)"], inNest: "damage")
                 }
             }
-            template.assign(variables: [:], inNest: "damages")
+            
             return template.asResponse()
         }
         
@@ -469,6 +470,7 @@ class ParkingRestAPI: RestAPI {
         data["date"] = GameTime(damage.accidentMonth).text
         data["car"] = damage.car
         data["type"] = damage.type.name
+        data["owner"] = damage.carOwner
         data["money"] = damage.fixPrice.money
         data["status"] = damage.status.name
         if damage.status.isClosed {

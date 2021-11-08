@@ -32,15 +32,18 @@ enum PayParkingDamageError: Error {
 class ParkingBusiness {
     let mapManager: GameMapManager
     let dataStore: DataStoreProvider
+    let court: Court
     var delegate: ParkingBusinessDelegate?
     let time: GameTime
     var damageArchivePeriod = 12
+    var lawsuitThreshold = 500.0
     private var damages: [MapPoint: [ParkingDamage]] = [:]
     
-    init(mapManager: GameMapManager, dataStore: DataStoreProvider, time: GameTime) {
+    init(mapManager: GameMapManager, court: Court) {
         self.mapManager = mapManager
-        self.dataStore = dataStore
-        self.time = time
+        self.dataStore = court.centralbank.dataStore
+        self.time = court.time
+        self.court = court
     }
     
     func payForDamage(address: MapPoint, damageUUID: String, centralBank: CentralBank) throws {
@@ -198,7 +201,21 @@ class ParkingBusiness {
     
     private func removeOldClosedDamages() {
         for address in self.damages.keys {
-            self.damages[address]?.removeAll{ $0.status.isClosed && $0.accidentMonth < self.time.month - self.damageArchivePeriod  }
+            self.damages[address]?.removeAll{ ($0.status.isClosed || $0.leftToPay < self.lawsuitThreshold) && $0.accidentMonth < self.time.month - self.damageArchivePeriod  }
+            
+            self.damages[address]?
+                .filter { !$0.status.isClosed }
+                .filter { $0.accidentMonth < self.time.month - self.damageArchivePeriod }
+                .forEach { damage in
+                    if let parking: Parking = self.dataStore.find(address: address) {
+                        if (self.court.getCase(uuid: damage.uuid) == nil) {
+                            let lawsuite = ParkingDamageLawsuite(accusedUUID: parking.ownerUUID, damage: damage)
+                            self.court.registerNewCase(lawsuite)
+                            let text = "There is a new <b>lawsuit against you</b>. \(damage.carOwner), owner of \(damage.car), parked \(GameTime(damage.accidentMonth).text) on your '\(parking.name)' had his car damaged - \(damage.type.name). You still did not cover the damage value so the owner sued you. The trial will start soon"
+                            self.delegate?.notify(playerUUID: parking.ownerUUID, UINotification(text: text, level: .warning, duration: 60, icon: .court))
+                        }
+                    }
+            }
         }
     }
     

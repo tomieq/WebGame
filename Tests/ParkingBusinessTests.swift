@@ -177,7 +177,9 @@ class ParkingBusinessTests: XCTestCase {
         let map = GameMap(width: 40, height: 40, scale: 1)
         let mapManager = GameMapManager(map)
         let time = GameTime()
-        let parkingBusiness = ParkingBusiness(mapManager: mapManager, dataStore: dataStore, time: time)
+        let centralBank = CentralBank(dataStore: dataStore, taxRates: TaxRates(), time: time)
+        let court = Court(centralbank: centralBank)
+        let parkingBusiness = ParkingBusiness(mapManager: mapManager, court: court)
         return parkingBusiness
     }
     

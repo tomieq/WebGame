@@ -54,7 +54,9 @@ class PropertyBalanceCalculatorTests: XCTestCase {
         let dataStore = DataStoreMemoryProvider()
         let taxRates = TaxRates()
         let time = GameTime()
-        let parkingBusiness = ParkingBusiness(mapManager: mapManager, dataStore: dataStore, time: time)
+        let centralBank = CentralBank(dataStore: dataStore, taxRates: taxRates, time: time)
+        let court = Court(centralbank: centralBank)
+        let parkingBusiness = ParkingBusiness(mapManager: mapManager, court: court)
         let calculator = PropertyBalanceCalculator(mapManager: mapManager, parkingBusiness: parkingBusiness, taxRates: taxRates)
         return calculator
     }
