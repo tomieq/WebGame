@@ -311,21 +311,41 @@ class ParkingRestAPI: RestAPI {
                 template.assign(variables: [:], inNest: "noDamages")
             } else {
                 for damage in damages {
-                    var data: [String: String] = [:]
-                    data["date"] = GameTime(damage.accidentMonth).text
-                    data["car"] = damage.car
-                    data["type"] = damage.type.name
-                    data["money"] = damage.fixPrice.money
-                    data["status"] = damage.status.name
-                    if damage.status.isClosed {
-                        data["css"] = "background-green"
-                    } else {
-                        data["css"] = "background-red"
-                    }
-                    template.assign(variables: data, inNest: "damage")
+                    let html = self.damageItemHTML(damage, windowIndex: windowIndex, address: address)
+                    template.assign(variables: ["html": html, "domID": "damage-\(damage.uuid)"], inNest: "damage")
                 }
             }
             return template.asResponse()
+        }
+        
+        // MARK: singleParkingDamage.html
+        server.GET["/singleParkingDamage.html"] = { request, _ in
+            request.disableKeepAlive = true
+            guard let playerSessionID = request.queryParam("playerSessionID"),
+                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                    return self.htmlError("Invalid request! Missing session ID.")
+            }
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return self.htmlError("Invalid request! Missing window context.")
+            }
+            guard let address = request.mapPoint else {
+                return self.htmlError("Invalid request! Missing address.")
+            }
+            guard let parking: Parking = self.dataStore.find(address: address) else {
+                return self.htmlError("Property at \(address.description) not found!")
+            }
+            let ownerID = parking.ownerUUID
+            guard session.playerUUID == ownerID else {
+                return self.htmlError("Property at \(address.description) is not yours!")
+            }
+            guard let damageUUID = request.queryParam("damageUUID") else {
+                return self.htmlError("Missing damage ID!")
+            }
+            
+            guard let damage = (self.gameEngine.parkingBusiness.getDamages(address: address).first{$0.uuid == damageUUID}) else {
+                return self.htmlError("Damage not found")
+            }
+            return self.damageItemHTML(damage, windowIndex: windowIndex, address: address).asResponse
         }
         
         // MARK: parkingAdvertising.html
@@ -398,6 +418,71 @@ class ParkingRestAPI: RestAPI {
             js.add(.showSuccess(txt: "New advertisement options applied!", duration: 10))
             return js.response
         }
+        
+        // MARK: payForDamage.js
+        server.GET["payForDamage.js"] = { request, _ in
+            request.disableKeepAlive = true
+            guard let playerSessionID = request.queryParam("playerSessionID"),
+                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                    return self.jsError("Invalid request! Missing session ID.")
+            }
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return self.htmlError("Invalid request! Missing window context.")
+            }
+            guard let address = request.mapPoint else {
+                return self.jsError("Invalid request! Missing address.")
+            }
+            guard let parking: Parking = self.dataStore.find(address: address) else {
+                return self.jsError("Property at \(address.description) not found!")
+            }
+            let ownerID = parking.ownerUUID
+            guard session.playerUUID == ownerID else {
+                return self.jsError("Property at \(address.description) is not yours!")
+            }
+            guard let damageUUID = request.queryParam("damageUUID") else {
+                return self.jsError("Missing damage ID!")
+            }
+            do {
+                try self.gameEngine.parkingBusiness.payForDamage(address: address, damageUUID: damageUUID, centralBank: self.gameEngine.centralbank)
+            } catch let error as PayParkingDamageError {
+                return self.jsError(error.description)
+            } catch {
+                return self.jsError(error.localizedDescription)
+            }
+            let js = JSResponse()
+            js.add(.loadHtmlInline(windowIndex, htmlPath: "singleParkingDamage.html?damageUUID=\(damageUUID)".append(address), targetID: "damage-\(damageUUID)"))
+            return js.response
+        }
+    }
+    
+    private func damageItemHTML(_ damage: ParkingDamage, windowIndex: String, address: MapPoint) -> String {
+        let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManager/parking/parkingDamageItem.html"))
+        
+        var data: [String: String] = [:]
+        data["date"] = GameTime(damage.accidentMonth).text
+        data["car"] = damage.car
+        data["type"] = damage.type.name
+        data["money"] = damage.fixPrice.money
+        data["status"] = damage.status.name
+        if damage.status.isClosed {
+            data["css"] = "background-green"
+        } else {
+            data["css"] = "background-red"
+            var payData: [String: String] = [:]
+            var moneyToPay = damage.fixPrice
+            switch damage.status {
+            case .partiallyCoveredByInsurance(let value):
+                moneyToPay -= value
+            default:
+                break
+            }
+            payData["money"] = moneyToPay.money
+            payData["payJS"] = JSCode.runScripts(windowIndex, paths: ["/payForDamage.js?damageUUID=\(damage.uuid)".append(address)]).js
+            template.assign(variables: payData, inNest: "payButton")
+        }
+        template.assign(variables: data)
+        
+        return template.output()
     }
 
 }

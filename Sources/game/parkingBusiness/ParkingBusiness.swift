@@ -9,12 +9,24 @@ import Foundation
 
 protocol ParkingBusinessDelegate {
     func notify(playerUUID: String, _ notification: UINotification)
+    func syncWalletChange(playerUUID: String)
 }
 
 enum PayParkingDamageError: Error {
     case damageNotFound
     case alreadyPaid
     case financialProblem(FinancialTransactionError)
+    
+    var description: String {
+        switch self {
+        case .damageNotFound:
+            return "Damage not found"
+        case .alreadyPaid:
+            return "Damage already paid"
+        case .financialProblem(let error):
+            return error.description
+        }
+    }
 }
 
 class ParkingBusiness {
@@ -54,6 +66,7 @@ class ParkingBusiness {
         do {
             try centralBank.process(transaction)
             damage.status = .paid
+            self.delegate?.syncWalletChange(playerUUID: parking.ownerUUID)
         } catch let error as FinancialTransactionError {
             throw PayParkingDamageError.financialProblem(error)
         }

@@ -126,7 +126,7 @@ enum ParkingDamageStatus: Equatable {
         case .partiallyCoveredByInsurance(let value):
             return "Insurance policy covered \(value.money)"
         case .paid:
-            return "Fylly paid"
+            return "Fully paid"
         }
     }
     

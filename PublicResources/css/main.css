@@ -124,12 +124,32 @@ hr.orange {
     color: #AD6F5C;
 }
 
+.background-red {
+    background-color: #3F0100;
+}
+
+.background-green {
+    background-color: #112D03;
+}
+
 .float-right {
     float: right;
 }
 
 .w100 {
     width: 100%;
+}
+
+.m5 {
+    margin: 5px;
+}
+
+.mb5 {
+    margin-bottom: 5px;
+}
+
+.p5 {
+    padding: 5px;
 }
 
 input[type=text] {

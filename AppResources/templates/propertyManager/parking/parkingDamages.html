@@ -8,18 +8,9 @@
     All clear.
     [END noDamages]
     [START damage]
-    <div class="detailsTable mb5 p5 {css}" style="width: 360px;">
-    <div class="float-right">Date: {date}</div>
-    <table>
-        <tr><td>Car:</td><td>{car}</td></tr>
-        <tr><td>Damage type:</td><td>{type}</td></tr>
-        <tr><td>Damage value:</td><td><b>{money}</b></td></tr>
-        <tr><td>Status:</td><td><b>{status}</b></td></tr>
-    </table>
-        <button class="btn btn-sm float-right">Pay {money}</button>
-        <div style="clear: both;"></div>
+    <div id="{domID}">
+    {html}
     </div>
-    <div style="clear: both;"></div>
     [END damage]
     <br><br>
 </div>
