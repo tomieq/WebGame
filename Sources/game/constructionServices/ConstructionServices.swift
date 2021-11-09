@@ -88,6 +88,7 @@ class ConstructionServices {
         let investmentsNetValue = offer.invoice.netValue
         let road = Road(land: land, constructionFinishMonth: constructionFinishMonth, investmentsNetValue: investmentsNetValue)
         self.dataStore.create(road)
+        self.dataStore.update(PropertyRegisterMutation(uuid: road.uuid, attributes: [.type(.road)]))
         
         let tile = GameMapTile(address: address, type: .streetUnderConstruction)
         self.mapManager.map.replaceTile(tile: tile)
@@ -125,6 +126,7 @@ class ConstructionServices {
         let investmentsNetValue = offer.invoice.netValue
         let parking = Parking(land: land, constructionFinishMonth: constructionFinishMonth, investmentsNetValue: investmentsNetValue)
         self.dataStore.create(parking)
+        self.dataStore.update(PropertyRegisterMutation(uuid: parking.uuid, attributes: [.type(.parking)]))
         
         let tile = GameMapTile(address: address, type: .parkingUnderConstruction)
         self.mapManager.map.replaceTile(tile: tile)
@@ -161,6 +163,7 @@ class ConstructionServices {
         }
         self.dataStore.removeLand(uuid: land.uuid)
         self.dataStore.create(building)
+        self.dataStore.update(PropertyRegisterMutation(uuid: building.uuid, attributes: [.type(.residentialBuilding)]))
         
         let tile = GameMapTile(address: address, type: .buildingUnderConstruction(size: storeyAmount))
         self.mapManager.map.replaceTile(tile: tile)

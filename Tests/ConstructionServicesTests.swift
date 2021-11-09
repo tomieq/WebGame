@@ -90,26 +90,30 @@ final class ConstructionServicesTests: XCTestCase {
     func test_startRoadInvestment_success() {
         let constructionServices = self.makeConstructionServices()
         
+        let dataStore = constructionServices.dataStore
         constructionServices.mapManager.loadMapFrom(content: "s,s")
         
         let address = MapPoint(x: 0, y: 1)
         
         let land = Land(address: address, ownerUUID: "p1")
-        constructionServices.dataStore.create(land)
+        let uuid = dataStore.create(land)
+        dataStore.create(PropertyRegister(uuid: uuid, address: address, playerUUID: "p1", type: .land))
         
         let player = Player(uuid: "p1", login: "tester", wallet: 1200)
-        constructionServices.dataStore.create(player)
+        dataStore.create(player)
         
         constructionServices.constructionDuration.road = 5
         constructionServices.priceList.buildRoadPrice = 500
 
         XCTAssertNoThrow(try constructionServices.startRoadInvestment(address: address, playerUUID: "p1"))
         XCTAssertEqual(constructionServices.mapManager.map.getTile(address: address)?.type, .streetUnderConstruction)
-        let road: Road? = constructionServices.dataStore.find(address: address)
+        let road: Road? = dataStore.find(address: address)
         XCTAssertNotNil(road)
         XCTAssertEqual(road?.isUnderConstruction, true)
-        let deletedLand: Land? = constructionServices.dataStore.find(address: address)
+        let deletedLand: Land? = dataStore.find(address: address)
         XCTAssertNil(deletedLand)
+        let register: PropertyRegister? = dataStore.find(uuid: uuid)
+        XCTAssertEqual(register?.type, .road)
     }
     
     func test_startRoadInvestment_verifyInvestmentValue() {
@@ -253,11 +257,13 @@ final class ConstructionServicesTests: XCTestCase {
     func test_startResidentialBuildingInvestment_success() {
         
         let constructionServices = self.makeConstructionServices()
+        let dataStore = constructionServices.dataStore
         constructionServices.mapManager.loadMapFrom(content: "s,s")
         let address = MapPoint(x: 0, y: 1)
         
         let land = Land(address: address, ownerUUID: "p1")
-        constructionServices.dataStore.create(land)
+        let uuid = dataStore.create(land)
+        dataStore.create(PropertyRegister(uuid: uuid, address: address, playerUUID: "p1", type: .land))
         
         let player = Player(uuid: "p1", login: "tester", wallet: 1200)
         constructionServices.dataStore.create(player)
@@ -269,11 +275,13 @@ final class ConstructionServicesTests: XCTestCase {
 
         XCTAssertNoThrow(try constructionServices.startResidentialBuildingInvestment(address: MapPoint(x: 0, y: 1), playerUUID: "p1", storeyAmount: 4))
         XCTAssertEqual(constructionServices.mapManager.map.getTile(address: address)?.type, .buildingUnderConstruction(size: 4))
-        let building: ResidentialBuilding? = constructionServices.dataStore.find(address: address)
+        let building: ResidentialBuilding? = dataStore.find(address: address)
         XCTAssertNotNil(building)
         XCTAssertEqual(building?.isUnderConstruction, true)
-        let deletedLand: Land? = constructionServices.dataStore.find(address: address)
+        let deletedLand: Land? = dataStore.find(address: address)
         XCTAssertNil(deletedLand)
+        let register: PropertyRegister? = dataStore.find(uuid: uuid)
+        XCTAssertEqual(register?.type, .residentialBuilding)
     }
     
     func test_startResidentialBuildingInvestment_verifyInvestmentValue() {
@@ -392,7 +400,8 @@ final class ConstructionServicesTests: XCTestCase {
         let dataStore = constructionServices.dataStore
         let address = MapPoint(x: 0, y: 1)
         
-        dataStore.create(Land(address: address, ownerUUID: "p1"))
+        let uuid = dataStore.create(Land(address: address, ownerUUID: "p1"))
+        dataStore.create(PropertyRegister(uuid: uuid, address: address, playerUUID: "p1", type: .land))
         
         let player = Player(uuid: "p1", login: "tester", wallet: 1200)
         dataStore.create(player)
@@ -407,6 +416,8 @@ final class ConstructionServicesTests: XCTestCase {
         XCTAssertEqual(parking?.isUnderConstruction, true)
         let deletedLand: Land? = constructionServices.dataStore.find(address: address)
         XCTAssertNil(deletedLand)
+        let register: PropertyRegister? = dataStore.find(uuid: uuid)
+        XCTAssertEqual(register?.type, .parking)
     }
     
     func test_finishParkingInvestment() {
