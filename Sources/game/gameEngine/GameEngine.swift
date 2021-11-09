@@ -80,7 +80,6 @@ class GameEngine {
         self.investorAI = InvestorArtifficialIntelligence(agent: self.realEstateAgent)
         self.footballBookie = FootballBookie(centralBank: self.centralbank)
         
-        self.court = Court(centralbank: self.centralbank)
         self.police = Police(footballBookie: self.footballBookie, court: self.court)
         self.debtCollector = DebtCollector(realEstateAgent: self.realEstateAgent)
         
@@ -173,10 +172,27 @@ class GameEngine {
         }.disposed(by: self.disposeBag)
     }
     
+    private func addPlannedAction(_ action: @escaping () -> ()) {
+        let delay = Int.random(in: 3...(self.gameClock.secondsPerMonth - 3))
+        Observable<Int>.interval(.seconds(delay), scheduler: MainScheduler.instance)
+            .take(1)
+            .bind { [weak self] number in
+                action()
+            
+        }.disposed(by: self.disposeBag)
+    }
+    
     private func setupDevParams() {
         self.constructionServices.constructionDuration.road = 1
+        self.constructionServices.constructionDuration.parking = 1
         self.constructionServices.constructionDuration.residentialBuilding = 1
         self.constructionServices.constructionDuration.residentialBuildingPerStorey = 0
+        
+        self.court.duration.footballMatchBriberyDuration = 1
+        self.debtCollector.params.startExecutionDelay = 0
+        self.debtCollector.params.initialPropertyValueRatio = 0.84
+        
+        self.footballBookie.archiveCapacity = 2
     }
 }
 
@@ -217,25 +233,25 @@ extension GameEngine: GameClockDelegate {
         
         self.debtCollector.executeDebts()
         self.constructionServices.finishInvestments()
-        self.investorAI.purchaseBargains()
         self.footballBookie.nextMonth()
-        
-        self.police.checkFootballMatches()
-        self.court.processTrials()
         self.parkingBusiness.monthlyActions()
         
         self.reloadMapCoordinator.flush()
         self.syncWalletCoordinator.flush()
         self.websocketHandler.sendToAll(command: .updateGameDate(UIGameDate(text: self.time.text, secondsLeft: self.gameClock.secondsLeft)))
         
-        let delay = Int.random(in: 3...(self.gameClock.secondsPerMonth - 3))
-        Observable<Int>.interval(.seconds(delay), scheduler: MainScheduler.instance)
-            .take(1)
-            .bind { [weak self] number in
-                guard let `self` = self else { return }
-                self.parkingBusiness.randomDamage()
-            
-        }.disposed(by: self.disposeBag)
+        self.addPlannedAction { [weak self] in
+            self?.parkingBusiness.randomDamage()
+        }
+        self.addPlannedAction { [weak self] in
+            self?.police.checkFootballMatches()
+        }
+        self.addPlannedAction { [weak self] in
+            self?.court.processTrials()
+        }
+        self.addPlannedAction { [weak self] in
+            self?.investorAI.purchaseBargains()
+        }
     }
 
     func syncTime() {
