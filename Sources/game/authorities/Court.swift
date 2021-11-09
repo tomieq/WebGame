@@ -61,7 +61,7 @@ class Court {
     
     func startParkingDamageLawsuite(_ courtCase: ParkingDamageLawsuite) {
         if courtCase.damage.leftToPay > 0, let guilty: Player = self.centralbank.dataStore.find(uuid: courtCase.accusedUUID) {
-            let fine = courtCase.damage.leftToPay * 1.3
+            let fine = courtCase.damage.leftToPay * 1.8
             let damage = courtCase.damage
             let invoice = Invoice(title: "Parking damage compensation, \(damage.car) \(damage.type.name)", grossValue: fine, taxRate: 0)
             let transaction = FinancialTransaction(payerUUID: guilty.uuid, recipientUUID: SystemPlayer.government.uuid, invoice: invoice, type: .fine)
