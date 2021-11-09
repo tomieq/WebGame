@@ -172,6 +172,50 @@ class ParkingBusinessTests: XCTestCase {
         XCTAssertEqual(owner?.wallet, 80000 - (damage?.fixPrice ?? 0))
     }
     
+    func test_handDamageToCourt() {
+        let business = self.makeParkingBusiness()
+        business.damageLawsuitMinValue = 20
+        business.damageArchivePeriod = 1
+        let court = business.court
+        let time = business.time
+        let dataStore = business.dataStore
+        
+        let address = MapPoint(x: 1, y: 1)
+        dataStore.create(Parking(land: Land(address: address)))
+        business.addDamage(ParkingDamage(type: .stolenWheels, accidentMonth: time.month), address: address)
+        
+        time.nextMonth()
+        business.monthlyActions()
+        XCTAssertEqual(court.cases.count, 0)
+
+        time.nextMonth()
+        business.monthlyActions()
+        XCTAssertEqual(court.cases.count, 1)
+    }
+    
+    func test_removeOldClosedDamages() {
+        let business = self.makeParkingBusiness()
+        business.damageLawsuitMinValue = 20000
+        business.damageArchivePeriod = 1
+        let court = business.court
+        let time = business.time
+        
+        let address = MapPoint(x: 1, y: 1)
+        business.addDamage(ParkingDamage(type: .stolenWheels, accidentMonth: time.month), address: address)
+        business.addDamage(ParkingDamage(type: .stolenWheels, accidentMonth: time.month), address: address)
+        
+        time.nextMonth()
+        business.monthlyActions()
+        XCTAssertEqual(business.getDamages(address: address).count, 2)
+        XCTAssertEqual(court.cases.count, 0)
+
+        time.nextMonth()
+        business.monthlyActions()
+        XCTAssertEqual(business.getDamages(address: address).count, 0)
+        XCTAssertEqual(court.cases.count, 0)
+        
+    }
+    
     private func makeParkingBusiness() -> ParkingBusiness {
         let dataStore = DataStoreMemoryProvider()
         let map = GameMap(width: 40, height: 40, scale: 1)
