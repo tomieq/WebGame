@@ -210,6 +210,9 @@ final class RealEstateAgentTests: XCTestCase {
         let register: PropertyRegister? = agent.dataStore.find(uuid: land?.uuid ?? "")
         XCTAssertNotNil(register)
         XCTAssertEqual(register?.ownerUUID, player.uuid)
+        XCTAssertEqual(land?.uuid, register?.uuid)
+        let registers: [PropertyRegister] = agent.dataStore.get(ownerUUID: "buyer")
+        XCTAssertEqual(registers.count, 1)
     }
     
     func test_buyLandProperty_fromOtherUser_success() {
