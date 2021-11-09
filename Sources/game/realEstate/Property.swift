@@ -21,6 +21,6 @@ protocol Property {
 
 extension Property {
     var readableAddress: String {
-        return "East \(self.address.x), South \(self.address.y)"
+        return self.address.readable
     }
 }

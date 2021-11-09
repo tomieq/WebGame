@@ -36,7 +36,7 @@ class PropertyManagerRestAPI: RestAPI {
                 return .badRequest(.html("Invalid request! Missing address."))
             }
             guard let property = self.gameEngine.realEstateAgent.getProperty(address: address) else {
-                return .badRequest(.html("Property at \(address.description) not found!"))
+                return .badRequest(.html("Property at \(address.readable) not found!"))
             }
             let ownerID = property.ownerUUID
             let owner: Player? = self.dataStore.find(uuid: ownerID)
@@ -111,11 +111,11 @@ class PropertyManagerRestAPI: RestAPI {
                 return self.htmlError("Invalid request! Missing address.")
             }
             guard let property = self.gameEngine.realEstateAgent.getProperty(address: address) else {
-                return self.htmlError("Property at \(address.description) not found!")
+                return self.htmlError("Property at \(address.readable) not found!")
             }
             let ownerID = property.ownerUUID
             guard session.playerUUID == ownerID else {
-                return self.htmlError("Property at \(address.description) is not yours!")
+                return self.htmlError("Property at \(address.readable) is not yours!")
             }
             let balanceView = PropertyBalanceView()
             balanceView.setMonthlyCosts(self.gameEngine.propertyBalanceCalculator.getMontlyCosts(address: address))

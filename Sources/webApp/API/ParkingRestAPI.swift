@@ -57,11 +57,11 @@ class ParkingRestAPI: RestAPI {
                 return self.htmlError("Invalid request! Missing address.")
             }
             guard let parking: Parking = self.dataStore.find(address: address) else {
-                return self.htmlError("Property at \(address.description) not found!")
+                return self.htmlError("Property at \(address.readable) not found!")
             }
             let ownerID = parking.ownerUUID
             guard session.playerUUID == ownerID else {
-                return self.htmlError("Property at \(address.description) is not yours!")
+                return self.htmlError("Property at \(address.readable) is not yours!")
             }
             let view = PropertyManagerTopView(windowIndex: windowIndex)
             let domID = PropertyManagerTopView.domID(windowIndex)
@@ -109,11 +109,11 @@ class ParkingRestAPI: RestAPI {
                 return self.htmlError("Invalid request! Missing address.")
             }
             guard let parking: Parking = self.dataStore.find(address: address) else {
-                return self.htmlError("Property at \(address.description) not found!")
+                return self.htmlError("Property at \(address.readable) not found!")
             }
             let ownerID = parking.ownerUUID
             guard session.playerUUID == ownerID else {
-                return self.htmlError("Property at \(address.description) is not yours!")
+                return self.htmlError("Property at \(address.readable) is not yours!")
             }
             let balanceView = PropertyBalanceView()
             balanceView.setMonthlyCosts(self.gameEngine.propertyBalanceCalculator.getMontlyCosts(address: address))
@@ -136,11 +136,11 @@ class ParkingRestAPI: RestAPI {
                 return self.htmlError("Invalid request! Missing address.")
             }
             guard let parking: Parking = self.dataStore.find(address: address) else {
-                return self.htmlError("Property at \(address.description) not found!")
+                return self.htmlError("Property at \(address.readable) not found!")
             }
             let ownerID = parking.ownerUUID
             guard session.playerUUID == ownerID else {
-                return self.htmlError("Property at \(address.description) is not yours!")
+                return self.htmlError("Property at \(address.readable) is not yours!")
             }
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManager/parking/parkingSecurity.html"))
             var data: [String: String] = [:]
@@ -185,11 +185,11 @@ class ParkingRestAPI: RestAPI {
                 return self.jsError("Invalid request! Missing address.")
             }
             guard let parking: Parking = self.dataStore.find(address: address) else {
-                return self.jsError("Property at \(address.description) not found!")
+                return self.jsError("Property at \(address.readable) not found!")
             }
             let ownerID = parking.ownerUUID
             guard session.playerUUID == ownerID else {
-                return self.jsError("Property at \(address.description) is not yours!")
+                return self.jsError("Property at \(address.readable) is not yours!")
             }
             
             let formData = request.flatFormData()
@@ -222,11 +222,11 @@ class ParkingRestAPI: RestAPI {
                 return self.htmlError("Invalid request! Missing address.")
             }
             guard let parking: Parking = self.dataStore.find(address: address) else {
-                return self.htmlError("Property at \(address.description) not found!")
+                return self.htmlError("Property at \(address.readable) not found!")
             }
             let ownerID = parking.ownerUUID
             guard session.playerUUID == ownerID else {
-                return self.htmlError("Property at \(address.description) is not yours!")
+                return self.htmlError("Property at \(address.readable) is not yours!")
             }
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManager/parking/parkingInsurance.html"))
             var data: [String: String] = [:]
@@ -259,11 +259,11 @@ class ParkingRestAPI: RestAPI {
                 return self.jsError("Invalid request! Missing address.")
             }
             guard let parking: Parking = self.dataStore.find(address: address) else {
-                return self.jsError("Property at \(address.description) not found!")
+                return self.jsError("Property at \(address.readable) not found!")
             }
             let ownerID = parking.ownerUUID
             guard session.playerUUID == ownerID else {
-                return self.jsError("Property at \(address.description) is not yours!")
+                return self.jsError("Property at \(address.readable) is not yours!")
             }
             
             let formData = request.flatFormData()
@@ -296,11 +296,11 @@ class ParkingRestAPI: RestAPI {
                 return self.htmlError("Invalid request! Missing address.")
             }
             guard let parking: Parking = self.dataStore.find(address: address) else {
-                return self.htmlError("Property at \(address.description) not found!")
+                return self.htmlError("Property at \(address.readable) not found!")
             }
             let ownerID = parking.ownerUUID
             guard session.playerUUID == ownerID else {
-                return self.htmlError("Property at \(address.description) is not yours!")
+                return self.htmlError("Property at \(address.readable) is not yours!")
             }
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManager/parking/parkingDamages.html"))
             var data: [String: String] = [:]
@@ -334,11 +334,11 @@ class ParkingRestAPI: RestAPI {
                 return self.htmlError("Invalid request! Missing address.")
             }
             guard let parking: Parking = self.dataStore.find(address: address) else {
-                return self.htmlError("Property at \(address.description) not found!")
+                return self.htmlError("Property at \(address.readable) not found!")
             }
             let ownerID = parking.ownerUUID
             guard session.playerUUID == ownerID else {
-                return self.htmlError("Property at \(address.description) is not yours!")
+                return self.htmlError("Property at \(address.readable) is not yours!")
             }
             guard let damageUUID = request.queryParam("damageUUID") else {
                 return self.htmlError("Missing damage ID!")
@@ -364,11 +364,11 @@ class ParkingRestAPI: RestAPI {
                 return self.htmlError("Invalid request! Missing address.")
             }
             guard let parking: Parking = self.dataStore.find(address: address) else {
-                return self.htmlError("Property at \(address.description) not found!")
+                return self.htmlError("Property at \(address.readable) not found!")
             }
             let ownerID = parking.ownerUUID
             guard session.playerUUID == ownerID else {
-                return self.htmlError("Property at \(address.description) is not yours!")
+                return self.htmlError("Property at \(address.readable) is not yours!")
             }
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManager/parking/parkingAdvertising.html"))
             var data: [String: String] = [:]
@@ -403,11 +403,11 @@ class ParkingRestAPI: RestAPI {
                 return self.jsError("Invalid request! Missing address.")
             }
             guard let parking: Parking = self.dataStore.find(address: address) else {
-                return self.jsError("Property at \(address.description) not found!")
+                return self.jsError("Property at \(address.readable) not found!")
             }
             let ownerID = parking.ownerUUID
             guard session.playerUUID == ownerID else {
-                return self.jsError("Property at \(address.description) is not yours!")
+                return self.jsError("Property at \(address.readable) is not yours!")
             }
             
             let formData = request.flatFormData()
@@ -441,11 +441,11 @@ class ParkingRestAPI: RestAPI {
                 return self.jsError("Invalid request! Missing address.")
             }
             guard let parking: Parking = self.dataStore.find(address: address) else {
-                return self.jsError("Property at \(address.description) not found!")
+                return self.jsError("Property at \(address.readable) not found!")
             }
             let ownerID = parking.ownerUUID
             guard session.playerUUID == ownerID else {
-                return self.jsError("Property at \(address.description) is not yours!")
+                return self.jsError("Property at \(address.readable) is not yours!")
             }
             guard let damageUUID = request.queryParam("damageUUID") else {
                 return self.jsError("Missing damage ID!")

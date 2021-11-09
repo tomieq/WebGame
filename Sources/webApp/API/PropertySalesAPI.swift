@@ -286,11 +286,11 @@ class PropertySalesAPI: RestAPI {
                 return self.htmlError("Invalid request! Missing address.")
             }
             guard let property = self.gameEngine.realEstateAgent.getProperty(address: address) else {
-                return self.htmlError("Property at \(address.description) not found!")
+                return self.htmlError("Property at \(address.readable) not found!")
             }
             let ownerID = property.ownerUUID
             guard session.playerUUID == ownerID else {
-                return self.htmlError("Property at \(address.description) is not yours!")
+                return self.htmlError("Property at \(address.readable) is not yours!")
             }
             let sellView = PropertySaleStatusView(property: property)
             sellView.setOffer(self.gameEngine.realEstateAgent.saleOffer(address: address, buyerUUID: "random"))

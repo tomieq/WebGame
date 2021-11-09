@@ -60,4 +60,8 @@ extension MapPoint {
     var asQueryParams: String {
         return "x=\(self.x)&y=\(self.y)"
     }
+    
+    var readable: String {
+        return "East \(self.x), South \(self.y)"
+    }
 }

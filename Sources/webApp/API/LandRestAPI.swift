@@ -52,11 +52,11 @@ class LandRestAPI: RestAPI {
                 return self.htmlError("Invalid request! Missing address.")
             }
             guard let land: Land = self.dataStore.find(address: address) else {
-                return self.htmlError("Property at \(address.description) not found!")
+                return self.htmlError("Property at \(address.readable) not found!")
             }
             let ownerID = land.ownerUUID
             guard session.playerUUID == ownerID else {
-                return self.htmlError("Property at \(address.description) is not yours!")
+                return self.htmlError("Property at \(address.readable) is not yours!")
             }
             
             let view = PropertyManagerTopView(windowIndex: windowIndex)
@@ -93,11 +93,11 @@ class LandRestAPI: RestAPI {
                 return self.htmlError("Invalid request! Missing address.")
             }
             guard let land: Land = self.dataStore.find(address: address) else {
-                return self.htmlError("Property at \(address.description) not found!")
+                return self.htmlError("Property at \(address.readable) not found!")
             }
             let ownerID = land.ownerUUID
             guard session.playerUUID == ownerID else {
-                return self.htmlError("Property at \(address.description) is not yours!")
+                return self.htmlError("Property at \(address.readable) is not yours!")
             }
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/landManager.html"))
 
