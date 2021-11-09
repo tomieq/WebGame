@@ -22,7 +22,7 @@ class ResidentialBuildingManagedObject: Codable {
     let storeyAmount: Int
 
     init(_ building: ResidentialBuilding) {
-        self.uuid = UUID().uuidString
+        self.uuid = building.uuid.isEmpty ? UUID().uuidString : building.uuid
         self.ownerUUID = building.ownerUUID
         self.x = building.address.x
         self.y = building.address.y

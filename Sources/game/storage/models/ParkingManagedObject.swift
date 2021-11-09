@@ -24,7 +24,7 @@ class ParkingManagedObject: Codable {
     var trustLevel: Double
     
     init(_ parking: Parking) {
-        self.uuid = UUID().uuidString
+        self.uuid = parking.uuid.isEmpty ? UUID().uuidString : parking.uuid
         self.ownerUUID = parking.ownerUUID
         self.x = parking.address.x
         self.y = parking.address.y
