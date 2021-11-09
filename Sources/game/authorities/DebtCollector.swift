@@ -91,13 +91,30 @@ class DebtCollector {
         for player in players {
             let isExecuted = self.isExecuted(playerUUID: player.uuid)
             if player.wallet < 0, !isExecuted {
-                let execution = DebtExecution(catchMonth: self.time.month, playerUUID: player.uuid, startExecutionDelay: self.params.startExecutionDelay)
-                self.executions.append(execution)
+                self.addDebtor(player)
             }
             if player.wallet >= 0, isExecuted {
                 self.stopExecutions(playerUUID: player.uuid)
             }
         }
+    }
+    
+    private func addDebtor(_ player: Player) {
+        let execution = DebtExecution(catchMonth: self.time.month, playerUUID: player.uuid, startExecutionDelay: self.params.startExecutionDelay)
+        self.executions.append(execution)
+        
+        let registers: [PropertyRegister] = self.dataStore.get(ownerUUID: player.uuid)
+        for register in registers {
+            // get rid of all costs
+            switch register.type {
+            case .parking:
+                self.dataStore.update(ParkingMutation(uuid: register.uuid, attributes: [.insurance(.none), .security(.none), .advertising(.none)]))
+            default:
+                break
+            }
+            
+        }
+        
     }
     
     private func stopExecutions(playerUUID: String) {

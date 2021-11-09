@@ -46,9 +46,14 @@ class DebtCollectorTests: XCTestCase {
         let time = collector.time
         let dataStore = collector.dataStore
         let address = MapPoint(x: 0, y: 0)
+        let address2 = MapPoint(x: 1, y: 0)
         
-        dataStore.create(PropertyRegister(uuid: "random", address: address, playerUUID: "player", type: .land))
+        let parkingUUID = dataStore.create(Parking(land: Land(address: address2, ownerUUID: "player")))
+        dataStore.update(ParkingMutation(uuid: parkingUUID, attributes: [.insurance(.extended)]))
+        dataStore.create(PropertyRegister(uuid: parkingUUID, address: address2, playerUUID: "player", type: .parking))
+        
         collector.realEstateAgent.mapManager.addPrivateLand(address: address)
+        dataStore.create(PropertyRegister(uuid: "random", address: address, playerUUID: "player", type: .land))
         dataStore.create(Land(address: address, ownerUUID: "player"))
         
         var register: PropertyRegister? = dataStore.find(uuid: "random")
@@ -66,6 +71,40 @@ class DebtCollectorTests: XCTestCase {
         
         register = dataStore.find(uuid: "random")
         XCTAssertEqual(register?.status, .blockedByDebtCollector)
+    }
+    
+    func test_parkingCostsTakenAway() {
+    
+        let collector = self.makeDebtCollector()
+        let dataStore = collector.dataStore
+        let constructions = collector.realEstateAgent.propertyValuer.constructionServices
+        let address = MapPoint(x: 0, y: 1)
+        collector.realEstateAgent.mapManager.loadMapFrom(content: "s,s,s,s")
+        
+        constructions.constructionDuration.parking = 1
+        constructions.priceList.buildParkingPrice = 3000
+        
+        dataStore.create(Player(uuid: "tester", login: "tester", wallet: 200000))
+        XCTAssertNoThrow(try collector.realEstateAgent.buyProperty(address: address, buyerUUID: "tester"))
+        XCTAssertNoThrow(try constructions.startParkingInvestment(address: address, playerUUID: "tester"))
+        
+        var parking: Parking? = dataStore.find(address: address)
+        XCTAssertNotNil(parking)
+        dataStore.update(ParkingMutation(uuid: parking?.uuid ?? "", attributes: [.insurance(.extended), .advertising(.leaflets), .security(.nightGuard)]))
+
+        parking = dataStore.find(address: address)
+        XCTAssertEqual(parking?.insurance, ParkingInsurance.extended)
+        XCTAssertEqual(parking?.security, ParkingSecurity.nightGuard)
+        XCTAssertEqual(parking?.advertising, ParkingAdvertising.leaflets)
+
+        dataStore.update(PlayerMutation(uuid: "tester", attributes: [.wallet(-80000)]))
+        collector.executeDebts()
+        XCTAssertTrue(collector.isExecuted(playerUUID: "tester"))
+
+        parking = dataStore.find(address: address)
+        XCTAssertEqual(parking?.insurance, ParkingInsurance.none)
+        XCTAssertEqual(parking?.security, ParkingSecurity.none)
+        XCTAssertEqual(parking?.advertising, ParkingAdvertising.none)
     }
     
     func test_propertyPutOnSale() {
