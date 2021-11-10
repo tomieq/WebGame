@@ -143,7 +143,7 @@ class PropertyManagerRestAPI: RestAPI {
             code.add(.loadHtmlInline(windowIndex, htmlPath: editUrl, targetID: "buildingDetails\(windowIndex)"))
             return code.response
         }
-        
+        /*
         server.GET["/rentApartment.js"] = { request, _ in
             request.disableKeepAlive = true
             let code = JSResponse()
@@ -246,10 +246,10 @@ class PropertyManagerRestAPI: RestAPI {
             }
             */
             return apartmentView.asResponse()
-        }
+        }*/
     }
     
-    
+    /*
     private func buildingActions(building: ResidentialBuilding, windowIndex: String, session: PlayerSession) -> String {
 
         if building.isUnderConstruction {
@@ -305,5 +305,5 @@ class PropertyManagerRestAPI: RestAPI {
         template.assign(variables: templateVars)
         
         return template.output()
-    }
+    }*/
 }
