@@ -134,7 +134,7 @@ class ParkingBusinessTests: XCTestCase {
 
         let uuid = dataStore.create(Parking(land: Land(address: address)))
         dataStore.update(ParkingMutation(uuid: uuid, attributes: [.insurance(insurance)]))
-        business.addDamage(ParkingDamage(type: .stolenWheels, accidentMonth: 0), address: address)
+        business.addDamage(ParkingDamage(type: .stolenCar, accidentMonth: 0), address: address)
         let damages = business.getDamages(address: address)
         XCTAssertEqual(damages.count, 1)
         XCTAssertEqual(damages.first?.status, .partiallyCoveredByInsurance(insurance.damageCoverLimit))
