@@ -310,14 +310,15 @@ final class ConstructionServicesTests: XCTestCase {
     func test_finishResidentialBuildingInvestment() {
         
         let constructionServices = self.makeConstructionServices()
+        let dataStore = constructionServices.dataStore
         constructionServices.mapManager.loadMapFrom(content: "s,s")
         let address = MapPoint(x: 0, y: 1)
         
         let land = Land(address: address, ownerUUID: "p1")
-        constructionServices.dataStore.create(land)
+        dataStore.create(land)
         
         let player = Player(uuid: "p1", login: "tester", wallet: 1200)
-        constructionServices.dataStore.create(player)
+        dataStore.create(player)
         
         constructionServices.constructionDuration.residentialBuilding = 1
         constructionServices.constructionDuration.residentialBuildingPerStorey = 1
@@ -336,15 +337,18 @@ final class ConstructionServicesTests: XCTestCase {
         // first month
         constructionServices.time.nextMonth()
         constructionServices.finishInvestments()
-        building = constructionServices.dataStore.find(address: address)
+        building = dataStore.find(address: address)
         XCTAssertEqual(building?.isUnderConstruction, true)
         
-        // second month so the investment shoul finish
+        // second month so the investment should finish
         constructionServices.time.month = 5
         XCTAssertEqual(constructionServices.time.month, 5)
         constructionServices.finishInvestments()
-        building = constructionServices.dataStore.find(address: address)
+        building = dataStore.find(address: address)
         XCTAssertEqual(building?.isUnderConstruction, false)
+        
+        let apartments: [Apartment] = dataStore.get(address: address)
+        XCTAssertEqual(apartments.count, building?.numberOfFlats)
     }
 
     func test_startParkingInvestment_addressNotFound() {

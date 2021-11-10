@@ -7,13 +7,6 @@
 
 import Foundation
 
-enum ResidentialBuildingBalcony: String {
-    case north
-    case south
-    case east
-    case west
-}
-
 struct ResidentialBuilding: Property {
     
     let uuid: String
@@ -24,29 +17,28 @@ struct ResidentialBuilding: Property {
     let purchaseNetValue: Double
     let investmentsNetValue: Double
     let condition: Double
-    let numberOfFlatsPerStorey = 4
     let storeyAmount: Int
     let isUnderConstruction: Bool
     let constructionFinishMonth: Int
-    let balconies: [ResidentialBuildingBalcony]
+    let balconies: [ApartmentWindowSide]
     
     var numberOfFlats: Int {
-        return self.numberOfFlatsPerStorey * self.storeyAmount
+        return 4 * self.storeyAmount
     }
     
     var mapTile: TileType {
         var buildingType = BuildingBalcony.none
-        if self.balconies.contains(.north), self.balconies.contains(.east) {
+        if self.balconies.contains(.eastNorth), self.balconies.contains(.eastSouth) {
             buildingType = .northAndSouthBalcony
-        } else if self.balconies.contains(.north) {
+        } else if self.balconies.contains(.eastNorth) {
             buildingType = .northBalcony
-        } else if self.balconies.contains(.south) {
+        } else if self.balconies.contains(.eastSouth) {
             buildingType = .southBalcony
         }
         return .building(size: self.storeyAmount, balcony: buildingType)
     }
     
-    init(land: Land, storeyAmount: Int, constructionFinishMonth: Int? = nil, investmentsNetValue: Double = 0, balconies: [ResidentialBuildingBalcony] = []) {
+    init(land: Land, storeyAmount: Int, constructionFinishMonth: Int? = nil, investmentsNetValue: Double = 0, balconies: [ApartmentWindowSide] = []) {
         self.uuid = land.uuid
         self.address = land.address
         self.name = "\(land.name) Apartments"
@@ -71,7 +63,7 @@ struct ResidentialBuilding: Property {
         self.constructionFinishMonth = managedObject.constructionFinishMonth
         self.condition = managedObject.condition
         self.storeyAmount = managedObject.storeyAmount
-        self.balconies = managedObject.balconies.components(separatedBy: ",").compactMap{ ResidentialBuildingBalcony(rawValue: $0) }
+        self.balconies = managedObject.balconies.components(separatedBy: ",").compactMap{ ApartmentWindowSide(rawValue: $0) }
     }
 }
 

@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum ApartmentWindowSide {
+enum ApartmentWindowSide: String, CaseIterable {
     case eastSouth
     case eastNorth
     case westSouth
@@ -32,13 +32,28 @@ struct Apartment {
     let isRented: Bool
     let condition: Double
     
+    init(ownerUUID: String, address: MapPoint, windowSide: ApartmentWindowSide, hasBalcony: Bool, storey: Int, condition: Double = 1.0) {
+        self.uuid = ""
+        self.ownerUUID = ownerUUID
+        self.address = address
+        self.purchaseNetValue = 0
+        self.investmentsNetValue = 0
+        self.windowSide = windowSide
+        self.livingArea = 54
+        self.numberOfBedrooms = 2
+        self.hasBalcony = hasBalcony
+        self.storey = storey
+        self.isRented = false
+        self.condition = min(1, max(0, condition))
+    }
+    
     init(_ managedObject: ApartmentManagedObject) {
         self.uuid = managedObject.uuid
         self.ownerUUID = managedObject.ownerUUID
         self.address = MapPoint(x: managedObject.x, y: managedObject.y)
         self.purchaseNetValue = managedObject.purchaseNetValue
         self.investmentsNetValue = managedObject.investmentsNetValue
-        self.windowSide = managedObject.windowSide
+        self.windowSide = ApartmentWindowSide(rawValue: managedObject.windowSide) ?? .eastNorth
         self.livingArea = managedObject.livingArea
         self.numberOfBedrooms = managedObject.numberOfBedrooms
         self.hasBalcony = managedObject.hasBalcony

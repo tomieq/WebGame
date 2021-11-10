@@ -162,7 +162,6 @@ class ConstructionServices {
             throw ConstructionServicesError.financialTransactionProblem(error)
         }
         self.dataStore.removeLand(uuid: land.uuid)
-        self.dataStore.create(building)
         self.dataStore.update(PropertyRegisterMutation(uuid: building.uuid, attributes: [.type(.residentialBuilding)]))
         
         let tile = GameMapTile(address: address, type: .buildingUnderConstruction(size: storeyAmount))
@@ -178,7 +177,7 @@ class ConstructionServices {
         
         let roads: [Road] = self.dataStore.getUnderConstruction()
         for road in roads {
-            if road.constructionFinishMonth == self.time.month {
+            if road.constructionFinishMonth == self.time.month, road.isUnderConstruction {
                 let mutation = RoadMutation(uuid: road.uuid, attributes: [.isUnderConstruction(false)])
                 self.dataStore.update(mutation)
                 
@@ -188,7 +187,7 @@ class ConstructionServices {
         }
         let parkings: [Parking] = self.dataStore.getUnderConstruction()
         for parking in parkings {
-            if parking.constructionFinishMonth == self.time.month {
+            if parking.constructionFinishMonth == self.time.month, parking.isUnderConstruction {
                 let mutation = ParkingMutation(uuid: parking.uuid, attributes: [.isUnderConstruction(false)])
                 self.dataStore.update(mutation)
                 
@@ -199,19 +198,17 @@ class ConstructionServices {
         
         let buildings: [ResidentialBuilding] = self.dataStore.getUnderConstruction()
         for building in buildings {
-            if building.constructionFinishMonth == self.time.month {
-                
+            if building.constructionFinishMonth == self.time.month, building.isUnderConstruction {
                 self.dataStore.update(ResidentialBuildingMutation(uuid: building.uuid, attributes: [.isUnderConstruction(false)]))
-                
-                /*for storey in (1...building.storeyAmount) {
-                    for flatNo in (1...building.numberOfFlatsPerStorey) {
-                        let apartment = Apartment(building, storey: storey, flatNumber: flatNo)
-                        apartment.monthlyBuildingFee = self.realEstateAgent.priceList.monthlyApartmentBuildingOwnerFee
-                        Storage.shared.apartments.append(apartment)
+
+                for storey in (1...building.storeyAmount) {
+                    for side in ApartmentWindowSide.allCases {
+                        let apartment = Apartment(ownerUUID: building.ownerUUID, address: building.address, windowSide: side, hasBalcony: building.balconies.contains(side), storey: storey)
+                        let uuid = self.dataStore.create(apartment)
+                        let registry = PropertyRegister(uuid: uuid, address: apartment.address, playerUUID: apartment.ownerUUID, type: .apartment)
+                        self.dataStore.create(registry)
                     }
                 }
-                self.realEstateAgent.recalculateFeesInTheBuilding(building)
-                */
                 let tile = GameMapTile(address: building.address, type: building.mapTile)
                 self.mapManager.map.replaceTile(tile: tile)
                 updateMap = true

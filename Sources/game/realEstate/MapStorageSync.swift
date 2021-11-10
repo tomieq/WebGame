@@ -23,17 +23,17 @@ class MapStorageSync {
         for tile in self.mapManager.map.tiles {
             switch tile.type {
             case .building(let size, let balcony):
-                var balconies: [ResidentialBuildingBalcony] = []
+                var balconies: [ApartmentWindowSide] = []
                 switch balcony {
                 case .none:
                     break
                 case .southBalcony:
-                    balconies.append(.south)
+                    balconies.append(.eastSouth)
                 case .northBalcony:
-                    balconies.append(.north)
+                    balconies.append(.eastNorth)
                 case .northAndSouthBalcony:
-                    balconies.append(.north)
-                    balconies.append(.south)
+                    balconies.append(.eastSouth)
+                    balconies.append(.eastNorth)
                 }
                 let building = ResidentialBuilding(land: Land(address: tile.address, ownerUUID: SystemPlayer.government.uuid), storeyAmount: size, balconies: balconies)
                 buildingToAdd.append(building)

@@ -16,7 +16,7 @@ class ApartmentManagedObject {
     var purchaseNetValue: Double
     var investmentsNetValue: Double
     
-    let windowSide: ApartmentWindowSide
+    let windowSide: String
     let livingArea: Int
     let numberOfBedrooms: Int
     let hasBalcony: Bool
@@ -32,7 +32,7 @@ class ApartmentManagedObject {
         self.y = apartment.address.y
         self.purchaseNetValue = apartment.purchaseNetValue
         self.investmentsNetValue = apartment.investmentsNetValue
-        self.windowSide = apartment.windowSide
+        self.windowSide = apartment.windowSide.rawValue
         self.livingArea = apartment.livingArea
         self.numberOfBedrooms = apartment.numberOfBedrooms
         self.hasBalcony = apartment.hasBalcony

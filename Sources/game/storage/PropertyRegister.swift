@@ -12,6 +12,7 @@ enum PropertyType: String {
     case road
     case parking
     case residentialBuilding
+    case apartment
 }
 
 enum PropertyStatus: String {
