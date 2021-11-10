@@ -1,5 +1,5 @@
 //
-//  Apartment.swift
+//  Condo.swift
 //  
 //
 //  Created by Tomasz Kucharski on 24/03/2021.
@@ -7,27 +7,43 @@
 
 import Foundation
 
-class Apartment: Codable {
-    
+enum ApartmentWindowSide {
+    case eastSouth
+    case eastNorth
+    case westSouth
+    case westNorth
+}
+
+struct Apartment {
+
     let uuid: String
-    var type: String { return "Apartment" }
-    let name: String
-    let flatNumber: Int
-    let storey: Int
+    var type: String { return "\(self.livingArea)m² Apartment" }
+    let ownerUUID: String
     let address: MapPoint
-    var ownerUUID: String?
-    var isRented: Bool
-    var condition: Double
+    let purchaseNetValue: Double
+    let investmentsNetValue: Double
     
-    init(_ building: ResidentialBuilding, storey: Int, flatNumber: Int) {
-        self.uuid = UUID().uuidString
-        self.storey = storey
-        self.flatNumber = flatNumber
-        self.ownerUUID = building.ownerUUID
-        self.name = "Apartment \(storey).\(flatNumber) at \(building.name)"
-        self.address = building.address
-        self.isRented = false
-        // condition varies from 0 to 100%
-        self.condition = 100.0
+    let windowSide: ApartmentWindowSide
+    let livingArea: Int
+    let numberOfBedrooms: Int
+    let hasBalcony: Bool
+    
+    let storey: Int
+    let isRented: Bool
+    let condition: Double
+    
+    init(_ managedObject: ApartmentManagedObject) {
+        self.uuid = managedObject.uuid
+        self.ownerUUID = managedObject.ownerUUID
+        self.address = MapPoint(x: managedObject.x, y: managedObject.y)
+        self.purchaseNetValue = managedObject.purchaseNetValue
+        self.investmentsNetValue = managedObject.investmentsNetValue
+        self.windowSide = managedObject.windowSide
+        self.livingArea = managedObject.livingArea
+        self.numberOfBedrooms = managedObject.numberOfBedrooms
+        self.hasBalcony = managedObject.hasBalcony
+        self.storey = managedObject.storey
+        self.isRented = managedObject.isRented
+        self.condition = managedObject.condition
     }
 }
