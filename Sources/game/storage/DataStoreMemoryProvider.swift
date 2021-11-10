@@ -16,6 +16,7 @@ class DataStoreMemoryProvider: DataStoreProvider {
     private var roads: [RoadManagedObject]
     private var parkings: [ParkingManagedObject]
     private var buildings: [ResidentialBuildingManagedObject]
+    private var apartments: [ApartmentManagedObject]
     private var adverts: [SaleAdvertManagedObject]
     
     private var playerQueue = DispatchQueue(label: "DataStore.Player.queue", attributes: .concurrent)
@@ -34,6 +35,7 @@ class DataStoreMemoryProvider: DataStoreProvider {
         self.roads = []
         self.parkings = []
         self.buildings = []
+        self.apartments = []
         self.adverts = []
     }
     
@@ -398,6 +400,26 @@ class DataStoreMemoryProvider: DataStoreProvider {
                     parking.trustLevel = value
                 }
             }
+        }
+    }
+    // MARK: Apartment
+    @discardableResult func create(_ apartment: Apartment) -> String {
+        return residentialBuildingQueue.sync(flags: .barrier) {
+            let managedObject = ApartmentManagedObject(apartment)
+            self.apartments.append(managedObject)
+            return managedObject.uuid
+        }
+    }
+    
+    func get(address: MapPoint) -> [Apartment] {
+        return residentialBuildingQueue.sync {
+            return self.apartments.filter{ $0.x == address.x && $0.y == address.y }.map { Apartment($0) }
+        }
+    }
+
+    func find(uuid: String) -> Apartment? {
+        return residentialBuildingQueue.sync {
+            return self.apartments.first{ $0.uuid == uuid }.map { Apartment($0) }
         }
     }
 }

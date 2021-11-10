@@ -15,15 +15,19 @@ protocol DataStoreProvider {
     @discardableResult func create(_ road: Road) -> String
     @discardableResult func create(_ parking: Parking) -> String
     @discardableResult func create(_ building: ResidentialBuilding) -> String
+    @discardableResult func create(_ apartment: Apartment) -> String
     @discardableResult func create(_ advert: SaleAdvert) -> String
     
     func find(uuid: String) -> Player?
     func find(uuid: String) -> PropertyRegister?
+    func find(uuid: String) -> Apartment?
+    
     func find(address: MapPoint) -> Land?
     func find(address: MapPoint) -> Road?
     func find(address: MapPoint) -> Parking?
     func find(address: MapPoint) -> ResidentialBuilding?
     func find(address: MapPoint) -> SaleAdvert?
+    func get(address: MapPoint) -> [Apartment]
     func getFinancialTransactions(userID: String) -> [CashFlow]
     func get(ownerUUID: String) -> [PropertyRegister]
     
