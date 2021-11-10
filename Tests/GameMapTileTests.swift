@@ -22,7 +22,7 @@ final class GameMapTileTests: XCTestCase {
     }
     
     func test_isStreet_building() {
-        let mapTile = GameMapTile(address: MapPoint(x: 5, y: 6), type: .building(size: 6))
+        let mapTile = GameMapTile(address: MapPoint(x: 5, y: 6), type: .building(size: 6, balcony: .none))
         XCTAssertFalse(mapTile.isStreet())
     }
     
@@ -32,7 +32,7 @@ final class GameMapTileTests: XCTestCase {
     }
     
     func test_isBuilding_building() {
-        let mapTile = GameMapTile(address: MapPoint(x: 5, y: 6), type: .building(size: 0))
+        let mapTile = GameMapTile(address: MapPoint(x: 5, y: 6), type: .building(size: 0, balcony: .none))
         XCTAssertTrue(mapTile.isBuilding())
     }
     

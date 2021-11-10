@@ -252,7 +252,7 @@ class ParkingBusiness {
 extension TileType {
     var carsOnProperty: Double {
         switch self {
-        case .building(let size):
+        case .building(let size, _):
             return size.double
         case .cityCouncil:
             return 5

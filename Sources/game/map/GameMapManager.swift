@@ -141,13 +141,13 @@ class GameMapManager {
                 case .warehouse:
                     mapTiles.append(GameMapTile(address: address, type: .warehouse))
                 case .building4:
-                    mapTiles.append(GameMapTile(address: address, type: .building(size: 4)))
+                    mapTiles.append(GameMapTile(address: address, type: .building(size: 4, balcony: BuildingBalcony.random)))
                 case .building6:
-                    mapTiles.append(GameMapTile(address: address, type: .building(size: 6)))
+                    mapTiles.append(GameMapTile(address: address, type: .building(size: 6, balcony: BuildingBalcony.random)))
                 case .building8:
-                    mapTiles.append(GameMapTile(address: address, type: .building(size: 8)))
+                    mapTiles.append(GameMapTile(address: address, type: .building(size: 8, balcony: BuildingBalcony.random)))
                 case .building10:
-                    mapTiles.append(GameMapTile(address: address, type: .building(size: 10)))
+                    mapTiles.append(GameMapTile(address: address, type: .building(size: 10, balcony: BuildingBalcony.random)))
                 case .tree1:
                     mapTiles.append(GameMapTile(address: address, type: .tree(type: 1)))
                 case .tree2:
@@ -373,4 +373,10 @@ fileprivate enum RoadType {
 fileprivate struct StreetCache {
     let address: MapPoint
     let type: RoadType
+}
+
+fileprivate extension BuildingBalcony {
+    static var random: BuildingBalcony {
+        return BuildingBalcony.allCases.shuffled().first ?? .none
+    }
 }

@@ -212,7 +212,7 @@ class ConstructionServices {
                 }
                 self.realEstateAgent.recalculateFeesInTheBuilding(building)
                 */
-                let tile = GameMapTile(address: building.address, type: .building(size: building.storeyAmount))
+                let tile = GameMapTile(address: building.address, type: building.mapTile)
                 self.mapManager.map.replaceTile(tile: tile)
                 updateMap = true
             }

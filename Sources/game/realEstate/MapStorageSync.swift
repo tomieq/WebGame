@@ -22,8 +22,20 @@ class MapStorageSync {
         var buildingToAdd: [ResidentialBuilding] = []
         for tile in self.mapManager.map.tiles {
             switch tile.type {
-            case .building(let size):
-                let building = ResidentialBuilding(land: Land(address: tile.address, ownerUUID: SystemPlayer.government.uuid), storeyAmount: size)
+            case .building(let size, let balcony):
+                var balconies: [ResidentialBuildingBalcony] = []
+                switch balcony {
+                case .none:
+                    break
+                case .southBalcony:
+                    balconies.append(.south)
+                case .northBalcony:
+                    balconies.append(.north)
+                case .northAndSouthBalcony:
+                    balconies.append(.north)
+                    balconies.append(.south)
+                }
+                let building = ResidentialBuilding(land: Land(address: tile.address, ownerUUID: SystemPlayer.government.uuid), storeyAmount: size, balconies: balconies)
                 buildingToAdd.append(building)
             case .parking(_):
                 let parking = Parking(land: Land(address: tile.address, ownerUUID: SystemPlayer.investor.uuid))
@@ -55,7 +67,7 @@ class MapStorageSync {
                 let tile = GameMapTile(address: building.address, type: .buildingUnderConstruction(size: building.storeyAmount))
                 self.mapManager.map.replaceTile(tile: tile)
             } else {
-                let tile = GameMapTile(address: building.address, type: .building(size: building.storeyAmount))
+                let tile = GameMapTile(address: building.address, type: building.mapTile)
                 self.mapManager.map.replaceTile(tile: tile)
             }
         }

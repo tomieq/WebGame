@@ -72,7 +72,7 @@ class ResidentialBuildingRestAPI: RestAPI {
                 
             } else {
                 view.setPropertyType(building.type)
-                    .setTileImage(TileType.building(size: building.storeyAmount).image.path)
+                    .setTileImage(building.mapTile.image.path)
             }
             
             view.addTip("Earn money on renting apartments or sell them.")

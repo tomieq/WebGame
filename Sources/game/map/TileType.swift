@@ -22,7 +22,7 @@ enum TileType {
     case parking(type: ParkingType)
     case parkingUnderConstruction
     case btsAntenna
-    case building(size: Int)
+    case building(size: Int, balcony: BuildingBalcony)
     case buildingUnderConstruction(size: Int)
     case cityCouncil
     case school
@@ -59,8 +59,8 @@ extension TileType {
             return TileImage(path: "tiles/sold-land.png", width: 600, height: 400)
         case .btsAntenna:
             return TileImage(path: "tiles/btsAntenna.png", width: 600, height: 800)
-        case .building(let size):
-            return TileImage(path: "tiles/building-\(size).png", width: 600, height: 900)
+        case .building(let size, let type):
+            return TileImage(path: "tiles/building-\(size)\(type.imagePathSuffix).png", width: 600, height: 900)
         case .buildingUnderConstruction(let size):
             return TileImage(path: "tiles/construction-\(size).png", width: 600, height: 1000)
         case .cityCouncil:
@@ -153,6 +153,27 @@ struct TileImage {
 enum StreetType {
     case local(LocalStreetType)
     case main(MainStreetType)
+}
+
+enum BuildingBalcony: CaseIterable {
+    case none
+    case southBalcony
+    case northBalcony
+    case northAndSouthBalcony
+    
+    var imagePathSuffix: String {
+        switch self {
+            
+        case .none:
+            return ""
+        case .southBalcony:
+            return "-balconyS"
+        case .northBalcony:
+            return "-balconyN"
+        case .northAndSouthBalcony:
+            return "-balconyNS"
+        }
+    }
 }
 
 enum ParkingType: String {

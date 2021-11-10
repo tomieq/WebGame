@@ -63,7 +63,7 @@ final class InvestorArtifficialIntelligenceTests: XCTestCase {
         let address = MapPoint(x: 5, y: 5)
         let building = ResidentialBuilding(land: Land(address: address, ownerUUID: "john"), storeyAmount: 6)
         engine.agent.dataStore.create(building)
-        engine.agent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .building(size: 6)))
+        engine.agent.mapManager.map.replaceTile(tile: GameMapTile(address: address, type: .building(size: 6, balcony: .none)))
         let owner = Player(uuid: "john", login: "john", wallet: 0)
         engine.agent.dataStore.create(owner)
         engine.params.instantPurchaseToEstimatedValueFactor = 0.85

@@ -85,7 +85,7 @@ class PropertyBalanceCalculator {
         case .residentialBuilding:
             
             switch tile.type {
-            case .building(let size):
+            case .building(let size, _):
                 return self.getBuildingMontlyCosts(size: size)
             case .buildingUnderConstruction(_):
                 return self.getBuildingUnderConstructionMontlyCosts()

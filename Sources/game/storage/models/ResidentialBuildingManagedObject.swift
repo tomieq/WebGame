@@ -20,6 +20,7 @@ class ResidentialBuildingManagedObject: Codable {
     var constructionFinishMonth: Int
     var condition: Double
     let storeyAmount: Int
+    let balconies: String
 
     init(_ building: ResidentialBuilding) {
         self.uuid = building.uuid.isEmpty ? UUID().uuidString : building.uuid
@@ -33,5 +34,6 @@ class ResidentialBuildingManagedObject: Codable {
         self.constructionFinishMonth = building.constructionFinishMonth
         self.condition = building.condition
         self.storeyAmount = building.storeyAmount
+        self.balconies = building.balconies.map{$0.rawValue}.joined(separator: ",")
     }
 }

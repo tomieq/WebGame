@@ -20,7 +20,7 @@ final class GameMapTests: XCTestCase {
     
     func test_settingTiles() {
         let gameMap = GameMap(width: 10, height: 10, scale: 1)
-        let tile = GameMapTile(address: MapPoint(x: 3, y: 3), type: .building(size: 4))
+        let tile = GameMapTile(address: MapPoint(x: 3, y: 3), type: .building(size: 4, balcony: .none))
         gameMap.setTiles([tile])
         XCTAssertEqual(gameMap.tiles.count, 1)
         XCTAssertEqual(gameMap.tiles.first?.address, tile.address)
@@ -28,7 +28,7 @@ final class GameMapTests: XCTestCase {
     
     func test_gettingTiles_existing() {
         let gameMap = GameMap(width: 30, height: 30, scale: 0.5)
-        let tile = GameMapTile(address: MapPoint(x: 2, y: 8), type: .building(size: 4))
+        let tile = GameMapTile(address: MapPoint(x: 2, y: 8), type: .building(size: 4, balcony: .none))
         gameMap.setTiles([tile])
         
         let receivedTile = gameMap.getTile(address: MapPoint(x: 2, y: 8))
@@ -39,7 +39,7 @@ final class GameMapTests: XCTestCase {
     
     func test_gettingTiles_nonExisting() {
         let gameMap = GameMap(width: 30, height: 30, scale: 0.5)
-        let tile = GameMapTile(address: MapPoint(x: 2, y: 8), type: .building(size: 4))
+        let tile = GameMapTile(address: MapPoint(x: 2, y: 8), type: .building(size: 4, balcony: .none))
         gameMap.setTiles([tile])
         
         let receivedTile = gameMap.getTile(address: MapPoint(x: 3, y: 8))
