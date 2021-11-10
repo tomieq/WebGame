@@ -66,7 +66,7 @@ class Court {
             let invoice = Invoice(title: "Parking damage compensation, \(damage.car) \(damage.type.name)", grossValue: fine, taxRate: 0)
             let transaction = FinancialTransaction(payerUUID: guilty.uuid, recipientUUID: SystemPlayer.government.uuid, invoice: invoice, type: .fine)
             try? self.centralbank.process(transaction, checkWalletCapacity: false)
-            let verdict = "The court has made a decision for lawsuite agains <b>\(guilty.login)</b> for damage of \(damage.car) - \(damage.type.name). Because you didn't have your parking insurance and refused to pay for damages, Court sentenced \(guilty.login) to pay <b>\(fine.money)</b> as a compensation to \(damage.carOwner), the owner of the car."
+            let verdict = "The court has made a decision for lawsuite agains <b>\(guilty.login)</b> for damage of \(damage.car) - \(damage.type.name). Because you didn't have proper parking insurance and refused to pay for damages, Court sentenced \(guilty.login) to pay <b>\(fine.money)</b> as a compensation to \(damage.carOwner), the owner of the car."
             self.delegate?.notify(playerUUID: guilty.uuid, UINotification(text: verdict, level: .error, duration: 60, icon: .court))
             self.delegate?.syncWalletChange(playerUUID: guilty.uuid)
             damage.status = .paid
