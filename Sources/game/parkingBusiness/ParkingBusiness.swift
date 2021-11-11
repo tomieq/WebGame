@@ -264,6 +264,8 @@ extension TileType {
             return 5
         case .warehouse:
             return 2
+        case .office:
+            return 15
         default:
             return 0
         }

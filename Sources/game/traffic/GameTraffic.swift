@@ -20,7 +20,7 @@ class GameTraffic {
     init(streetNavi: StreetNavi) {
         self.runningCars = [:]
         self.streetNavi = streetNavi
-        self.buildingPoints = self.streetNavi.gameMap.tiles.filter{ $0.isBuilding() }.map{ $0.address }
+        self.buildingPoints = self.streetNavi.gameMap.tiles.filter{ $0.isBuilding() || $0.isOffice() }.map{ $0.address }
         self.startRandomTraffic()
         
         GameEventBus.gameEvents.asObservable().bind { [weak self] event in
@@ -43,7 +43,7 @@ class GameTraffic {
     }
     
     func mapReloaded() {
-        self.buildingPoints = self.streetNavi.gameMap.tiles.filter{ $0.isBuilding() }.map{ $0.address } ?? []
+        self.buildingPoints = self.streetNavi.gameMap.tiles.filter{ $0.isBuilding() || $0.isOffice() }.map{ $0.address }
     }
     
     private func startRandomTraffic() {

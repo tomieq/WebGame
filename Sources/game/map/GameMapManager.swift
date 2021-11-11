@@ -130,6 +130,8 @@ class GameMapManager {
                     mapTiles.append(GameMapTile(address: address, type: .school))
                 case .cityCouncil:
                     mapTiles.append(GameMapTile(address: address, type: .cityCouncil))
+                case .office:
+                    mapTiles.append(GameMapTile(address: address, type: .office))
                 case .footballPitchLeftTop:
                     mapTiles.append(GameMapTile(address: address, type: .footballPitch(.leftTop)))
                 case .footballPitchRightTop:
@@ -363,6 +365,7 @@ fileprivate enum GameMapFileEntry: String {
     case footballPitchLeftBottom = "P"
     case footballPitchRightBottom = "p"
     case parking = "c"
+    case office = "O"
 }
 
 fileprivate enum RoadType {

@@ -29,6 +29,7 @@ enum TileType {
     case hospital
     case footballPitch(TileSide)
     case smallFootballPitch
+    case office
     case warehouse
     case tree(type: Int)
 }
@@ -61,6 +62,8 @@ extension TileType {
             return TileImage(path: "tiles/btsAntenna.png", width: 600, height: 800)
         case .building(let size, let type):
             return TileImage(path: "tiles/building-\(size)\(type.imagePathSuffix).png", width: 600, height: 900)
+        case .office:
+            return TileImage(path: "tiles/office-8.png", width: 600, height: 900)
         case .buildingUnderConstruction(let size):
             return TileImage(path: "tiles/construction-\(size).png", width: 600, height: 1000)
         case .cityCouncil:

@@ -118,6 +118,13 @@ extension GameMapTile {
         return false
     }
     
+    func isOffice() -> Bool {
+        if case .office = self.type {
+            return true
+        }
+        return false
+    }
+    
     func isAntenna() -> Bool {
         if case .btsAntenna = self.type {
             return true
