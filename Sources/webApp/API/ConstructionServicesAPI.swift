@@ -177,6 +177,14 @@ class ConstructionServicesAPI: RestAPI {
             data["submitUrl"] = API.validateStep2js.url.append(address).append("storey", storeyTxt)
             data["previousJS"] = JSCode.loadHtmlInline(windowIndex, htmlPath: API.step1html.url.append(address).append("storey", storeyTxt), targetID: PropertyManagerTopView.domID(windowIndex)).js
             data["windowIndex"] = windowIndex
+            
+            let prechoice = request.queryParam("elevator")
+            if prechoice == "true" {
+                data["yesChecked"] = "checked"
+            } else if prechoice == "false" {
+                data["noChecked"] = "checked"
+            }
+            
             template.assign(variables: data)
             return template.asResponse()
         }
@@ -234,7 +242,7 @@ class ConstructionServicesAPI: RestAPI {
             var data = [String:String]()
             data["apartmentAmount"] = ApartmentWindowSide.allCases.count.string
             data["submitUrl"] = API.validateStep3js.url.append(address)
-            data["previousJS"] = JSCode.loadHtmlInline(windowIndex, htmlPath: API.step2html.url.append(address).append("storey", storeyTxt), targetID: PropertyManagerTopView.domID(windowIndex)).js
+            data["previousJS"] = JSCode.loadHtmlInline(windowIndex, htmlPath: API.step2html.url.append(address).append("storey", storeyTxt).append("elevator", elevatorTxt), targetID: PropertyManagerTopView.domID(windowIndex)).js
             data["windowIndex"] = windowIndex
             template.assign(variables: data)
             return template.asResponse()
