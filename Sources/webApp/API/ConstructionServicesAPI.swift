@@ -9,9 +9,34 @@ import Foundation
 
 class ConstructionServicesAPI: RestAPI {
     
+    enum API {
+        case step1html
+        case step2html
+        case step3html
+        case validateStep1js
+        case validateStep2js
+        case validateStep3js
+        
+        var url: String {
+            switch self {
+            case .step1html:
+                return "/residentialInvestmentStep1.html"
+            case .step2html:
+                return "/residentialInvestmentStep2.html"
+            case .step3html:
+                return "/residentialInvestmentStep3.html"
+            case .validateStep1js:
+                return "/validateStep1.js"
+            case .validateStep2js:
+                return "/validateStep2.js"
+            case .validateStep3js:
+                return "/validateStep3.js"
+            }
+        }
+    }
     override func setupEndpoints() {
         
-        // MARK: openLandManager
+        // MARK: startInvestment
         server.GET[.startInvestment] = { request, _ in
             request.disableKeepAlive = true
             let code = JSResponse()
@@ -73,7 +98,7 @@ class ConstructionServicesAPI: RestAPI {
         
         
         // MARK: residentialInvestmentStep1.html
-        self.server.GET["/residentialInvestmentStep1.html"] = { request, _ in
+        self.server.GET[API.step1html.url] = { request, _ in
             request.disableKeepAlive = true
             
             guard let windowIndex = request.queryParam("windowIndex") else {
@@ -97,14 +122,14 @@ class ConstructionServicesAPI: RestAPI {
                 template.assign(variables: data, inNest: "storeyOption")
             }
             var data = [String:String]()
-            data["submitUrl"] = "/validateBuildingStep1.js".append(address)
+            data["submitUrl"] = API.validateStep1js.url.append(address)
             data["windowIndex"] = windowIndex
             template.assign(variables: data)
             return template.asResponse()
         }
         
         // MARK: validateBuildingStep1.js
-        server.POST["/validateBuildingStep1.js"] = { request, _ in
+        server.POST[API.validateStep1js.url] = { request, _ in
             request.disableKeepAlive = true
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return self.jsError("Invalid request! Missing window context.")
@@ -122,13 +147,13 @@ class ConstructionServicesAPI: RestAPI {
             }
             
             let js = JSResponse()
-            js.add(.loadHtmlInline(windowIndex, htmlPath: "/residentialInvestmentStep2.html".append(address).appending("&storey=").appending(storey), targetID: PropertyManagerTopView.domID(windowIndex)))
+            js.add(.loadHtmlInline(windowIndex, htmlPath: API.step2html.url.append(address).append("storey", storey), targetID: PropertyManagerTopView.domID(windowIndex)))
             return js.response
         }
         
         
         // MARK: residentialInvestmentStep2.html
-        self.server.GET["/residentialInvestmentStep2.html"] = { request, _ in
+        self.server.GET[API.step2html.url] = { request, _ in
             request.disableKeepAlive = true
             
             guard let windowIndex = request.queryParam("windowIndex") else {
@@ -149,15 +174,15 @@ class ConstructionServicesAPI: RestAPI {
             data["storey"] = storeyTxt
             data["baseCost"] = offer.invoice.netValue.money
             data["elevatorCost"] = (self.gameEngine.constructionServices.priceList.residentialBuildingElevatorPricePerStorey * storey.double).money
-            data["submitUrl"] = "/validateBuildingStep2.js".append(address).appending("&storey=").appending(storeyTxt)
-            data["previousJS"] = JSCode.loadHtmlInline(windowIndex, htmlPath: "/residentialInvestmentStep1.html".append(address).appending("&storey=").appending(storeyTxt), targetID: PropertyManagerTopView.domID(windowIndex)).js
+            data["submitUrl"] = API.validateStep2js.url.append(address).append("storey", storeyTxt)
+            data["previousJS"] = JSCode.loadHtmlInline(windowIndex, htmlPath: API.step1html.url.append(address).append("storey", storeyTxt), targetID: PropertyManagerTopView.domID(windowIndex)).js
             data["windowIndex"] = windowIndex
             template.assign(variables: data)
             return template.asResponse()
         }
         
         // MARK: validateBuildingStep2.js
-        server.POST["/validateBuildingStep2.js"] = { request, _ in
+        server.POST[API.validateStep2js.url] = { request, _ in
             request.disableKeepAlive = true
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return self.jsError("Invalid request! Missing window context.")
@@ -178,12 +203,12 @@ class ConstructionServicesAPI: RestAPI {
             }
             
             let js = JSResponse()
-            js.add(.loadHtmlInline(windowIndex, htmlPath: "/residentialInvestmentStep3.html".append(address).appending("&storey=").appending(storeyTxt).appending("&elevator=").appending(elevator), targetID: PropertyManagerTopView.domID(windowIndex)))
+            js.add(.loadHtmlInline(windowIndex, htmlPath: API.step3html.url.append(address).append("storey", storeyTxt).append("elevator", elevator), targetID: PropertyManagerTopView.domID(windowIndex)))
             return js.response
         }
         
         // MARK: residentialInvestmentStep3.html
-        self.server.GET["/residentialInvestmentStep3.html"] = { request, _ in
+        self.server.GET[API.step3html.url] = { request, _ in
             request.disableKeepAlive = true
             
             guard let windowIndex = request.queryParam("windowIndex") else {
@@ -208,8 +233,8 @@ class ConstructionServicesAPI: RestAPI {
             }
             var data = [String:String]()
             data["apartmentAmount"] = ApartmentWindowSide.allCases.count.string
-            data["submitUrl"] = "/validateBuildingStep3.js".append(address)
-            data["previousJS"] = JSCode.loadHtmlInline(windowIndex, htmlPath: "/residentialInvestmentStep2.html".append(address).appending("&storey=").appending(storeyTxt), targetID: PropertyManagerTopView.domID(windowIndex)).js
+            data["submitUrl"] = API.validateStep3js.url.append(address)
+            data["previousJS"] = JSCode.loadHtmlInline(windowIndex, htmlPath: API.step2html.url.append(address).append("storey", storeyTxt), targetID: PropertyManagerTopView.domID(windowIndex)).js
             data["windowIndex"] = windowIndex
             template.assign(variables: data)
             return template.asResponse()

@@ -78,6 +78,12 @@ extension String {
         }
         return "\(self)?\(address.asQueryParams)"
     }
+    func append(_ key: String, _ value: String) -> String {
+        if self.contains("?") {
+            return "\(self)&\(key)=\(value)"
+        }
+        return "\(self)?\(key)=\(value)"
+    }
 }
 
 extension HttpServer.MethodRoute {
