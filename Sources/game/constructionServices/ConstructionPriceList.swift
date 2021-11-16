@@ -13,9 +13,15 @@ class ConstructionPriceList {
     var buildParkingPrice: Double = 130000
     var buildResidentialBuildingPrice: Double = 2300000
     var buildResidentialBuildingPricePerStorey: Double = 840000
+    var residentialBuildingElevatorPricePerStorey: Double = 23000
     
-    func buildResidentialBuildingPrice(storey: Int) -> Double {
-        return (self.buildResidentialBuildingPrice + storey.double * self.buildResidentialBuildingPricePerStorey).rounded(toPlaces: 0)
+    func buildResidentialBuildingPrice(storey: Int, elevator: Bool) -> Double {
+        var price = self.buildResidentialBuildingPrice
+        price += storey.double * self.buildResidentialBuildingPricePerStorey
+        if elevator {
+            price += storey.double * self.residentialBuildingElevatorPricePerStorey
+        }
+        return price.rounded(toPlaces: 0)
     }
 }
 
