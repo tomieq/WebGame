@@ -83,12 +83,17 @@ class ConstructionServicesAPI: RestAPI {
                 return self.htmlError("Invalid request! Missing address.")
             }
             
+            let prechoiced = request.queryParam("storey")
+            
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/constructionServices/residentialBuildingStep1.html"))
             for storey in [4,6,8,10] {
                 let offer = self.gameEngine.constructionServices.residentialBuildingOffer(landName: "", storeyAmount: storey, elevator: false, balconies: [])
                 var data = [String:String]()
                 data["storey"] = storey.string
                 data["cost"] = offer.invoice.netValue.money
+                if prechoiced == storey.string {
+                    data["checked"] = "checked"
+                }
                 template.assign(variables: data, inNest: "storeyOption")
             }
             var data = [String:String]()
@@ -145,6 +150,7 @@ class ConstructionServicesAPI: RestAPI {
             data["baseCost"] = offer.invoice.netValue.money
             data["elevatorCost"] = (self.gameEngine.constructionServices.priceList.residentialBuildingElevatorPricePerStorey * storey.double).money
             data["submitUrl"] = "/validateBuildingStep2.js".append(address).appending("&storey=").appending(storeyTxt)
+            data["previousJS"] = JSCode.loadHtmlInline(windowIndex, htmlPath: "/residentialInvestmentStep1.html".append(address).appending("&storey=").appending(storeyTxt), targetID: PropertyManagerTopView.domID(windowIndex)).js
             data["windowIndex"] = windowIndex
             template.assign(variables: data)
             return template.asResponse()
@@ -203,6 +209,7 @@ class ConstructionServicesAPI: RestAPI {
             var data = [String:String]()
             data["apartmentAmount"] = ApartmentWindowSide.allCases.count.string
             data["submitUrl"] = "/validateBuildingStep3.js".append(address)
+            data["previousJS"] = JSCode.loadHtmlInline(windowIndex, htmlPath: "/residentialInvestmentStep2.html".append(address).appending("&storey=").appending(storeyTxt), targetID: PropertyManagerTopView.domID(windowIndex)).js
             data["windowIndex"] = windowIndex
             template.assign(variables: data)
             return template.asResponse()
