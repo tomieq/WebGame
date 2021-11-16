@@ -266,6 +266,8 @@ extension TileType {
             return 2
         case .office:
             return 15
+        case .market:
+            return 6
         default:
             return 0
         }
