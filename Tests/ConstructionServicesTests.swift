@@ -181,7 +181,7 @@ final class ConstructionServicesTests: XCTestCase {
         constructionServices.constructionDuration.residentialBuilding = 100
         constructionServices.constructionDuration.residentialBuildingPerStorey = 10
         
-        let offer = constructionServices.residentialBuildingOffer(landName: "Test", storeyAmount: 4)
+        let offer = constructionServices.residentialBuildingOffer(landName: "Test", storeyAmount: 4, elevator: true, balconies: [])
         XCTAssertEqual(offer.duration, 140)
     }
     
@@ -190,7 +190,7 @@ final class ConstructionServicesTests: XCTestCase {
         constructionServices.priceList.buildResidentialBuildingPrice = 10000
         constructionServices.priceList.buildResidentialBuildingPricePerStorey = 20
         
-        let offer = constructionServices.residentialBuildingOffer(landName: "test", storeyAmount: 3)
+        let offer = constructionServices.residentialBuildingOffer(landName: "test", storeyAmount: 3, elevator: true, balconies: [])
         XCTAssertEqual(offer.invoice.netValue, 10060)
     }
     
@@ -201,14 +201,14 @@ final class ConstructionServicesTests: XCTestCase {
         constructionServices.priceList.buildResidentialBuildingPrice = 10000
         constructionServices.priceList.buildResidentialBuildingPricePerStorey = 1000
         
-        let offer = constructionServices.residentialBuildingOffer(landName: "test", storeyAmount: 10)
+        let offer = constructionServices.residentialBuildingOffer(landName: "test", storeyAmount: 10, elevator: true, balconies: [])
         XCTAssertEqual(offer.invoice.netValue, 20000)
         XCTAssertEqual(offer.invoice.tax, 10000)
     }
     
     func test_startResidentialBuildingInvestment_addressNotFound() {
         let constructionServices = self.makeConstructionServices()
-        XCTAssertThrowsError(try constructionServices.startResidentialBuildingInvestment(address: MapPoint(x: 0, y: 0), playerUUID: "player", storeyAmount: 4)){ error in
+        XCTAssertThrowsError(try constructionServices.startResidentialBuildingInvestment(address: MapPoint(x: 0, y: 0), playerUUID: "player", storeyAmount: 4, elevator: true, balconies: [])){ error in
             XCTAssertEqual(error as? ConstructionServicesError, .addressNotFound)
         }
     }
@@ -219,7 +219,7 @@ final class ConstructionServicesTests: XCTestCase {
         let land = Land(address: MapPoint(x: 0, y: 0))
         constructionServices.dataStore.create(land)
         
-        XCTAssertThrowsError(try constructionServices.startResidentialBuildingInvestment(address: MapPoint(x: 0, y: 0), playerUUID: "player", storeyAmount: 4)){ error in
+        XCTAssertThrowsError(try constructionServices.startResidentialBuildingInvestment(address: MapPoint(x: 0, y: 0), playerUUID: "player", storeyAmount: 4, elevator: true, balconies: [])){ error in
             XCTAssertEqual(error as? ConstructionServicesError, .playerIsNotPropertyOwner)
         }
     }
@@ -230,7 +230,7 @@ final class ConstructionServicesTests: XCTestCase {
         let land = Land(address: MapPoint(x: 0, y: 0), ownerUUID: "tester")
         constructionServices.dataStore.create(land)
         
-        XCTAssertThrowsError(try constructionServices.startResidentialBuildingInvestment(address: MapPoint(x: 0, y: 0), playerUUID: "tester", storeyAmount: 4)){ error in
+        XCTAssertThrowsError(try constructionServices.startResidentialBuildingInvestment(address: MapPoint(x: 0, y: 0), playerUUID: "tester", storeyAmount: 4, elevator: true, balconies: [])){ error in
             XCTAssertEqual(error as? ConstructionServicesError, .noDirectAccessToRoad)
         }
     }
@@ -249,7 +249,7 @@ final class ConstructionServicesTests: XCTestCase {
         constructionServices.priceList.buildResidentialBuildingPrice = 500
         constructionServices.priceList.buildResidentialBuildingPricePerStorey = 100
 
-        XCTAssertThrowsError(try constructionServices.startResidentialBuildingInvestment(address: MapPoint(x: 0, y: 1), playerUUID: "p1", storeyAmount: 4)){ error in
+        XCTAssertThrowsError(try constructionServices.startResidentialBuildingInvestment(address: MapPoint(x: 0, y: 1), playerUUID: "p1", storeyAmount: 4, elevator: true, balconies: [])){ error in
             XCTAssertEqual(error as? ConstructionServicesError, .financialTransactionProblem(.notEnoughMoney))
         }
     }
@@ -273,7 +273,7 @@ final class ConstructionServicesTests: XCTestCase {
         constructionServices.priceList.buildResidentialBuildingPrice = 500
         constructionServices.priceList.buildResidentialBuildingPricePerStorey = 100
 
-        XCTAssertNoThrow(try constructionServices.startResidentialBuildingInvestment(address: MapPoint(x: 0, y: 1), playerUUID: "p1", storeyAmount: 4))
+        XCTAssertNoThrow(try constructionServices.startResidentialBuildingInvestment(address: MapPoint(x: 0, y: 1), playerUUID: "p1", storeyAmount: 4, elevator: true, balconies: []))
         XCTAssertEqual(constructionServices.mapManager.map.getTile(address: address)?.type, .buildingUnderConstruction(size: 4))
         let building: ResidentialBuilding? = dataStore.find(address: address)
         XCTAssertNotNil(building)
@@ -300,7 +300,7 @@ final class ConstructionServicesTests: XCTestCase {
         constructionServices.priceList.buildResidentialBuildingPrice = 500
         constructionServices.priceList.buildResidentialBuildingPricePerStorey = 100
 
-        XCTAssertNoThrow(try constructionServices.startResidentialBuildingInvestment(address: MapPoint(x: 0, y: 1), playerUUID: "p1", storeyAmount: 4))
+        XCTAssertNoThrow(try constructionServices.startResidentialBuildingInvestment(address: MapPoint(x: 0, y: 1), playerUUID: "p1", storeyAmount: 4, elevator: true, balconies: []))
         XCTAssertEqual(constructionServices.mapManager.map.getTile(address: address)?.type, .buildingUnderConstruction(size: 4))
         let building: ResidentialBuilding? = constructionServices.dataStore.find(address: address)
         XCTAssertNotNil(building)
@@ -327,7 +327,7 @@ final class ConstructionServicesTests: XCTestCase {
         
         XCTAssertIdentical(constructionServices.time, constructionServices.time)
 
-        XCTAssertNoThrow(try constructionServices.startResidentialBuildingInvestment(address: MapPoint(x: 0, y: 1), playerUUID: "p1", storeyAmount: 4))
+        XCTAssertNoThrow(try constructionServices.startResidentialBuildingInvestment(address: MapPoint(x: 0, y: 1), playerUUID: "p1", storeyAmount: 4, elevator: true, balconies: []))
         XCTAssertEqual(constructionServices.mapManager.map.getTile(address: address)?.type, .buildingUnderConstruction(size: 4))
         var building: ResidentialBuilding? = constructionServices.dataStore.find(address: address)
         XCTAssertNotNil(building)

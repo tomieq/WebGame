@@ -53,7 +53,7 @@ class ConstructionServices {
         return ConstructionOffer(invoice: invoice, duration: duration)
     }
     
-    func residentialBuildingOffer(landName: String, storeyAmount: Int) -> ConstructionOffer {
+    func residentialBuildingOffer(landName: String, storeyAmount: Int, elevator: Bool, balconies: [ApartmentWindowSide]) -> ConstructionOffer {
         let invoice = Invoice(title: "Build \(storeyAmount)-storey \(landName)", netValue: self.priceList.buildResidentialBuildingPrice(storey: storeyAmount), taxRate: self.centralBank.taxRates.investmentTax)
         let duration = self.constructionDuration.residentialBuilding(storey: storeyAmount)
         return ConstructionOffer(invoice: invoice, duration: duration)
@@ -135,7 +135,7 @@ class ConstructionServices {
         self.delegate?.reloadMap()
     }
 
-    func startResidentialBuildingInvestment(address: MapPoint, playerUUID: String, storeyAmount: Int) throws {
+    func startResidentialBuildingInvestment(address: MapPoint, playerUUID: String, storeyAmount: Int, elevator: Bool, balconies: [ApartmentWindowSide]) throws {
         
         guard let land: Land = self.dataStore.find(address: address) else {
             throw ConstructionServicesError.addressNotFound
@@ -147,11 +147,11 @@ class ConstructionServices {
             throw ConstructionServicesError.noDirectAccessToRoad
         }
         
-        let offer = residentialBuildingOffer(landName: land.name, storeyAmount: storeyAmount)
+        let offer = residentialBuildingOffer(landName: land.name, storeyAmount: storeyAmount, elevator: elevator, balconies: balconies)
         
         let constructionFinishMonth = self.time.month + offer.duration
         let investmentsNetValue = offer.invoice.netValue
-        let building = ResidentialBuilding(land: land, storeyAmount: storeyAmount, constructionFinishMonth: constructionFinishMonth, investmentsNetValue: investmentsNetValue)
+        let building = ResidentialBuilding(land: land, storeyAmount: storeyAmount, constructionFinishMonth: constructionFinishMonth, investmentsNetValue: investmentsNetValue, elevator: elevator, balconies: balconies)
         self.dataStore.create(building)
         // process the transaction
         let governmentID = SystemPlayer.government.uuid

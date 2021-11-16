@@ -54,7 +54,7 @@ class PropertyValuer {
     
     private func estimateResidentialBuildingValue(_ address: MapPoint) -> Double {
         guard let building: ResidentialBuilding = self.dataStore.find(address: address) else { return 0 }
-        let constructionOffer = self.constructionServices.residentialBuildingOffer(landName: "", storeyAmount: building.storeyAmount)
+        let constructionOffer = self.constructionServices.residentialBuildingOffer(landName: "", storeyAmount: building.storeyAmount, elevator: building.hasElevator, balconies: building.balconies)
         let monthlyCost = self.balanceCalculator.getBuildingUnderConstructionMontlyCosts().map{ $0.netValue }.reduce(0, +)
         let costs = constructionOffer.duration.double * monthlyCost
         let basePrice = constructionOffer.invoice.netValue + costs + self.estimateLandValue(address)

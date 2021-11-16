@@ -1,0 +1,24 @@
+<div style="font-size: 0.9em; margin: 5px; width: 400px;">
+    <p>
+    This wizard will take you step by step through a process of configuring your Residential Building Investment
+    </p>
+    <hr>
+
+    <form onsubmit="event.preventDefault();  formSubmit({windowIndex}, '{submitUrl}', this);">
+        <b>Number of storeys</b>
+        <div class="float-right text-dark">Base cost</div>
+        <br><br>
+    [START storeyOption]
+    <div class="w100" style="border-bottom: 1px solid #003649;">
+      <input type="radio" name="storey" id="s{storey}" value="{storey}" {checked}>
+      <label for="s{storey}">{storey} storey building</label>
+      <div class="float-right text-dark">{cost}</div>
+    </div>
+    [END storeyOption]
+    <br>
+    <div style="text-align: center;">
+        <input type="submit" class="btn btn-sm" value="Next step"/>
+    </div>
+    </form>
+
+</div>

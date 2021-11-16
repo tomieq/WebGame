@@ -35,7 +35,7 @@ class MapStorageSync {
                     balconies.append(.eastSouth)
                     balconies.append(.eastNorth)
                 }
-                let building = ResidentialBuilding(land: Land(address: tile.address, ownerUUID: SystemPlayer.government.uuid), storeyAmount: size, balconies: balconies)
+                let building = ResidentialBuilding(land: Land(address: tile.address, ownerUUID: SystemPlayer.government.uuid), storeyAmount: size, elevator: true, balconies: balconies)
                 buildingToAdd.append(building)
             case .parking(_):
                 let parking = Parking(land: Land(address: tile.address, ownerUUID: SystemPlayer.investor.uuid))

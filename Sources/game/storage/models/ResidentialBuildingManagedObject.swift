@@ -21,6 +21,7 @@ class ResidentialBuildingManagedObject: Codable {
     var condition: Double
     let storeyAmount: Int
     let balconies: String
+    let hasElevator: Bool
 
     init(_ building: ResidentialBuilding) {
         self.uuid = building.uuid.isEmpty ? UUID().uuidString : building.uuid
@@ -35,5 +36,6 @@ class ResidentialBuildingManagedObject: Codable {
         self.condition = building.condition
         self.storeyAmount = building.storeyAmount
         self.balconies = building.balconies.map{$0.rawValue}.joined(separator: ",")
+        self.hasElevator = building.hasElevator
     }
 }

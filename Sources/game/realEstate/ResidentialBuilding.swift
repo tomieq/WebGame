@@ -20,6 +20,7 @@ struct ResidentialBuilding: Property {
     let storeyAmount: Int
     let isUnderConstruction: Bool
     let constructionFinishMonth: Int
+    let hasElevator: Bool
     let balconies: [ApartmentWindowSide]
     
     var numberOfFlats: Int {
@@ -42,7 +43,7 @@ struct ResidentialBuilding: Property {
         return .building(size: self.storeyAmount, balcony: balconyType)
     }
     
-    init(land: Land, storeyAmount: Int, constructionFinishMonth: Int? = nil, investmentsNetValue: Double = 0, balconies: [ApartmentWindowSide] = []) {
+    init(land: Land, storeyAmount: Int, constructionFinishMonth: Int? = nil, investmentsNetValue: Double = 0, elevator: Bool = true, balconies: [ApartmentWindowSide] = []) {
         self.uuid = land.uuid
         self.address = land.address
         self.name = "\(land.name) Apartments"
@@ -54,6 +55,7 @@ struct ResidentialBuilding: Property {
         self.isUnderConstruction = constructionFinishMonth == nil ? false : true
         self.constructionFinishMonth = constructionFinishMonth ?? 0
         self.balconies = []
+        self.hasElevator = elevator
     }
     
     init(_ managedObject: ResidentialBuildingManagedObject) {
@@ -68,6 +70,7 @@ struct ResidentialBuilding: Property {
         self.condition = managedObject.condition
         self.storeyAmount = managedObject.storeyAmount
         self.balconies = managedObject.balconies.components(separatedBy: ",").compactMap{ ApartmentWindowSide(rawValue: $0) }
+        self.hasElevator = managedObject.hasElevator
     }
 }
 
