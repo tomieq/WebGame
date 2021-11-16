@@ -13,6 +13,7 @@ class ConstructionServicesAPI: RestAPI {
         case step1html
         case step2html
         case step3html
+        case step4html
         case validateStep1js
         case validateStep2js
         case validateStep3js
@@ -25,6 +26,8 @@ class ConstructionServicesAPI: RestAPI {
                 return "/residentialInvestmentStep2.html"
             case .step3html:
                 return "/residentialInvestmentStep3.html"
+            case .step4html:
+                return "/residentialInvestmentStep4.html"
             case .validateStep1js:
                 return "/validateStep1.js"
             case .validateStep2js:
@@ -232,17 +235,112 @@ class ConstructionServicesAPI: RestAPI {
                 return self.htmlError("Missing storey amount")
             }
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/constructionServices/residentialBuildingStep3.html"))
+            
+            let prechoice = request.queryParam("balconies")?.components(separatedBy: ",").compactMap { ApartmentWindowSide(rawValue: $0) } ?? []
+            
             for side in ApartmentWindowSide.allCases {
                 let cost = storey.double * self.gameEngine.constructionServices.priceList.residentialBuildingBalconyCost
                 var data = [String:String]()
-                data["side"] = side.name
+                data["side"] = side.rawValue
+                data["name"] = side.name
                 data["cost"] = cost.money
+                if prechoice.contains(side) {
+                    data["checked"] = "checked"
+                }
                 template.assign(variables: data, inNest: "apartment")
             }
             var data = [String:String]()
             data["apartmentAmount"] = ApartmentWindowSide.allCases.count.string
-            data["submitUrl"] = API.validateStep3js.url.append(address)
+            data["submitUrl"] = API.validateStep3js.url.append(address).append("storey", storeyTxt).append("elevator", elevatorTxt)
             data["previousJS"] = JSCode.loadHtmlInline(windowIndex, htmlPath: API.step2html.url.append(address).append("storey", storeyTxt).append("elevator", elevatorTxt), targetID: PropertyManagerTopView.domID(windowIndex)).js
+            data["windowIndex"] = windowIndex
+            template.assign(variables: data)
+            return template.asResponse()
+        }
+        
+        
+        // MARK: validateBuildingStep3.js
+        server.POST[API.validateStep3js.url] = { request, _ in
+            request.disableKeepAlive = true
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return self.jsError("Invalid request! Missing window context.")
+            }
+            guard let address = request.mapPoint else {
+                return self.jsError("Invalid request! Missing address.")
+            }
+            
+            guard let storeyTxt = request.queryParam("storey"), let storey = Int(storeyTxt) else {
+                return self.jsError("Missing storey amount")
+            }
+            guard [2,4,6,8,10].contains(storey) else {
+                return self.jsError("Invalid storey amount")
+            }
+            guard let elevatorTxt = request.queryParam("elevator"), let elevator = Bool(elevatorTxt) else {
+                return self.jsError("Invalid elevator value")
+            }
+
+            let formData = request.flatFormData()
+            var balconies: [ApartmentWindowSide] = []
+            for balcony in ApartmentWindowSide.allCases {
+                if let _ = formData[balcony.rawValue] {
+                    balconies.append(balcony)
+                }
+            }
+            
+            let url = API.step4html.url
+                .append(address)
+                .append("storey", storeyTxt)
+                .append("elevator", elevatorTxt)
+                .append("balconies", balconies.map{$0.rawValue}.joined(separator: ","))
+            
+            let js = JSResponse()
+            js.add(.loadHtmlInline(windowIndex, htmlPath: url, targetID: PropertyManagerTopView.domID(windowIndex)))
+            return js.response
+        }
+        
+        // MARK: residentialInvestmentStep4.html
+        self.server.GET[API.step4html.url] = { request, _ in
+            request.disableKeepAlive = true
+            
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return self.htmlError("Invalid request! Missing window context.")
+            }
+            guard let address = request.mapPoint else {
+                return self.htmlError("Invalid request! Missing address.")
+            }
+            guard let storeyTxt = request.queryParam("storey"), let storey = Int(storeyTxt) else {
+                return self.htmlError("Missing storey amount")
+            }
+            guard let elevatorTxt = request.queryParam("elevator"), let elevator = Bool(elevatorTxt) else {
+                return self.htmlError("Missing storey amount")
+            }
+            guard let balconiesTxt = request.queryParam("balconies") else {
+                return self.htmlError("Missing balcony info")
+            }
+            let balconies = balconiesTxt.components(separatedBy: ",").compactMap { ApartmentWindowSide(rawValue: $0) }
+            
+            let offer = self.gameEngine.constructionServices.residentialBuildingOffer(landName: "", storeyAmount: storey, elevator: elevator, balconies: balconies)
+            
+            let template = Template(raw: ResourceCache.shared.getAppResource("templates/constructionServices/residentialBuildingStep4.html"))
+            var data = [String:String]()
+            data["storey"] = storeyTxt
+            data["balconies"] = balconiesTxt
+            data["balconiesReadable"] = balconies.map{ $0.name }.chunked(by: 2).map{ $0.joined(separator: ", ") }.joined(separator: "<br>")
+            data["elevator"] = elevatorTxt
+            data["elevatorReadable"] = elevator ? "Yes" : "No"
+            
+            data["investmentCost"] = offer.invoice.netValue.money
+            data["investmentTax"] = offer.invoice.tax.money
+            data["investmentTotal"] = offer.invoice.total.money
+            data["investmentDuration"] = "\(offer.duration) months"
+            data["taxRate"] = (offer.invoice.taxRate * 100).rounded(toPlaces: 0).string
+            
+            let previousUrl = API.step3html.url
+                .append(address).append("storey", storeyTxt)
+                .append("elevator", elevatorTxt)
+                .append("balconies", balconiesTxt)
+            data["submitUrl"] = API.validateStep3js.url.append(address).append("storey", storeyTxt).append("elevator", elevatorTxt)
+            data["previousJS"] = JSCode.loadHtmlInline(windowIndex, htmlPath: previousUrl, targetID: PropertyManagerTopView.domID(windowIndex)).js
             data["windowIndex"] = windowIndex
             template.assign(variables: data)
             return template.asResponse()

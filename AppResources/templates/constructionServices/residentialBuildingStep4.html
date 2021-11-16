@@ -1,0 +1,60 @@
+<div style="font-size: 0.9em; margin: 5px; width: 400px;">
+    <p>
+    Residential building investment summary:
+    </p>
+    <hr>
+
+    <form onsubmit="event.preventDefault();  formSubmit({windowIndex}, '{submitUrl}', this);">
+        <input type="hidden" name="storey" value="{storey}">
+        <input type="hidden" name="elevator" value="{elevator}">
+        <input type="hidden" name="balconies" value="{balconies}">
+        
+        <div class="lightBorder" style="width: 380px; padding:10px; margin: 3px;">
+            <div class="centered" style="font-weight: bold;">{name}</div>
+            <table style="width: 100%; font-size: 0.9em;">
+            <tbody>
+            <tr>
+                <td>Storey amount:</td>
+                <td style="text-align: right;"><b>{storey}</b></td>
+            </tr>
+            <tr>
+                <td>Elevator:</td>
+                <td style="text-align: right;"><b>{elevatorReadable}</b></td>
+            </tr>
+            <tr>
+                <td>Balconies:</td>
+                <td style="text-align: right;">{balconiesReadable}</td>
+            </tr>
+            <tr>
+                <td colspan=2><hr></td>
+            </tr>
+            <tr>
+                <td>Build costs:</td>
+                <td style="text-align: right;">{investmentCost}</td>
+            </tr>
+            <tr>
+                <td>Value added tax ({taxRate}%)</td>
+                <td style="text-align: right;">{investmentTax}</td>
+            </tr>
+            <tr>
+                <td>Total costs</td>
+                <td style="text-align: right;">{investmentTotal}</td>
+            </tr>
+            <tr>
+                <td>Build time</td>
+                <td style="text-align: right;">{investmentDuration}</td>
+            </tr>
+            </tbody>
+            </table>
+        </div>
+    <br>
+    <hr>
+    <div style="text-align: center;">
+        <button type="button" onclick="{previousJS}" class="float-left btn btn-sm">Previous step</button>
+        <input type="submit" class="btn btn-sm float-right" value="Start Investment"/>
+    </div>
+    </form>
+
+</div>
+
+
