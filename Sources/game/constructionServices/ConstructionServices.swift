@@ -54,7 +54,7 @@ class ConstructionServices {
     }
     
     func residentialBuildingOffer(landName: String, storeyAmount: Int, elevator: Bool, balconies: [ApartmentWindowSide]) -> ConstructionOffer {
-        let invoice = Invoice(title: "Build \(storeyAmount)-storey \(landName)", netValue: self.priceList.buildResidentialBuildingPrice(storey: storeyAmount, elevator: elevator), taxRate: self.centralBank.taxRates.investmentTax)
+        let invoice = Invoice(title: "Build \(storeyAmount)-storey \(landName)", netValue: self.priceList.buildResidentialBuildingPrice(storey: storeyAmount, elevator: elevator, balconies: balconies), taxRate: self.centralBank.taxRates.investmentTax)
         let duration = self.constructionDuration.residentialBuilding(storey: storeyAmount)
         return ConstructionOffer(invoice: invoice, duration: duration)
     }

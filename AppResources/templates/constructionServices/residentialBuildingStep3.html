@@ -1,0 +1,27 @@
+<div style="font-size: 0.9em; margin: 5px; width: 400px;">
+    <p>
+    Each storey contains of {apartmentAmount} apartments. You can choose which ones will have the balcony.
+    It's abvious that apartments with balcony will be more pricey. Of course it increases investment cost.
+    Below table presents the extra cost for installing all the balconies.
+    </p>
+    <hr>
+
+    <form onsubmit="event.preventDefault();  formSubmit({windowIndex}, '{submitUrl}', this);">
+        <b>Apartment</b>
+        <div class="float-right text-dark">Additional cost</div>
+        <br><br>
+    [START apartment]
+    <div class="w100" style="border-bottom: 1px solid #003649;">
+      <input type="checkbox" name="{side}" id="{side}" value="true" {checked}>
+      <label for="{side}">Install balcony to all {side} apartments</label>
+      <div class="float-right text-dark">+ {cost}</div>
+    </div>
+    [END apartment]
+    <br>
+    <div style="text-align: center;">
+        <input type="submit" class="btn btn-sm" value="Next step"/>
+    </div>
+    </form>
+
+</div>
+

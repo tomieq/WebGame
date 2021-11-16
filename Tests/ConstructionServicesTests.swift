@@ -189,9 +189,10 @@ final class ConstructionServicesTests: XCTestCase {
         let constructionServices = self.makeConstructionServices()
         constructionServices.priceList.buildResidentialBuildingPrice = 10000
         constructionServices.priceList.buildResidentialBuildingPricePerStorey = 20
+        constructionServices.priceList.residentialBuildingElevatorPricePerStorey = 2
         
         let offer = constructionServices.residentialBuildingOffer(landName: "test", storeyAmount: 3, elevator: true, balconies: [])
-        XCTAssertEqual(offer.invoice.netValue, 10060)
+        XCTAssertEqual(offer.invoice.netValue, 10066)
     }
     
     func test_residentialBuildingOfferTaxRate() {
@@ -201,7 +202,7 @@ final class ConstructionServicesTests: XCTestCase {
         constructionServices.priceList.buildResidentialBuildingPrice = 10000
         constructionServices.priceList.buildResidentialBuildingPricePerStorey = 1000
         
-        let offer = constructionServices.residentialBuildingOffer(landName: "test", storeyAmount: 10, elevator: true, balconies: [])
+        let offer = constructionServices.residentialBuildingOffer(landName: "test", storeyAmount: 10, elevator: false, balconies: [])
         XCTAssertEqual(offer.invoice.netValue, 20000)
         XCTAssertEqual(offer.invoice.tax, 10000)
     }
@@ -273,7 +274,7 @@ final class ConstructionServicesTests: XCTestCase {
         constructionServices.priceList.buildResidentialBuildingPrice = 500
         constructionServices.priceList.buildResidentialBuildingPricePerStorey = 100
 
-        XCTAssertNoThrow(try constructionServices.startResidentialBuildingInvestment(address: MapPoint(x: 0, y: 1), playerUUID: "p1", storeyAmount: 4, elevator: true, balconies: []))
+        XCTAssertNoThrow(try constructionServices.startResidentialBuildingInvestment(address: MapPoint(x: 0, y: 1), playerUUID: "p1", storeyAmount: 4, elevator: false, balconies: []))
         XCTAssertEqual(constructionServices.mapManager.map.getTile(address: address)?.type, .buildingUnderConstruction(size: 4))
         let building: ResidentialBuilding? = dataStore.find(address: address)
         XCTAssertNotNil(building)
@@ -300,7 +301,7 @@ final class ConstructionServicesTests: XCTestCase {
         constructionServices.priceList.buildResidentialBuildingPrice = 500
         constructionServices.priceList.buildResidentialBuildingPricePerStorey = 100
 
-        XCTAssertNoThrow(try constructionServices.startResidentialBuildingInvestment(address: MapPoint(x: 0, y: 1), playerUUID: "p1", storeyAmount: 4, elevator: true, balconies: []))
+        XCTAssertNoThrow(try constructionServices.startResidentialBuildingInvestment(address: MapPoint(x: 0, y: 1), playerUUID: "p1", storeyAmount: 4, elevator: false, balconies: []))
         XCTAssertEqual(constructionServices.mapManager.map.getTile(address: address)?.type, .buildingUnderConstruction(size: 4))
         let building: ResidentialBuilding? = constructionServices.dataStore.find(address: address)
         XCTAssertNotNil(building)
@@ -327,7 +328,7 @@ final class ConstructionServicesTests: XCTestCase {
         
         XCTAssertIdentical(constructionServices.time, constructionServices.time)
 
-        XCTAssertNoThrow(try constructionServices.startResidentialBuildingInvestment(address: MapPoint(x: 0, y: 1), playerUUID: "p1", storeyAmount: 4, elevator: true, balconies: []))
+        XCTAssertNoThrow(try constructionServices.startResidentialBuildingInvestment(address: MapPoint(x: 0, y: 1), playerUUID: "p1", storeyAmount: 4, elevator: false, balconies: []))
         XCTAssertEqual(constructionServices.mapManager.map.getTile(address: address)?.type, .buildingUnderConstruction(size: 4))
         var building: ResidentialBuilding? = constructionServices.dataStore.find(address: address)
         XCTAssertNotNil(building)

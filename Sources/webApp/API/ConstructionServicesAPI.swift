@@ -55,6 +55,158 @@ class ConstructionServicesAPI: RestAPI {
             code.add(.closeWindow(windowIndex))
             return code.response
         }
+        
+        // MARK: .residentialBuildingInvestmentWizard
+        server.GET[.residentialBuildingInvestmentWizard] = { request, _ in
+            request.disableKeepAlive = true
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return self.jsError("Invalid request! Missing window context.")
+            }
+            guard let address = request.mapPoint else {
+                return self.jsError("Invalid request! Missing address.")
+            }
+            
+            let js = JSResponse()
+            js.add(.loadHtmlInline(windowIndex, htmlPath: "/residentialInvestmentStep1.html".append(address), targetID: PropertyManagerTopView.domID(windowIndex)))
+            return js.response
+        }
+        
+        
+        // MARK: residentialInvestmentStep1.html
+        self.server.GET["/residentialInvestmentStep1.html"] = { request, _ in
+            request.disableKeepAlive = true
+            
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return self.htmlError("Invalid request! Missing window context.")
+            }
+            guard let address = request.mapPoint else {
+                return self.htmlError("Invalid request! Missing address.")
+            }
+            
+            let template = Template(raw: ResourceCache.shared.getAppResource("templates/constructionServices/residentialBuildingStep1.html"))
+            for storey in [4,6,8,10] {
+                let offer = self.gameEngine.constructionServices.residentialBuildingOffer(landName: "", storeyAmount: storey, elevator: false, balconies: [])
+                var data = [String:String]()
+                data["storey"] = storey.string
+                data["cost"] = offer.invoice.netValue.money
+                template.assign(variables: data, inNest: "storeyOption")
+            }
+            var data = [String:String]()
+            data["submitUrl"] = "/validateBuildingStep1.js".append(address)
+            data["windowIndex"] = windowIndex
+            template.assign(variables: data)
+            return template.asResponse()
+        }
+        
+        // MARK: validateBuildingStep1.js
+        server.POST["/validateBuildingStep1.js"] = { request, _ in
+            request.disableKeepAlive = true
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return self.jsError("Invalid request! Missing window context.")
+            }
+            guard let address = request.mapPoint else {
+                return self.jsError("Invalid request! Missing address.")
+            }
+            
+            let formData = request.flatFormData()
+            guard let storey = formData["storey"] else {
+                return self.jsError("Please choose storey amount")
+            }
+            guard [4,6,8,10].contains(Int(storey)) else {
+                return self.jsError("Invalid storey amount")
+            }
+            
+            let js = JSResponse()
+            js.add(.loadHtmlInline(windowIndex, htmlPath: "/residentialInvestmentStep2.html".append(address).appending("&storey=").appending(storey), targetID: PropertyManagerTopView.domID(windowIndex)))
+            return js.response
+        }
+        
+        
+        // MARK: residentialInvestmentStep2.html
+        self.server.GET["/residentialInvestmentStep2.html"] = { request, _ in
+            request.disableKeepAlive = true
+            
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return self.htmlError("Invalid request! Missing window context.")
+            }
+            guard let address = request.mapPoint else {
+                return self.htmlError("Invalid request! Missing address.")
+            }
+            guard let storeyTxt = request.queryParam("storey"), let storey = Int(storeyTxt) else {
+                return self.htmlError("Missing storey amount")
+            }
+            
+            let offer = self.gameEngine.constructionServices.residentialBuildingOffer(landName: "", storeyAmount: storey, elevator: false, balconies: [])
+            
+            let template = Template(raw: ResourceCache.shared.getAppResource("templates/constructionServices/residentialBuildingStep2.html"))
+
+            var data = [String:String]()
+            data["storey"] = storeyTxt
+            data["baseCost"] = offer.invoice.netValue.money
+            data["elevatorCost"] = (self.gameEngine.constructionServices.priceList.residentialBuildingElevatorPricePerStorey * storey.double).money
+            data["submitUrl"] = "/validateBuildingStep2.js".append(address).appending("&storey=").appending(storeyTxt)
+            data["windowIndex"] = windowIndex
+            template.assign(variables: data)
+            return template.asResponse()
+        }
+        
+        // MARK: validateBuildingStep2.js
+        server.POST["/validateBuildingStep2.js"] = { request, _ in
+            request.disableKeepAlive = true
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return self.jsError("Invalid request! Missing window context.")
+            }
+            guard let address = request.mapPoint else {
+                return self.jsError("Invalid request! Missing address.")
+            }
+            
+            guard let storeyTxt = request.queryParam("storey") else {
+                return self.jsError("Missing storey amount")
+            }
+            let formData = request.flatFormData()
+            guard let elevator = formData["elevator"] else {
+                return self.jsError("Please choose elevator option")
+            }
+            guard let _ = Bool(elevator) else {
+                return self.jsError("Invalid elevator value")
+            }
+            
+            let js = JSResponse()
+            js.add(.loadHtmlInline(windowIndex, htmlPath: "/residentialInvestmentStep3.html".append(address).appending("&storey=").appending(storeyTxt).appending("&elevator=").appending(elevator), targetID: PropertyManagerTopView.domID(windowIndex)))
+            return js.response
+        }
+        
+        // MARK: residentialInvestmentStep3.html
+        self.server.GET["/residentialInvestmentStep3.html"] = { request, _ in
+            request.disableKeepAlive = true
+            
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return self.htmlError("Invalid request! Missing window context.")
+            }
+            guard let address = request.mapPoint else {
+                return self.htmlError("Invalid request! Missing address.")
+            }
+            guard let storeyTxt = request.queryParam("storey"), let storey = Int(storeyTxt) else {
+                return self.htmlError("Missing storey amount")
+            }
+            guard let elevatorTxt = request.queryParam("elevator") else {
+                return self.htmlError("Missing storey amount")
+            }
+            let template = Template(raw: ResourceCache.shared.getAppResource("templates/constructionServices/residentialBuildingStep3.html"))
+            for side in ApartmentWindowSide.allCases {
+                let cost = storey.double * self.gameEngine.constructionServices.priceList.residentialBuildingBalconyCost
+                var data = [String:String]()
+                data["side"] = side.name
+                data["cost"] = cost.money
+                template.assign(variables: data, inNest: "apartment")
+            }
+            var data = [String:String]()
+            data["apartmentAmount"] = ApartmentWindowSide.allCases.count.string
+            data["submitUrl"] = "/validateBuildingStep3.js".append(address)
+            data["windowIndex"] = windowIndex
+            template.assign(variables: data)
+            return template.asResponse()
+        }
     }
     
 }

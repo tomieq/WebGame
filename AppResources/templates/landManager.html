@@ -26,16 +26,27 @@
         <td>Build time</td>
         <td style="text-align: right;">{investmentDuration}</td>
     </tr>
-    <tr>
-        <td>Potential income/profit</td>
-        <td class="light hand" style="text-align: right;">Check</td>
-    </tr>
     </tbody>
     </table>
     <br>
     <div class="centered" style="margin-top: 15px;"><button class="btn" onclick="{actionJS}">{actionTitle}</button></div>
 </div>
 [END investment]
+[START configurator]
+<div class="lightBorder" style="width: 225px; padding:10px; margin: 3px; float: left">
+    <div class="centered" style="font-weight: bold;">{name}</div>
+    <br>
+    <div class="float-right" style="font-size: 0.8em; width: 110px;">
+    Build cost starts from<br>
+    {investmentCost}
+    </div>
+    <div class="blue-border" style="width: 100px; text-align: center;">
+        <img src="{tileUrl}" class="centered" style="width: 70px; height: auto;"/>
+    </div>
+    <div style="clear: both;"></div>
+    <div class="centered" style="margin-top: 15px;"><button class="btn" onclick="{actionJS}">{actionTitle}</button></div>
+</div>
+[END configurator]
 
 <div style="clear: both;"></div>
 <br>

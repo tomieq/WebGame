@@ -136,6 +136,10 @@ hr.orange {
     float: right;
 }
 
+.float-left {
+    float: left;
+}
+
 .w100 {
     width: 100%;
 }

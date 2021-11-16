@@ -1,0 +1,31 @@
+
+<div style="font-size: 0.9em; margin: 5px; width: 400px;">
+    <p>
+    Base price for {storey} storey residential bulding is {baseCost}
+    </p>
+    <hr>
+
+    <form onsubmit="event.preventDefault();  formSubmit({windowIndex}, '{submitUrl}', this);">
+        <b>Elevator</b>
+        <div class="float-right text-dark">Additional cost</div>
+        <br><br>
+
+        <div class="w100" style="border-bottom: 1px solid #003649;">
+          <input type="radio" name="elevator" id="e0" value="false">
+          <label for="e0">No</label>
+          <div class="float-right text-dark">$0</div>
+        </div>
+        
+        <div class="w100" style="border-bottom: 1px solid #003649;">
+          <input type="radio" name="elevator" id="e1" value="true">
+          <label for="e0">Yes</label>
+          <div class="float-right text-dark">+ {elevatorCost}</div>
+        </div>
+
+    <br>
+    <div style="text-align: center;">
+        <input type="submit" class="btn btn-sm" value="Next step"/>
+    </div>
+    </form>
+
+</div>

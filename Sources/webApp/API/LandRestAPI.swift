@@ -137,22 +137,14 @@ class LandRestAPI: RestAPI {
             buildParkingData["actionTitle"] = "Start investment"
             template.assign(variables: buildParkingData, inNest: "investment")
             
-            for storey in [4, 6, 8, 10] {
-                var buildHouseData = [String:String]()
-                
-                let offer = self.gameEngine.constructionServices.residentialBuildingOffer(landName: land.name, storeyAmount: storey)
-
-                buildHouseData["name"] = "\(storey) storey Apartment"
-                buildHouseData["investmentCost"] = offer.invoice.netValue.money
-                buildHouseData["investmentCost"] = offer.invoice.netValue.money
-                buildHouseData["investmentTax"] = offer.invoice.tax.money
-                buildHouseData["investmentTotal"] = offer.invoice.total.money
-                buildHouseData["taxRate"] = (offer.invoice.taxRate * 100).rounded(toPlaces: 0).string
-                buildHouseData["investmentDuration"] = "\(offer.duration) months"
-                buildHouseData["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/startInvestment.js?type=apartment&\(land.address.asQueryParams)&storey=\(storey)"]).js
-                buildHouseData["actionTitle"] = "Start investment"
-                template.assign(variables: buildHouseData, inNest: "investment")
-            }
+            let offer = self.gameEngine.constructionServices.residentialBuildingOffer(landName: land.name, storeyAmount: 4, elevator: false, balconies: [])
+            var buildHouseData = [String:String]()
+            buildHouseData["name"] = "Residential Building"
+            buildHouseData["investmentCost"] = offer.invoice.netValue.money
+            buildHouseData["tileUrl"] = TileType.building(size: 6, balcony: .northBalcony).image.path
+            buildHouseData["actionJS"] = JSCode.runScripts(windowIndex, paths: [RestEndpoint.residentialBuildingInvestmentWizard.append(land.address)]).js
+            buildHouseData["actionTitle"] = "Start configurator"
+            template.assign(variables: buildHouseData, inNest: "configurator")
             
         } else {
             let info = "This property has no access to the public road, so the investment options are very narrow."
