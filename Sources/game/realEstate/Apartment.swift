@@ -8,10 +8,14 @@
 import Foundation
 
 enum ApartmentWindowSide: String, CaseIterable {
+    case east
     case eastSouth
     case eastNorth
+    case west
     case westSouth
     case westNorth
+    case north
+    case south
 }
 
 struct Apartment {

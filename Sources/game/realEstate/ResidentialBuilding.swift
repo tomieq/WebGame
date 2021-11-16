@@ -23,19 +23,23 @@ struct ResidentialBuilding: Property {
     let balconies: [ApartmentWindowSide]
     
     var numberOfFlats: Int {
-        return 4 * self.storeyAmount
+        return ApartmentWindowSide.allCases.count * self.storeyAmount
     }
     
     var mapTile: TileType {
-        var buildingType = BuildingBalcony.none
-        if self.balconies.contains(.eastNorth), self.balconies.contains(.eastSouth) {
-            buildingType = .northAndSouthBalcony
-        } else if self.balconies.contains(.eastNorth) {
-            buildingType = .northBalcony
-        } else if self.balconies.contains(.eastSouth) {
-            buildingType = .southBalcony
+        var balconyType = BuildingBalcony.none
+        let nothern = self.balconies.contains(.eastNorth) || self.balconies.contains(.north)
+        let southern = self.balconies.contains(.eastSouth) || self.balconies.contains(.south)
+        if nothern, southern {
+            balconyType = .northAndSouthBalcony
+        } else if nothern {
+            balconyType = .northBalcony
+        } else if southern {
+            balconyType = .southBalcony
+        } else if self.balconies.contains(.east) {
+            balconyType = .southBalcony
         }
-        return .building(size: self.storeyAmount, balcony: buildingType)
+        return .building(size: self.storeyAmount, balcony: balconyType)
     }
     
     init(land: Land, storeyAmount: Int, constructionFinishMonth: Int? = nil, investmentsNetValue: Double = 0, balconies: [ApartmentWindowSide] = []) {
