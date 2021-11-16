@@ -22,6 +22,7 @@ enum RestEndpoint {
     case loadEditSaleOfferForm
     case cancelSaleOffer
     case openFootballPitch
+    case startInvestment
     
     var base: String {
         switch self {
@@ -51,6 +52,8 @@ enum RestEndpoint {
             return "/cancelSaleOffer.js"
         case .openFootballPitch:
             return "/openFootballPitch.js"
+        case .startInvestment:
+            return "/startInvestment.js"
         }
     }
 }

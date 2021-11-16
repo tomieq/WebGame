@@ -51,55 +51,6 @@ class PropertyManagerRestAPI: RestAPI {
             return .ok(.html(template.output()))
         }
 
-        server.GET["/startInvestment.js"] = { request, _ in
-            request.disableKeepAlive = true
-            let code = JSResponse()
-            guard let windowIndex = request.queryParam("windowIndex") else {
-                return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
-            }
-            guard let address = request.mapPoint else {
-                return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
-            }
-            guard let playerSessionID = request.queryParam("playerSessionID"),
-                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                    code.add(.closeWindow(windowIndex))
-                    code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
-                    return code.response
-            }
-            guard let investmentType = request.queryParam("type") else {
-                return JSCode.showError(txt: "Invalid request! Missing or invalid investmentType.", duration: 10).response
-            }
-            
-            do {
-                switch investmentType {
-                case "road":
-                    try self.gameEngine.constructionServices.startRoadInvestment(address: address, playerUUID: session.playerUUID)
-                case "parking":
-                    try self.gameEngine.constructionServices.startParkingInvestment(address: address, playerUUID: session.playerUUID)
-                case "apartment":
-                    guard let storeyValue = request.queryParam("storey"), let storeyAmount = Int(storeyValue) else {
-                        return JSCode.showError(txt: "Invalid request! Missing storeyAmount.", duration: 10).response
-                    }
-                    try self.gameEngine.constructionServices.startResidentialBuildingInvestment(address: address, playerUUID: session.playerUUID, storeyAmount: storeyAmount)
-                default:
-                    return JSCode.showError(txt: "Invalid request! Invalid investmentType \(investmentType).", duration: 10).response
-                }
-                
-            } catch ConstructionServicesError.addressNotFound {
-                return JSCode.showError(txt: "You can build only on an empty land.", duration: 10).response
-            } catch ConstructionServicesError.playerIsNotPropertyOwner {
-                return JSCode.showError(txt: "You can invest only on your properties.", duration: 10).response
-            } catch ConstructionServicesError.noDirectAccessToRoad {
-                return JSCode.showError(txt: "You cannot build here as this property has no direct access to the public road.", duration: 10).response
-            } catch ConstructionServicesError.financialTransactionProblem(let reason) {
-                return JSCode.showError(txt: reason.description , duration: 10).response
-            } catch {
-                return JSCode.showError(txt: "Unexpected error [\(request.address ?? "")]", duration: 10).response
-            }
-            code.add(.closeWindow(windowIndex))
-            return code.response
-        }
-
         // MARK: propertyWalletBalance
         server.GET[.propertyWalletBalance] = { request, _ in
             request.disableKeepAlive = true

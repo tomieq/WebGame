@@ -120,7 +120,7 @@ class LandRestAPI: RestAPI {
             buildRoadData["investmentTotal"] = roadOffer.invoice.total.money
             buildRoadData["investmentDuration"] = "\(roadOffer.duration) months"
             buildRoadData["taxRate"] = (roadOffer.invoice.taxRate * 100).rounded(toPlaces: 0).string
-            buildRoadData["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/startInvestment.js?type=road&\(land.address.asQueryParams)"]).js
+            buildRoadData["actionJS"] = JSCode.runScripts(windowIndex, paths: [RestEndpoint.startInvestment.append(land.address).appending("&type=road")]).js
             buildRoadData["actionTitle"] = "Start investment"
             template.assign(variables: buildRoadData, inNest: "investment")
             
@@ -133,7 +133,7 @@ class LandRestAPI: RestAPI {
             buildParkingData["investmentTotal"] = parkingOffer.invoice.total.money
             buildParkingData["investmentDuration"] = "\(parkingOffer.duration) months"
             buildParkingData["taxRate"] = (parkingOffer.invoice.taxRate * 100).rounded(toPlaces: 0).string
-            buildParkingData["actionJS"] = JSCode.runScripts(windowIndex, paths: ["/startInvestment.js?type=parking&\(land.address.asQueryParams)"]).js
+            buildParkingData["actionJS"] = JSCode.runScripts(windowIndex, paths: [RestEndpoint.startInvestment.append(land.address).appending("&type=parking")]).js
             buildParkingData["actionTitle"] = "Start investment"
             template.assign(variables: buildParkingData, inNest: "investment")
             

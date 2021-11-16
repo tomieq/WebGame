@@ -28,6 +28,7 @@ public class WebApplication {
         api.append(PropertyManagerRestAPI(server, gameEngine: self.gameEngine))
         api.append(PublicPlacesAPI(server, gameEngine: self.gameEngine))
         api.append(ParkingRestAPI(server, gameEngine: self.gameEngine))
+        api.append(ConstructionServicesAPI(server, gameEngine: self.gameEngine))
         self.api = api
 
         server.GET["/"] = { request, responseHeaders in
