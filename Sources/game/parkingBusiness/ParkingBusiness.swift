@@ -120,6 +120,10 @@ class ParkingBusiness {
                     continue
                 }
             }
+            // skip parkings with no cars
+            if self.calculateCarsForParking(address: parking.address) == 0 {
+                continue
+            }
             // some time throttle
             let lastDamageTime = self.damages[parking.address]?.last?.accidentMonth ?? parking.constructionFinishMonth
             if lastDamageTime + 1 >= self.time.month {
