@@ -17,6 +17,7 @@ class ConstructionServicesAPI: RestAPI {
         case validateStep1js
         case validateStep2js
         case validateStep3js
+        case startInvestment
         
         var url: String {
             switch self {
@@ -34,6 +35,8 @@ class ConstructionServicesAPI: RestAPI {
                 return "/validateStep2.js"
             case .validateStep3js:
                 return "/validateStep3.js"
+            case .startInvestment:
+                return "/startResidentialbuildingInvestment.js"
             }
         }
     }
@@ -275,7 +278,7 @@ class ConstructionServicesAPI: RestAPI {
             guard [2,4,6,8,10].contains(storey) else {
                 return self.jsError("Invalid storey amount")
             }
-            guard let elevatorTxt = request.queryParam("elevator"), let elevator = Bool(elevatorTxt) else {
+            guard let elevatorTxt = request.queryParam("elevator"), let _ = Bool(elevatorTxt) else {
                 return self.jsError("Invalid elevator value")
             }
 
@@ -339,11 +342,64 @@ class ConstructionServicesAPI: RestAPI {
                 .append(address).append("storey", storeyTxt)
                 .append("elevator", elevatorTxt)
                 .append("balconies", balconiesTxt)
-            data["submitUrl"] = API.validateStep3js.url.append(address).append("storey", storeyTxt).append("elevator", elevatorTxt)
+            data["submitUrl"] = API.startInvestment.url
+                .append(address).append("storey", storeyTxt)
+                .append("elevator", elevatorTxt)
+                .append("balconies", balconiesTxt)
             data["previousJS"] = JSCode.loadHtmlInline(windowIndex, htmlPath: previousUrl, targetID: PropertyManagerTopView.domID(windowIndex)).js
             data["windowIndex"] = windowIndex
             template.assign(variables: data)
             return template.asResponse()
+        }
+        
+        
+        // MARK: validateBuildingStep3.js
+        server.POST[API.startInvestment.url] = { request, _ in
+            request.disableKeepAlive = true
+            guard let windowIndex = request.queryParam("windowIndex") else {
+                return self.jsError("Invalid request! Missing window context.")
+            }
+            let code = JSResponse()
+            guard let playerSessionID = request.queryParam("playerSessionID"),
+                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                    code.add(.closeWindow(windowIndex))
+                    code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
+                    return code.response
+            }
+            guard let address = request.mapPoint else {
+                return self.jsError("Invalid request! Missing address.")
+            }
+            guard let storeyTxt = request.queryParam("storey"), let storey = Int(storeyTxt) else {
+                return self.jsError("Missing storey amount")
+            }
+            guard [2,4,6,8,10].contains(storey) else {
+                return self.jsError("Invalid storey amount")
+            }
+            guard let elevatorTxt = request.queryParam("elevator"), let elevator = Bool(elevatorTxt) else {
+                return self.jsError("Invalid elevator value")
+            }
+            guard let balconiesTxt = request.queryParam("balconies") else {
+                return self.jsError("Missing balconies")
+            }
+            let balconies = balconiesTxt.components(separatedBy: ",").compactMap { ApartmentWindowSide(rawValue: $0) }
+
+            
+            do {
+                try self.gameEngine.constructionServices.startResidentialBuildingInvestment(address: address, playerUUID: session.playerUUID, storeyAmount: storey, elevator: elevator, balconies: balconies)
+                
+            } catch ConstructionServicesError.addressNotFound {
+                return self.jsError("You can build only on an empty land.")
+            } catch ConstructionServicesError.playerIsNotPropertyOwner {
+                return self.jsError("You can invest only on your properties.")
+            } catch ConstructionServicesError.noDirectAccessToRoad {
+                return self.jsError("You cannot build here as this property has no direct access to the public road.")
+            } catch ConstructionServicesError.financialTransactionProblem(let reason) {
+                return self.jsError(reason.description)
+            } catch {
+                return self.jsError("Unexpected error [\(request.address ?? "")]")
+            }
+            code.add(.closeWindow(windowIndex))
+            return code.response
         }
     }
     

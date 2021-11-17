@@ -54,7 +54,7 @@ struct ResidentialBuilding: Property {
         self.condition = 100.0
         self.isUnderConstruction = constructionFinishMonth == nil ? false : true
         self.constructionFinishMonth = constructionFinishMonth ?? 0
-        self.balconies = []
+        self.balconies = balconies
         self.hasElevator = elevator
     }
     

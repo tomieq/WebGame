@@ -16,6 +16,28 @@ enum ApartmentWindowSide: String, CaseIterable {
     case westNorth
     case north
     case south
+    
+    var name: String {
+        switch self {
+            
+        case .east:
+            return "East"
+        case .eastSouth:
+            return "East-South"
+        case .eastNorth:
+            return "East-North"
+        case .west:
+            return "West"
+        case .westSouth:
+            return "West-South"
+        case .westNorth:
+            return "West-North"
+        case .north:
+            return "North"
+        case .south:
+            return "South"
+        }
+    }
 }
 
 struct Apartment {

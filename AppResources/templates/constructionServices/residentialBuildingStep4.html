@@ -2,14 +2,13 @@
     <p>
     Residential building investment summary:
     </p>
-    <hr>
 
     <form onsubmit="event.preventDefault();  formSubmit({windowIndex}, '{submitUrl}', this);">
         <input type="hidden" name="storey" value="{storey}">
         <input type="hidden" name="elevator" value="{elevator}">
         <input type="hidden" name="balconies" value="{balconies}">
         
-        <div class="lightBorder" style="width: 380px; padding:10px; margin: 3px;">
+        <div class="lightBorder" style="width: 360px; padding:10px; margin: 3px;">
             <div class="centered" style="font-weight: bold;">{name}</div>
             <table style="width: 100%; font-size: 0.9em;">
             <tbody>
@@ -48,7 +47,6 @@
             </table>
         </div>
     <br>
-    <hr>
     <div style="text-align: center;">
         <button type="button" onclick="{previousJS}" class="float-left btn btn-sm">Previous step</button>
         <input type="submit" class="btn btn-sm float-right" value="Start Investment"/>
