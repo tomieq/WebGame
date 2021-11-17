@@ -8,30 +8,30 @@
 import Foundation
 
 enum ApartmentWindowSide: String, CaseIterable {
-    case east
-    case eastSouth
-    case eastNorth
-    case west
-    case westSouth
-    case westNorth
     case north
+    case northEast
+    case east
+    case southEast
     case south
+    case southWest
+    case west
+    case northWest
     
     var name: String {
         switch self {
             
         case .east:
             return "East"
-        case .eastSouth:
-            return "East-South"
-        case .eastNorth:
-            return "East-North"
+        case .southEast:
+            return "South-East"
+        case .northEast:
+            return "North-East"
         case .west:
             return "West"
-        case .westSouth:
-            return "West-South"
-        case .westNorth:
-            return "West-North"
+        case .southWest:
+            return "South West"
+        case .northWest:
+            return "North West"
         case .north:
             return "North"
         case .south:
@@ -79,7 +79,7 @@ struct Apartment {
         self.address = MapPoint(x: managedObject.x, y: managedObject.y)
         self.purchaseNetValue = managedObject.purchaseNetValue
         self.investmentsNetValue = managedObject.investmentsNetValue
-        self.windowSide = ApartmentWindowSide(rawValue: managedObject.windowSide) ?? .eastNorth
+        self.windowSide = ApartmentWindowSide(rawValue: managedObject.windowSide) ?? .northEast
         self.livingArea = managedObject.livingArea
         self.numberOfBedrooms = managedObject.numberOfBedrooms
         self.hasBalcony = managedObject.hasBalcony

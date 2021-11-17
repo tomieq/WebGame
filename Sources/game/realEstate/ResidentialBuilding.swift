@@ -29,8 +29,8 @@ struct ResidentialBuilding: Property {
     
     var mapTile: TileType {
         var balconyType = BuildingBalcony.none
-        let nothern = self.balconies.contains(.eastNorth) || self.balconies.contains(.north)
-        let southern = self.balconies.contains(.eastSouth) || self.balconies.contains(.south)
+        let nothern = self.balconies.contains(.northEast) || self.balconies.contains(.north)
+        let southern = self.balconies.contains(.southEast) || self.balconies.contains(.south)
         if nothern, southern {
             balconyType = .northAndSouthBalcony
         } else if nothern {

@@ -28,12 +28,12 @@ class MapStorageSync {
                 case .none:
                     break
                 case .southBalcony:
-                    balconies.append(.eastSouth)
+                    balconies.append(.southEast)
                 case .northBalcony:
-                    balconies.append(.eastNorth)
+                    balconies.append(.northEast)
                 case .northAndSouthBalcony:
-                    balconies.append(.eastSouth)
-                    balconies.append(.eastNorth)
+                    balconies.append(.southEast)
+                    balconies.append(.northEast)
                 }
                 let building = ResidentialBuilding(land: Land(address: tile.address, ownerUUID: SystemPlayer.government.uuid), storeyAmount: size, elevator: true, balconies: balconies)
                 buildingToAdd.append(building)
