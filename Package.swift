@@ -12,7 +12,7 @@ let package = Package(
             targets: ["WebGameLib"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/tomieq/swifter.git", .upToNextMajor(from: "1.5.4")),
+        .package(url: "https://github.com/tomieq/swifter.git", .upToNextMajor(from: "1.5.5")),
         .package(url: "https://github.com/ReactiveX/RxSwift.git", .exact("6.1.0"))
     ],
     targets: [
