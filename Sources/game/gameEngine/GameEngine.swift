@@ -176,9 +176,8 @@ class GameEngine {
         let delay = Int.random(in: 3...(self.gameClock.secondsPerMonth - 3))
         Observable<Int>.interval(.seconds(delay), scheduler: MainScheduler.instance)
             .take(1)
-            .bind { [weak self] number in
+            .bind { _ in
                 action()
-            
         }.disposed(by: self.disposeBag)
     }
     
