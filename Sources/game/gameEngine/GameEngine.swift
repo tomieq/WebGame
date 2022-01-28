@@ -43,7 +43,7 @@ class GameEngine {
         
         let government = Player(uuid: SystemPlayer.government.uuid, login: SystemPlayer.government.login, wallet: 0)
         let realEstateAgent = Player(uuid: SystemPlayer.realEstateAgency.uuid, login: SystemPlayer.realEstateAgency.login, wallet: 0)
-        let user1 = Player(uuid: "p1", login: "Tomasz Kucharski", wallet: 10000000)
+        let user1 = Player(uuid: "p1", login: "Tomasz Kucharski", wallet: 100000000)
         let user2 = Player(uuid: "p2", login: "Richard Smith", wallet: 10000000)
         self.dataStore.create(government)
         self.dataStore.create(realEstateAgent)
@@ -56,7 +56,7 @@ class GameEngine {
         let bookie = Player(uuid: SystemPlayer.bookie.uuid, login: SystemPlayer.bookie.login, wallet: 1000000000)
         self.dataStore.create(bookie)
         
-        self.gameMap = GameMap(width: 25, height: 25, scale: 0.40)
+        self.gameMap = GameMap(width: 25, height: 25, scale: 0.30)
         self.gameMapManager = GameMapManager(self.gameMap)
         self.gameMapManager.loadMapFrom(path: "maps/roadMap1")
         
