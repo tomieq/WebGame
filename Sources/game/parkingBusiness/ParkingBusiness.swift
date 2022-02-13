@@ -69,11 +69,7 @@ class ParkingBusiness {
     }
     
     func addDamage(_ parkingDamage: ParkingDamage, address: MapPoint) {
-        if self.damages[address] != nil {
-            self.damages[address]?.append(parkingDamage)
-        } else {
-            self.damages[address] = [parkingDamage]
-        }
+        self.damages[address, default: []].append(parkingDamage)
         if let parking: Parking = self.dataStore.find(address: address) {
             let trustLevel = parking.trustLevel - parkingDamage.type.trustLoose
             self.dataStore.update(ParkingMutation(uuid: parking.uuid, attributes: [.trustLevel(trustLevel)]))
