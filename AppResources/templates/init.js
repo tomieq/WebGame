@@ -1,6 +1,7 @@
 var calculator = new GameCalculator({mapWidth}, {mapHeight}, {mapScale});
 var gameStreetMap;
 var gameInteractionMap;
+var gameAddonsMap;
 var gameTraffic;
 var gameBuildingsMap;
 var mouseOverMenu = false;
@@ -16,6 +17,9 @@ $( document ).ready(function() {
 
     var canvasInteraction = $("#canvasInteraction");
     gameInteractionMap = new GameMap(canvasInteraction, calculator);
+
+    var canvasAddons = $("#canvasAddons");
+    gameAddonsMap = new GameMap(canvasAddons, calculator);
 
     var canvasBuildings  = $('#canvasBuildings');
     gameBuildingsMap = new GameMap(canvasBuildings, calculator);
