@@ -70,32 +70,34 @@ class ParkingBusiness {
     
     func addDamage(_ parkingDamage: ParkingDamage, address: MapPoint) {
         self.damages[address, default: []].append(parkingDamage)
-        if let parking: Parking = self.dataStore.find(address: address) {
-            let trustLevel = parking.trustLevel - parkingDamage.type.trustLoose
-            self.dataStore.update(ParkingMutation(uuid: parking.uuid, attributes: [.trustLevel(trustLevel)]))
-            
-            var level = UINotificationLevel.warning
-            var duration = 10
-            var text = "Ups! There was an incident on your <b>\(parking.name)</b> located <i>\(parking.readableAddress)</i>. Customer's \(parkingDamage.car) got damaged - \(parkingDamage.type.name)."
-            if parking.insurance == .none {
-                text.append("<br>Visit the place and cover the damage value")
-                level = .error
-                duration = 25
-            } else {
-                if parking.insurance.damageCoverLimit >= parkingDamage.fixPrice {
-                    parkingDamage.status = .coveredByInsurance
-                    text.append("<br>The good news is that you have insurance and it fully covered the damage value")
-                    level = .info
-                    duration = 10
-                } else {
-                    parkingDamage.status = .partiallyCoveredByInsurance(parking.insurance.damageCoverLimit)
-                    let fraction = (parking.insurance.damageCoverLimit/parkingDamage.fixPrice * 100).int
-                    text.append("<br>The good news is that you have insurance and it partially(\(fraction)%) covered the damage value")
-                    duration = 15
-                }
-            }
-            self.delegate?.notify(playerUUID: parking.ownerUUID, UINotification(text: text, level: level, duration: duration, icon: .carDamage))
+        guard let parking: Parking = self.dataStore.find(address: address) else {
+            return
         }
+        let trustLevel = parking.trustLevel - parkingDamage.type.trustLoose
+        self.dataStore.update(ParkingMutation(uuid: parking.uuid, attributes: [.trustLevel(trustLevel)]))
+        
+        var level = UINotificationLevel.warning
+        var duration = 10
+        var text = "Ups! There was an incident on your <b>\(parking.name)</b> located <i>\(parking.readableAddress)</i>. Customer's \(parkingDamage.car) got damaged - \(parkingDamage.type.name)."
+        if parking.insurance == .none {
+            text.append("<br>Visit the place and cover the damage value")
+            level = .error
+            duration = 25
+        } else {
+            if parking.insurance.damageCoverLimit >= parkingDamage.fixPrice {
+                parkingDamage.status = .coveredByInsurance
+                text.append("<br>The good news is that you have insurance and it fully covered the damage value")
+                level = .info
+                duration = 10
+            } else {
+                parkingDamage.status = .partiallyCoveredByInsurance(parking.insurance.damageCoverLimit)
+                let fraction = (parking.insurance.damageCoverLimit/parkingDamage.fixPrice * 100).int
+                text.append("<br>The good news is that you have insurance and it partially(\(fraction)%) covered the damage value")
+                duration = 15
+            }
+        }
+        self.delegate?.notify(playerUUID: parking.ownerUUID, UINotification(text: text, level: level, duration: duration, icon: .carDamage))
+
     }
     
     func getDamages(address: MapPoint) -> [ParkingDamage] {
@@ -150,11 +152,7 @@ class ParkingBusiness {
             let carsInCompetitorRange = self.getCarsAroundAddress(competitorAddress)
             let competitorTrust = competitors.first{ $0.address == competitorAddress }?.trustLevel ?? 1.0
             for address in carsInCompetitorRange.keys {
-                if competitorTrusts[address] != nil {
-                    competitorTrusts[address]?.append(competitorTrust)
-                } else {
-                    competitorTrusts[address] = [competitorTrust]
-                }
+                competitorTrusts[address, default: []].append(competitorTrust)
             }
         }
         let myTrust = parking?.trustLevel ?? 1.0
