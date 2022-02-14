@@ -64,7 +64,12 @@ class WebSocketHandler {
                 break;
             case "reloadMap":
                 $.getScript( "js/loadMap.js", function( data, textStatus, jqxhr ) {
-                  console.log( "Load map performed." );
+                  console.log( "Loaded map tiles" );
+                });
+                break;
+            case "reloadAddonsMap":
+                $.getScript( "js/loadAddonsMap.js", function( data, textStatus, jqxhr ) {
+                  console.log( "Loaded addon map tiles" );
                 });
                 break;
             case "highlightArea":

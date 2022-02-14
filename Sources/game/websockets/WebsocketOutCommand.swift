@@ -10,6 +10,7 @@ import Foundation
 enum WebsocketOutCommand {
     case startVehicle(VehicleTravelStarted)
     case reloadMap
+    case reloadAddonsMap
     case highlightArea(HighlightArea)
     case openWindow(OpenWindow)
     case runScript(String)
@@ -23,6 +24,8 @@ enum WebsocketOutCommand {
             return "startVehicle"
         case .reloadMap:
             return "reloadMap"
+        case .reloadAddonsMap:
+            return "reloadAddonsMap"
         case .highlightArea:
             return "highlightArea"
         case .openWindow:
