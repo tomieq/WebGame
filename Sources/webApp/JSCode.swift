@@ -19,6 +19,12 @@ class JSResponse {
         self.jsCodeList.append(code)
         return self
     }
+    
+    @discardableResult
+    func add(_ code: [JSCode]) -> JSResponse {
+        self.jsCodeList.append(contentsOf: code)
+        return self
+    }
 }
 
 enum JSCode {

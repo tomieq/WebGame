@@ -91,7 +91,7 @@ class ClickTileRouter {
 }
 
 extension ClickTileAction {
-    func commands( point: MapPoint) -> [WebsocketOutCommand] {
+    func commands(point: MapPoint) -> [WebsocketOutCommand] {
         switch self {
             
         case .roadInfo:

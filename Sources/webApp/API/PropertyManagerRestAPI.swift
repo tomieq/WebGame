@@ -22,6 +22,9 @@ class PropertyManagerRestAPI: RestAPI {
                 return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
             }
             let js = JSResponse()
+            if let tile = self.gameEngine.gameMap.getTile(address: address), tile.isParking() {
+                js.add(ParkingRestAPI.jsForHighlightParkingArea(address: address, parkingClientCalculator: self.gameEngine.parkingClientCalculator))
+            }
             js.add(.loadHtml(windowIndex, htmlPath: "/propertyInfo.html?\(address.asQueryParams)"))
             js.add(.disableWindowResizing(windowIndex))
             return js.response

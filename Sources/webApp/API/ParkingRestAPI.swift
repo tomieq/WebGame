@@ -9,6 +9,16 @@ import Foundation
 
 class ParkingRestAPI: RestAPI {
     
+    static func jsForHighlightParkingArea(address: MapPoint, parkingClientCalculator: ParkingClientCalculator) -> [JSCode] {
+        var js: [JSCode] = []
+        var points = parkingClientCalculator.mapManager.map.getNeighbourAddresses(to: address, radius: 1)
+        points.append(contentsOf: parkingClientCalculator.mapManager.map.getNeighbourAddresses(to: address, radius: 2))
+        js.append(.highlightPoints(points, color: "green"))
+        let competitors = parkingClientCalculator.getParkingsAroundAddress(address)
+        js.append(.highlightPoints(competitors, color: "red"))
+        return js
+    }
+
     override func setupEndpoints() {
         
         
@@ -20,11 +30,7 @@ class ParkingRestAPI: RestAPI {
             }
             let js = JSResponse()
             js.add(.openWindow(name: "Parking Manager", path: "/initParkingManager.js".append(address), width: 580, height: 480, singletonID: address.asQueryParams))
-            var points = self.gameEngine.gameMap.getNeighbourAddresses(to: address, radius: 1)
-            points.append(contentsOf: self.gameEngine.gameMap.getNeighbourAddresses(to: address, radius: 2))
-            js.add(.highlightPoints(points, color: "green"))
-            let competitors = self.gameEngine.parkingClientCalculator.getParkingsAroundAddress(address)
-            js.add(.highlightPoints(competitors, color: "red"))
+            js.add(ParkingRestAPI.jsForHighlightParkingArea(address: address, parkingClientCalculator: self.gameEngine.parkingClientCalculator))
             return js.response
         }
         
