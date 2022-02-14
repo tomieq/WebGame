@@ -23,7 +23,7 @@ class ParkingRestAPI: RestAPI {
             var points = self.gameEngine.gameMap.getNeighbourAddresses(to: address, radius: 1)
             points.append(contentsOf: self.gameEngine.gameMap.getNeighbourAddresses(to: address, radius: 2))
             js.add(.highlightPoints(points, color: "green"))
-            let competitors = self.gameEngine.parkingBusiness.getParkingsAroundAddress(address)
+            let competitors = self.gameEngine.parkingClientCalculator.getParkingsAroundAddress(address)
             js.add(.highlightPoints(competitors, color: "red"))
             return js.response
         }

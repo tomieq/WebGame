@@ -10,15 +10,15 @@ import Foundation
 class PropertyBalanceCalculator {
     let mapManager: GameMapManager
     let dataStore: DataStoreProvider
-    let parkingBusiness: ParkingBusiness
+    let parkingClientCalculator: ParkingClientCalculator
     let costPriceList: MonthlyCostPriceList
     let incomePriceList: MontlyIncomePriceList
     let taxRates: TaxRates
     
-    init(mapManager: GameMapManager, parkingBusiness: ParkingBusiness, taxRates: TaxRates) {
+    init(mapManager: GameMapManager, parkingClientCalculator: ParkingClientCalculator, taxRates: TaxRates) {
         self.mapManager = mapManager
-        self.dataStore = parkingBusiness.dataStore
-        self.parkingBusiness = parkingBusiness
+        self.dataStore = parkingClientCalculator.dataStore
+        self.parkingClientCalculator = parkingClientCalculator
         self.costPriceList = MonthlyCostPriceList()
         self.incomePriceList = MontlyIncomePriceList()
         self.taxRates = taxRates
@@ -141,7 +141,7 @@ class PropertyBalanceCalculator {
     }
     
     func getParkingMontlyIncome(address: MapPoint) -> [MonthlyIncome] {
-        let carsForParking = self.parkingBusiness.calculateCarsForParking(address: address)
+        let carsForParking = self.parkingClientCalculator.calculateCarsForParking(address: address)
         if carsForParking > 0 {
             return [MonthlyIncome(name: "Renting parking places", netValue: (carsForParking * self.incomePriceList.monthlyParkingIncomePerTakenPlace).rounded(toPlaces: 0))]
         }

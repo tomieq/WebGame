@@ -23,6 +23,7 @@ class GameEngine {
     let propertyValuer: PropertyValuer
     let realEstateAgent: RealEstateAgent
     let constructionServices: ConstructionServices
+    let parkingClientCalculator: ParkingClientCalculator
     let parkingBusiness: ParkingBusiness
     let propertyBalanceCalculator: PropertyBalanceCalculator
     let gameClock: GameClock
@@ -67,8 +68,9 @@ class GameEngine {
         self.addonsMap = AddonsMap(gameMap: self.gameMap)
 
         self.court = Court(centralbank: self.centralbank)
-        self.parkingBusiness = ParkingBusiness(mapManager: self.gameMapManager, court: self.court)
-        self.propertyBalanceCalculator = PropertyBalanceCalculator(mapManager: self.gameMapManager, parkingBusiness: self.parkingBusiness, taxRates: self.taxRates)
+        self.parkingClientCalculator = ParkingClientCalculator(mapManager: self.gameMapManager, dataStore: self.dataStore)
+        self.parkingBusiness = ParkingBusiness(calculator: self.parkingClientCalculator, court: self.court)
+        self.propertyBalanceCalculator = PropertyBalanceCalculator(mapManager: self.gameMapManager, parkingClientCalculator: self.parkingClientCalculator, taxRates: self.taxRates)
         
         self.constructionServices = ConstructionServices(mapManager: self.gameMapManager, centralBank: self.centralbank, time: self.time)
         self.propertyValuer = PropertyValuer(balanceCalculator: self.propertyBalanceCalculator, constructionServices: self.constructionServices)
