@@ -54,6 +54,9 @@ $( document ).ready(function() {
     $.getScript( "js/loadMap.js", function( data, textStatus, jqxhr ) {
       console.log( "Load was performed." );
     });
+    $.getScript( "js/loadAddonsMap.js", function( data, textStatus, jqxhr ) {
+      console.log( "Load was performed." );
+    });
 
 });
 

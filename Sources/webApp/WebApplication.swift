@@ -94,6 +94,13 @@ public class WebApplication {
             return .ok(.javaScript(template.output()))
         }
         
+        server.GET["js/loadAddonsMap.js"] = { request, _ in
+            request.disableKeepAlive = true
+            let template = Template(raw: ResourceCache.shared.getAppResource("templates/loadAddonsMap.js"))
+
+            return .ok(.javaScript(template.output()))
+        }
+        
         server.GET["js/openBankTransactions.js"] = { request, _ in
             request.disableKeepAlive = true
             guard let windowIndex = request.queryParam("windowIndex") else {
