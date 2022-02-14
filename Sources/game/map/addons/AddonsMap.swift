@@ -18,25 +18,30 @@ struct AddonMapTile {
 
 class AddonsMap {
     private var addonTiles: [MapPoint:AddonMapTile] = [:]
-    private var gameMap: GameMap
+    private var parkingClientCalculator: ParkingClientCalculator
     var delegate: AddonsMapDelegate?
     var tiles: [AddonMapTile] {
         return Array(self.addonTiles.values)
     }
     
-    init(gameMap: GameMap) {
-        self.gameMap = gameMap
+    init(parkingClientCalculator: ParkingClientCalculator) {
+        self.parkingClientCalculator = parkingClientCalculator
         
         self.syncMapTiles()
     }
     
     private func syncMapTiles() {
         self.addonTiles = [:]
-        for tile in self.gameMap.tiles {
+        for tile in self.parkingClientCalculator.mapManager.map.tiles {
             let address = tile.address
             switch tile.type {
             case .parking(let parkingType):
-                self.addonTiles[address] = AddonMapTile(address: address, type: .carsOnParking(direction: parkingType.direction, size: 10))
+                let carsOnParking = self.parkingClientCalculator.calculateCarsForParking(address: address)
+                if carsOnParking > 0 {
+                    print("There are \(carsOnParking) at address \(address.readable)")
+                    let size = max(min(10, Int(carsOnParking/5)), 1)
+                    self.addonTiles[address] = AddonMapTile(address: address, type: .carsOnParking(direction: parkingType.direction, size: size))
+                }
             default:
                 break
             }
