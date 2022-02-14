@@ -7,7 +7,9 @@
 
 import Foundation
 
-
+protocol AddonsMapDelegate {
+    func reloadAddonsMap()
+}
 
 struct AddonMapTile {
     let address: MapPoint
@@ -17,6 +19,7 @@ struct AddonMapTile {
 class AddonsMap {
     private var addonTiles: [MapPoint:AddonMapTile] = [:]
     private var gameMap: GameMap
+    var delegate: AddonsMapDelegate?
     var tiles: [AddonMapTile] {
         return Array(self.addonTiles.values)
     }
@@ -24,6 +27,11 @@ class AddonsMap {
     init(gameMap: GameMap) {
         self.gameMap = gameMap
         
+        self.syncMapTiles()
+    }
+    
+    private func syncMapTiles() {
+        self.addonTiles = [:]
         for tile in self.gameMap.tiles {
             let address = tile.address
             switch tile.type {
@@ -32,6 +40,13 @@ class AddonsMap {
             default:
                 break
             }
+        }
+        self.delegate?.reloadAddonsMap()
+    }
+    
+    func constructionFinished(_ types: [ConstructionType]) {
+        if types.contains(.parking) {
+            self.syncMapTiles()
         }
     }
 }
