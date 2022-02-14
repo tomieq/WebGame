@@ -38,7 +38,6 @@ class AddonsMap {
             case .parking(let parkingType):
                 let carsOnParking = self.parkingClientCalculator.calculateCarsForParking(address: address)
                 if carsOnParking > 0 {
-                    print("There are \(carsOnParking) at address \(address.readable)")
                     let size = max(min(10, Int(carsOnParking/5)), 1)
                     self.addonTiles[address] = AddonMapTile(address: address, type: .carsOnParking(direction: parkingType.direction, size: size))
                 }
@@ -50,7 +49,7 @@ class AddonsMap {
     }
     
     func constructionFinished(_ types: [ConstructionType]) {
-        if types.contains(.parking) {
+        if types.contains(.parking) || types.contains(.building) {
             self.syncMapTiles()
         }
     }

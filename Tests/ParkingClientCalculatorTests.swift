@@ -28,6 +28,12 @@ class ParkingClientCalculatorTests: XCTestCase {
         calculator.mapManager.loadMapFrom(content: "-,H")
         XCTAssertEqual(calculator.calculateCarsForParking(address: MapPoint(x: 1, y: 1)), 12)
     }
+
+    func test_amountOfCarsNearbyTwoHospitals() {
+        let calculator = self.makeCalculator()
+        calculator.mapManager.loadMapFrom(content: "H,H")
+        XCTAssertEqual(calculator.calculateCarsForParking(address: MapPoint(x: 1, y: 1)), 24)
+    }
     
     func test_amountOfCarsNearSchool() {
         let calculator = self.makeCalculator()
