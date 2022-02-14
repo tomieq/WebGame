@@ -48,6 +48,8 @@ enum WebsocketOutCommand {
             return payload
         case .reloadMap:
             return ""
+        case .reloadAddonsMap:
+            return ""
         case .highlightArea(let payload):
             return payload
         case .openWindow(let payload):

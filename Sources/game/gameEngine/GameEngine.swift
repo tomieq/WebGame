@@ -33,6 +33,7 @@ class GameEngine {
     let police: Police
     let debtCollector: DebtCollector
     let reloadMapCoordinator: ReloadMapCoordinator
+    let reloadAddonsMapCoordinator: ReloadMapCoordinator
     let syncWalletCoordinator: SyncWalletCoordinator
     let disposeBag = DisposeBag()
     
@@ -87,6 +88,7 @@ class GameEngine {
         self.debtCollector = DebtCollector(realEstateAgent: self.realEstateAgent)
         
         self.reloadMapCoordinator = ReloadMapCoordinator()
+        self.reloadAddonsMapCoordinator = ReloadMapCoordinator()
         self.syncWalletCoordinator = SyncWalletCoordinator()
         
         self.realEstateAgent.delegate = self
@@ -97,11 +99,16 @@ class GameEngine {
         self.police.delegate = self
         self.debtCollector.delegate = self
         self.parkingBusiness.delegate = self
+        self.addonsMap.delegate = self
         
         self.reloadMapCoordinator.setFlushAction { [weak self] in
            self?.streetNavi.reload()
            self?.gameTraffic.mapReloaded()
            self?.websocketHandler.sendToAll(command: .reloadMap)
+       }
+        
+        self.reloadAddonsMapCoordinator.setFlushAction { [weak self] in
+           self?.websocketHandler.sendToAll(command: .reloadAddonsMap)
        }
         
         self.syncWalletCoordinator.setSyncWalletChange { [weak self] playerUUID in
@@ -209,7 +216,18 @@ extension GameEngine: FootballBookieDelegate {
         }
     }
 }
+
+extension GameEngine: AddonsMapDelegate {
+    func reloadAddonsMap() {
+        self.reloadAddonsMapCoordinator.reloadMap()
+    }
+}
+
 extension GameEngine: RealEstateAgentDelegate, ConstructionServicesDelegate {
+    func constructionFinished(_ types: [ConstructionType]) {
+        self.addonsMap.constructionFinished(types)
+    }
+    
     
     func syncWalletChange(playerUUID: String) {
         self.syncWalletCoordinator.syncWalletChange(playerUUID: playerUUID)
@@ -231,6 +249,7 @@ extension GameEngine: RealEstateAgentDelegate, ConstructionServicesDelegate {
 extension GameEngine: GameClockDelegate {
     func nextMonth() {
         self.reloadMapCoordinator.hold()
+        self.reloadAddonsMapCoordinator.hold()
         self.syncWalletCoordinator.hold()
         
         self.debtCollector.executeDebts()
@@ -239,6 +258,7 @@ extension GameEngine: GameClockDelegate {
         self.parkingBusiness.monthlyActions()
         
         self.reloadMapCoordinator.flush()
+        self.reloadAddonsMapCoordinator.flush()
         self.syncWalletCoordinator.flush()
         self.websocketHandler.sendToAll(command: .updateGameDate(UIGameDate(text: self.time.text, secondsLeft: self.gameClock.secondsLeft)))
         
