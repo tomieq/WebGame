@@ -7,11 +7,17 @@
 
 import Foundation
 
+enum ConstructionType {
+    case road
+    case parking
+    case building
+}
 
 protocol ConstructionServicesDelegate {
     func syncWalletChange(playerUUID: String)
     func notifyEveryone(_ notification: UINotification)
     func reloadMap()
+    func constructionFinished(_ types: [ConstructionType])
 }
 
 enum ConstructionServicesError: Error, Equatable {
@@ -173,7 +179,7 @@ class ConstructionServices {
     
     func finishInvestments() {
         Logger.info("ConstructionServices", "Finish all constructions for \(self.time.month)")
-        var updateMap = false
+        var finishedConstructionTypes: [ConstructionType] = []
         
         let roads: [Road] = self.dataStore.getUnderConstruction()
         for road in roads {
@@ -182,7 +188,7 @@ class ConstructionServices {
                 self.dataStore.update(mutation)
                 
                 self.mapManager.addStreet(address: road.address)
-                updateMap = true
+                finishedConstructionTypes.append(.road)
             }
         }
         let parkings: [Parking] = self.dataStore.getUnderConstruction()
@@ -192,7 +198,7 @@ class ConstructionServices {
                 self.dataStore.update(mutation)
                 
                 self.mapManager.addParking(address: parking.address)
-                updateMap = true
+                finishedConstructionTypes.append(.parking)
             }
         }
         
@@ -211,11 +217,12 @@ class ConstructionServices {
                 }
                 let tile = GameMapTile(address: building.address, type: building.mapTile)
                 self.mapManager.map.replaceTile(tile: tile)
-                updateMap = true
+                finishedConstructionTypes.append(.building)
             }
         }
-        if updateMap {
+        if !finishedConstructionTypes.isEmpty {
             self.delegate?.reloadMap()
+            self.delegate?.constructionFinished(finishedConstructionTypes)
         }
     }
 }
