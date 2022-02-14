@@ -98,6 +98,18 @@ public class WebApplication {
             request.disableKeepAlive = true
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/loadAddonsMap.js"))
 
+            for tile in self.gameEngine.addonsMap.tiles {
+                var variables = [String:String]()
+                variables["x"] = tile.address.x.string
+                variables["y"] = tile.address.y.string
+                let image = tile.type.image
+                variables["path"] = image.path
+                variables["imageWidth"] = image.width.string
+                variables["imageHeight"] = image.height.string
+
+                template.assign(variables: variables, inNest: "object")
+            }
+
             return .ok(.javaScript(template.output()))
         }
         
