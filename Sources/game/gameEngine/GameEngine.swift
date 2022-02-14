@@ -15,6 +15,7 @@ class GameEngine {
     let taxRates: TaxRates
     let centralbank: CentralBank
     let gameMap: GameMap
+    let addonsMap: AddonsMap
     let gameMapManager: GameMapManager
     let streetNavi: StreetNavi
     let gameTraffic: GameTraffic
@@ -62,6 +63,8 @@ class GameEngine {
         
         MapStorageSync(mapManager: self.gameMapManager, dataStore: self.dataStore).syncMapWithDataStore()
         
+        self.addonsMap = AddonsMap(gameMap: self.gameMap)
+
         self.court = Court(centralbank: self.centralbank)
         self.parkingBusiness = ParkingBusiness(mapManager: self.gameMapManager, court: self.court)
         self.propertyBalanceCalculator = PropertyBalanceCalculator(mapManager: self.gameMapManager, parkingBusiness: self.parkingBusiness, taxRates: self.taxRates)
