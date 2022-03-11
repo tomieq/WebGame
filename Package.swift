@@ -4,12 +4,12 @@ import PackageDescription
 
 let package = Package(
     name: "WebGame",
-    
+
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
             name: "WebGameLib",
-            targets: ["WebGameLib"]),
+            targets: ["WebGameLib"])
     ],
     dependencies: [
         .package(url: "https://github.com/tomieq/swifter.git", .upToNextMajor(from: "1.5.5")),
@@ -27,6 +27,6 @@ let package = Package(
         .testTarget(
             name: "WebGameTests",
             dependencies: ["WebGameLib", "Swifter", "RxSwift", "RxCocoa"],
-            path: "Tests"),
+            path: "Tests")
     ]
 )

@@ -1,6 +1,6 @@
 //
 //  GameEngine.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 15/03/2021.
 //
@@ -37,13 +37,13 @@ class GameEngine {
     let reloadAddonsMapCoordinator: ReloadMapCoordinator
     let syncWalletCoordinator: SyncWalletCoordinator
     let disposeBag = DisposeBag()
-    
+
     init(dataStore: DataStoreProvider) {
         self.time = GameTime()
         self.dataStore = dataStore
         self.taxRates = TaxRates()
         self.centralbank = CentralBank(dataStore: self.dataStore, taxRates: self.taxRates, time: self.time)
-        
+
         let government = Player(uuid: SystemPlayer.government.uuid, login: SystemPlayer.government.login, wallet: 0)
         let realEstateAgent = Player(uuid: SystemPlayer.realEstateAgency.uuid, login: SystemPlayer.realEstateAgency.login, wallet: 0)
         let user1 = Player(uuid: "p1", login: "Tomasz Kucharski", wallet: 100000000)
@@ -52,48 +52,47 @@ class GameEngine {
         self.dataStore.create(realEstateAgent)
         self.dataStore.create(user1)
         self.dataStore.create(user2)
-        
+
         let investor = Player(uuid: SystemPlayer.investor.uuid, login: SystemPlayer.investor.login, wallet: 1000000000)
         self.dataStore.create(investor)
-        
+
         let bookie = Player(uuid: SystemPlayer.bookie.uuid, login: SystemPlayer.bookie.login, wallet: 1000000000)
         self.dataStore.create(bookie)
-        
+
         self.gameMap = GameMap(width: 25, height: 25, scale: 0.30)
         self.gameMapManager = GameMapManager(self.gameMap)
         self.gameMapManager.loadMapFrom(path: "maps/roadMap1")
-        
+
         MapStorageSync(mapManager: self.gameMapManager, dataStore: self.dataStore).syncMapWithDataStore()
-        
+
         self.parkingClientCalculator = ParkingClientCalculator(mapManager: self.gameMapManager, dataStore: self.dataStore)
         self.addonsMap = AddonsMap(parkingClientCalculator: self.parkingClientCalculator)
 
         self.court = Court(centralbank: self.centralbank)
-        
+
         self.parkingBusiness = ParkingBusiness(calculator: self.parkingClientCalculator, court: self.court)
         self.propertyBalanceCalculator = PropertyBalanceCalculator(mapManager: self.gameMapManager, parkingClientCalculator: self.parkingClientCalculator, taxRates: self.taxRates)
-        
+
         self.constructionServices = ConstructionServices(mapManager: self.gameMapManager, centralBank: self.centralbank, time: self.time)
         self.propertyValuer = PropertyValuer(balanceCalculator: self.propertyBalanceCalculator, constructionServices: self.constructionServices)
         self.realEstateAgent = RealEstateAgent(mapManager: self.gameMapManager, propertyValuer: self.propertyValuer, centralBank: self.centralbank)
-        
-        
+
         self.streetNavi = StreetNavi(gameMap: self.gameMap)
         self.gameTraffic = GameTraffic(streetNavi: self.streetNavi)
         self.websocketHandler = WebsocketHandler()
         self.gameClock = GameClock(realEstateAgent: self.realEstateAgent, time: self.time, secondsPerMonth: 30)
-        
+
         self.clickRouter = ClickTileRouter(agent: self.realEstateAgent)
         self.investorAI = InvestorArtifficialIntelligence(agent: self.realEstateAgent)
         self.footballBookie = FootballBookie(centralBank: self.centralbank)
-        
+
         self.police = Police(footballBookie: self.footballBookie, court: self.court)
         self.debtCollector = DebtCollector(realEstateAgent: self.realEstateAgent)
-        
+
         self.reloadMapCoordinator = ReloadMapCoordinator()
         self.reloadAddonsMapCoordinator = ReloadMapCoordinator()
         self.syncWalletCoordinator = SyncWalletCoordinator()
-        
+
         self.realEstateAgent.delegate = self
         self.constructionServices.delegate = self
         self.gameClock.delegate = self
@@ -103,20 +102,20 @@ class GameEngine {
         self.debtCollector.delegate = self
         self.parkingBusiness.delegate = self
         self.addonsMap.delegate = self
-        
+
         self.reloadMapCoordinator.setFlushAction { [weak self] in
-           self?.streetNavi.reload()
-           self?.gameTraffic.mapReloaded()
-           self?.websocketHandler.sendToAll(command: .reloadMap)
-       }
-        
+            self?.streetNavi.reload()
+            self?.gameTraffic.mapReloaded()
+            self?.websocketHandler.sendToAll(command: .reloadMap)
+        }
+
         self.reloadAddonsMapCoordinator.setFlushAction { [weak self] in
-           self?.websocketHandler.sendToAll(command: .reloadAddonsMap)
-       }
-        
+            self?.websocketHandler.sendToAll(command: .reloadAddonsMap)
+        }
+
         self.syncWalletCoordinator.setSyncWalletChange { [weak self] playerUUID in
             if let player: Player = self?.dataStore.find(uuid: playerUUID) {
-                for session in PlayerSessionManager.shared.getSessions(playerUUID: playerUUID){
+                for session in PlayerSessionManager.shared.getSessions(playerUUID: playerUUID) {
                     self?.websocketHandler.sendTo(playerSessionID: session.id, command: .updateWallet(player.wallet.money))
                 }
             }
@@ -140,14 +139,13 @@ class GameEngine {
             case .tileClicked(let point):
 
                 let playerUUID = gameEvent.playerSession?.playerUUID
-                
-                
+
                 if let commands = self?.clickRouter.action(address: point, playerUUID: playerUUID).commands(point: point) {
                     for command in commands {
                         self?.websocketHandler.sendTo(playerSessionID: gameEvent.playerSession?.id, command: command)
                     }
                 }
-                
+
                 /*
                 if let points = self?.gameMap.getNeighbourAddresses(to: point, radius: 1) {
                     let payload = HighlightArea(points: points, color: "red")
@@ -163,8 +161,6 @@ class GameEngine {
                 }
  */
 
-
-                break
             case .vehicleTravelStarted(let payload):
                 switch gameEvent.playerSession {
                 case .none:
@@ -184,26 +180,26 @@ class GameEngine {
             }
         }.disposed(by: self.disposeBag)
     }
-    
+
     private func addPlannedAction(_ action: @escaping () -> ()) {
         let delay = Int.random(in: 3...(self.gameClock.secondsPerMonth - 3))
         Observable<Int>.interval(.seconds(delay), scheduler: MainScheduler.instance)
             .take(1)
             .bind { _ in
                 action()
-        }.disposed(by: self.disposeBag)
+            }.disposed(by: self.disposeBag)
     }
-    
+
     private func setupDevParams() {
         self.constructionServices.constructionDuration.road = 1
         self.constructionServices.constructionDuration.parking = 1
         self.constructionServices.constructionDuration.residentialBuilding = 1
         self.constructionServices.constructionDuration.residentialBuildingPerStorey = 0
-        
+
         self.court.duration.footballMatchBriberyDuration = 1
         self.debtCollector.params.startExecutionDelay = 0
         self.debtCollector.params.initialPropertyValueRatio = 0.84
-        
+
         self.footballBookie.archiveCapacity = 2
     }
 }
@@ -214,7 +210,7 @@ extension GameEngine: PoliceDelegate {}
 extension GameEngine: DebtCollectorDelegate {}
 extension GameEngine: FootballBookieDelegate {
     func notify(playerUUID: String, _ notification: UINotification) {
-        for session in PlayerSessionManager.shared.getSessions(playerUUID: playerUUID){
+        for session in PlayerSessionManager.shared.getSessions(playerUUID: playerUUID) {
             self.websocketHandler.sendTo(playerSessionID: session.id, command: .notification(notification))
         }
     }
@@ -230,16 +226,15 @@ extension GameEngine: RealEstateAgentDelegate, ConstructionServicesDelegate {
     func constructionFinished(_ types: [ConstructionType]) {
         self.addonsMap.constructionFinished(types)
     }
-    
-    
+
     func syncWalletChange(playerUUID: String) {
         self.syncWalletCoordinator.syncWalletChange(playerUUID: playerUUID)
     }
-    
+
     func reloadMap() {
         self.reloadMapCoordinator.reloadMap()
     }
-    
+
     func notifyEveryone(_ notification: UINotification) {
         self.websocketHandler.sendToAll(command: .notification(notification))
     }
@@ -254,17 +249,17 @@ extension GameEngine: GameClockDelegate {
         self.reloadMapCoordinator.hold()
         self.reloadAddonsMapCoordinator.hold()
         self.syncWalletCoordinator.hold()
-        
+
         self.debtCollector.executeDebts()
         self.constructionServices.finishInvestments()
         self.footballBookie.nextMonth()
         self.parkingBusiness.monthlyActions()
-        
+
         self.reloadMapCoordinator.flush()
         self.reloadAddonsMapCoordinator.flush()
         self.syncWalletCoordinator.flush()
         self.websocketHandler.sendToAll(command: .updateGameDate(UIGameDate(text: self.time.text, secondsLeft: self.gameClock.secondsLeft)))
-        
+
         self.addPlannedAction { [weak self] in
             self?.parkingBusiness.randomDamage()
         }
@@ -282,5 +277,4 @@ extension GameEngine: GameClockDelegate {
     func syncTime() {
         self.websocketHandler.sendToAll(command: .updateGameDate(UIGameDate(text: self.time.text, secondsLeft: self.gameClock.secondsLeft)))
     }
-    
 }

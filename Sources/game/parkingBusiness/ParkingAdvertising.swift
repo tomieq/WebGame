@@ -1,6 +1,6 @@
 //
 //  ParkingAdvertising.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 08/11/2021.
 //
@@ -13,7 +13,7 @@ enum ParkingAdvertising: String, CaseIterable {
     case localNewspaperAd
     case radioAd
     case tvSpot
-    
+
     var monthlyFee: Double {
         switch self {
         case .none:
@@ -28,6 +28,7 @@ enum ParkingAdvertising: String, CaseIterable {
             return 2100
         }
     }
+
     var name: String {
         switch self {
         case .none:
@@ -42,6 +43,7 @@ enum ParkingAdvertising: String, CaseIterable {
             return "TV spot in local station"
         }
     }
+
     var monthlyTrustGain: Double {
         switch self {
         case .none:

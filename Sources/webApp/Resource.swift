@@ -1,6 +1,6 @@
 //
 //  Resource.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 12/03/2021.
 //
@@ -22,11 +22,11 @@ class Resource {
         }
         return ""
     }
-    
+
     static func absolutePath(forPublicResource relativePath: String) -> String {
         return Resource.publicResourcesDir + relativePath.trimmingCharacters(in: CharacterSet(arrayLiteral: "/"))
     }
-    
+
     static func absolutePath(forAppResource relativePath: String) -> String {
         return Resource.appResourcesDir + relativePath.trimmingCharacters(in: CharacterSet(arrayLiteral: "/"))
     }

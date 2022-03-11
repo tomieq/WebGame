@@ -1,6 +1,6 @@
 //
 //  Template+HttpResponse.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 12/03/2021.
 //

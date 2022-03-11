@@ -1,6 +1,6 @@
 //
 //  WebsocketOutCommand.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 17/03/2021.
 //
@@ -17,7 +17,7 @@ enum WebsocketOutCommand {
     case notification(UINotification)
     case updateWallet(String)
     case updateGameDate(UIGameDate)
-    
+
     var type: String {
         switch self {
         case .startVehicle:
@@ -40,10 +40,9 @@ enum WebsocketOutCommand {
             return "runScript"
         }
     }
-    
+
     var payload: Codable {
         switch self {
-            
         case .startVehicle(let payload):
             return payload
         case .reloadMap:
@@ -64,7 +63,7 @@ enum WebsocketOutCommand {
             return payload
         }
     }
-    
+
     var json: String {
         return "{ \"command\": \"\(self.type)\", \"payload\": \(self.payload.toJSONString() ?? "{}") }"
     }

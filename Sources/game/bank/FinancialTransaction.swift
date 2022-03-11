@@ -1,6 +1,6 @@
 //
 //  FinancialTransaction.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 24/03/2021.
 //
@@ -21,7 +21,7 @@ struct FinancialTransaction: Codable {
     let recipientUUID: String
     let invoice: Invoice
     let type: FinancialTransactionType
-    
+
     init(payerUUID: String, recipientUUID: String, invoice: Invoice, type: FinancialTransactionType) {
         self.payerUUID = payerUUID
         self.recipientUUID = recipientUUID

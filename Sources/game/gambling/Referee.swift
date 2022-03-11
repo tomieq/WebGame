@@ -1,6 +1,6 @@
 //
 //  Referee.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 31/10/2021.
 //
@@ -15,10 +15,9 @@ enum RefereeError: Error, Equatable {
     case financialProblem(FinancialTransactionError)
     case didAlreadySentBribeOffer
     case refereeAlreadyTookMoney
-    
+
     var description: String {
         switch self {
-            
         case .bribeTooSmall:
             return "The referee is well paid and he will not risk his career for such small amount of money."
         case .matchNotFound:
@@ -47,54 +46,51 @@ protocol RefereeDelegate {
 class Referee {
     var delegate: RefereeDelegate?
     private var bribers: [String] = []
-    
+
     func nextMatch() {
         self.bribers = []
     }
-    
+
     func didAlreadyTryBribe(playerUUID: String) -> Bool {
         return self.bribers.contains(playerUUID)
     }
-    
+
     func bribe(playerUUID: String, matchUUID: String, amount: Double) throws {
-        
         if self.didAlreadyTryBribe(playerUUID: playerUUID) {
             throw RefereeError.didAlreadySentBribeOffer
         }
-    
+
         self.bribers.append(playerUUID)
 
         if amount < 10000 {
             Logger.info("Referee", "RefereeError.bribeTooSmall \(amount)")
             throw RefereeError.bribeTooSmall
         }
-        
+
         guard let delegate = self.delegate, let match = self.delegate?.upcomingMatch else {
             Logger.info("Referee", "RefereeError.matchNotFound")
             throw RefereeError.matchNotFound
         }
-        
+
         guard match.uuid == matchUUID else {
             Logger.info("Referee", "RefereeError.outOfTime")
             throw RefereeError.outOfTime
         }
-        
+
         guard let bet = delegate.getBet(playerUUID: playerUUID) else {
             Logger.info("Referee", "RefereeError.betNotFound")
             throw RefereeError.betNotFound
         }
-        
+
         if let expectedResult = match.result, bet.expectedResult != expectedResult {
             throw RefereeError.refereeAlreadyTookMoney
         }
-        
-        
+
         let invoice = Invoice(title: "Gift for \(match.referee)", grossValue: amount, taxRate: 0)
         let transaction = FinancialTransaction(payerUUID: playerUUID, recipientUUID: SystemPlayer.bookie.uuid, invoice: invoice, type: .incomeTaxFree)
         do {
             try delegate.centralBank.process(transaction)
             switch bet.expectedResult {
-                
             case .team1Win:
                 match.setResult(goals: (Int.random(in: (5...8)), Int.random(in: (0...4))), briberUUID: playerUUID)
             case .team2Win:
@@ -108,7 +104,6 @@ class Referee {
             Logger.info("Referee", "RefereeError.financialProblem - \(error.description)")
             throw RefereeError.financialProblem(error)
         } catch {
-            
         }
     }
 }

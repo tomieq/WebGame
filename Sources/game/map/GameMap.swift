@@ -1,6 +1,6 @@
 //
 //  GameMap.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 12/03/2021.
 //
@@ -8,37 +8,36 @@
 import Foundation
 
 class GameMap {
-    
     let width: Int
     let height: Int
     let scale: Double
-    private var gameTiles: [MapPoint:GameMapTile]
+    private var gameTiles: [MapPoint: GameMapTile]
     var tiles: [GameMapTile] {
         return Array(self.gameTiles.values)
     }
-    
+
     init(width: Int, height: Int, scale: Double) {
         self.width = width
         self.height = height
         self.scale = scale
         self.gameTiles = [:]
     }
-    
+
     func setTiles(_ tiles: [GameMapTile]) {
         self.gameTiles = [:]
         for tile in tiles {
             self.gameTiles[tile.address] = tile
         }
     }
-    
+
     func getTile(address: MapPoint) -> GameMapTile? {
         return self.gameTiles[address]
     }
-    
+
     func replaceTile(tile: GameMapTile) {
         self.gameTiles[tile.address] = tile
     }
-    
+
     func getNeighbourAddresses(to address: MapPoint, radius: Int) -> [MapPoint] {
         guard self.isAddressOnMap(address) else { return [] }
         guard radius > 0 else { return [] }
@@ -58,14 +57,14 @@ class GameMap {
         }
         return points.filter { self.isAddressOnMap($0) }
     }
-    
+
     func isAddressOnMap(_ address: MapPoint) -> Bool {
         return address.x >= 0 && address.x < self.width && address.y >= 0 && address.y < self.height
     }
 
     func hasDirectAccessToRoad(address: MapPoint) -> Bool {
-        return ![address.move(.up),address.move(.down),address.move(.left),address.move(.right)]
-        .compactMap { self.getTile(address: $0) }
-        .filter{ $0.isStreet() }.isEmpty
+        return ![address.move(.up), address.move(.down), address.move(.left), address.move(.right)]
+            .compactMap { self.getTile(address: $0) }
+            .filter{ $0.isStreet() }.isEmpty
     }
 }

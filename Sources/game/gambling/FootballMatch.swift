@@ -1,6 +1,6 @@
 //
 //  FootballMatch.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 28/10/2021.
 //
@@ -27,22 +27,24 @@ class FootballMatch {
     private var matchResult: FootballMatchResult?
     private var matchGoals: Goals?
     var briberUUID: String?
-    
+
     var result: FootballMatchResult? {
         self.matchResult
     }
+
     var goals: Goals? {
         self.matchGoals
     }
+
     var isResultBribed: Bool {
         self.briberUUID != nil
     }
-    
+
     var winRatio: Double? {
         guard let result = self.result else { return nil }
         return self.resultRatio(result)
     }
-    
+
     init(team: String) {
         self.uuid = UUID().uuidString
         self.team1 = team
@@ -52,13 +54,13 @@ class FootballMatch {
         self.team2WinsRatio = Double.random(in: (1.9...2.7))
         self.drawRatio = Double.random(in: (3...5.7))
     }
-    
+
     func playMatch() {
         guard self.matchResult == nil else { return }
         let goals = (team1: Int.random(in: (0...5)), team2: Int.random(in: (0...5)))
         self.setGoals(goals)
     }
-    
+
     func resultRatio(_ result: FootballMatchResult) -> Double {
         switch result {
         case .team1Win:
@@ -69,13 +71,13 @@ class FootballMatch {
             return self.drawRatio
         }
     }
-    
+
     func setResult(goals: Goals, briberUUID: String) {
         guard self.matchResult == nil else { return }
         self.briberUUID = briberUUID
         self.setGoals(goals)
     }
-    
+
     private func setGoals(_ goals: Goals) {
         guard self.matchResult == nil else { return }
         if goals.team1 == goals.team2 {

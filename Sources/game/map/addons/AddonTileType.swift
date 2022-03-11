@@ -1,6 +1,6 @@
 //
 //  AddonTileType.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 14/02/2022.
 //
@@ -14,7 +14,7 @@ enum CarsOnParkingDirection: String {
 
 enum AddonTileType {
     case carsOnParking(direction: CarsOnParkingDirection, size: Int)
-    
+
     var image: TileImage {
         switch self {
         case .carsOnParking(let direction, let size):

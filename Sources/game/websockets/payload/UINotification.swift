@@ -1,6 +1,6 @@
 //
 //  UINotification.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 19/03/2021.
 //
@@ -35,7 +35,7 @@ struct UINotification: Codable {
     let level: UINotificationLevel
     let duration: Int
     let icon: String
-    
+
     init(text: String, level: UINotificationLevel, duration: Int, icon: UINotificationIcon = .none) {
         self.text = text
         self.level = level

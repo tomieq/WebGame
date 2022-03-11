@@ -1,21 +1,18 @@
 //
 //  ResidentialBuildingRestAPI.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 26/10/2021.
 //
 
 import Foundation
 
-
 class ResidentialBuildingRestAPI: RestAPI {
-    
     override func setupEndpoints() {
-        
         // MARK: openBuildingManager
         server.GET[.openBuildingManager] = { request, _ in
             request.disableKeepAlive = true
-  
+
             guard let address = request.mapPoint else {
                 return self.jsError("Invalid request! Missing address.")
             }
@@ -23,7 +20,7 @@ class ResidentialBuildingRestAPI: RestAPI {
             js.add(.openWindow(name: "Residential Building", path: "/initBuildingManager.js".append(address), width: 680, height: 500, singletonID: address.asQueryParams))
             return js.response
         }
-        
+
         // MARK: initBuildingManager.js
         server.GET["/initBuildingManager.js"] = { request, _ in
             request.disableKeepAlive = true
@@ -43,8 +40,8 @@ class ResidentialBuildingRestAPI: RestAPI {
         server.GET["/buildingManager.html"] = { request, _ in
             request.disableKeepAlive = true
             guard let playerSessionID = request.queryParam("playerSessionID"),
-                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                    return self.htmlError("Invalid request! Missing session ID.")
+                  let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                return self.htmlError("Invalid request! Missing session ID.")
             }
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return self.htmlError("Invalid request! Missing window context.")
@@ -59,24 +56,24 @@ class ResidentialBuildingRestAPI: RestAPI {
             guard session.playerUUID == ownerID else {
                 return self.htmlError("Property at \(address.description) is not yours!")
             }
-            
+
             let view = PropertyManagerTopView(windowIndex: windowIndex)
             let domID = PropertyManagerTopView.domID(windowIndex)
             view.addTab("Wallet balance", onclick: .loadHtmlInline(windowIndex, htmlPath: RestEndpoint.propertyWalletBalance.append(address), targetID: domID))
             view.addTab("Sell options", onclick: .loadHtmlInline(windowIndex, htmlPath: RestEndpoint.propertySellStatus.append(address), targetID: domID))
             view.addTab("Investments", onclick: .loadHtmlInline(windowIndex, htmlPath: "buildingInvestments.html".append(address), targetID: domID))
-            
+
             if building.isUnderConstruction {
                 view.setPropertyType("\(building.type) - under construction")
                     .setTileImage(TileType.buildingUnderConstruction(size: building.storeyAmount).image.path)
-                
+
             } else {
                 view.setPropertyType(building.type)
                     .setTileImage(building.mapTile.image.path)
             }
-            
+
             view.addTip("Earn money on renting apartments or sell them.")
-            
+
             let balanceView = PropertyBalanceView()
             balanceView.setMonthlyCosts(self.gameEngine.propertyBalanceCalculator.getMontlyCosts(address: address))
             balanceView.setMonthlyIncome(self.gameEngine.propertyBalanceCalculator.getMonthlyIncome(address: address))

@@ -1,6 +1,6 @@
 //
 //  ParkingBusiness.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 05/11/2021.
 //
@@ -16,7 +16,7 @@ enum PayParkingDamageError: Error {
     case damageNotFound
     case alreadyPaid
     case financialProblem(FinancialTransactionError)
-    
+
     var description: String {
         switch self {
         case .damageNotFound:
@@ -38,14 +38,14 @@ class ParkingBusiness {
     var damageArchivePeriod = 12
     var damageLawsuitMinValue = 500.0
     private var damages: [MapPoint: [ParkingDamage]] = [:]
-    
+
     init(calculator: ParkingClientCalculator, court: Court) {
         self.calculator = calculator
         self.dataStore = court.centralbank.dataStore
         self.time = court.time
         self.court = court
     }
-    
+
     func payForDamage(address: MapPoint, damageUUID: String, centralBank: CentralBank) throws {
         guard let damage = (self.damages[address]?.first{ $0.uuid == damageUUID }) else {
             throw PayParkingDamageError.damageNotFound
@@ -67,7 +67,7 @@ class ParkingBusiness {
             throw PayParkingDamageError.financialProblem(error)
         }
     }
-    
+
     func addDamage(_ parkingDamage: ParkingDamage, address: MapPoint) {
         self.damages[address, default: []].append(parkingDamage)
         guard let parking: Parking = self.dataStore.find(address: address) else {
@@ -75,7 +75,7 @@ class ParkingBusiness {
         }
         let trustLevel = parking.trustLevel - parkingDamage.type.trustLoose
         self.dataStore.update(ParkingMutation(uuid: parking.uuid, attributes: [.trustLevel(trustLevel)]))
-        
+
         var level = UINotificationLevel.warning
         var duration = 10
         var text = "Ups! There was an incident on your <b>\(parking.name)</b> located <i>\(parking.readableAddress)</i>. Customer's \(parkingDamage.car) got damaged - \(parkingDamage.type.name)."
@@ -91,21 +91,19 @@ class ParkingBusiness {
                 duration = 10
             } else {
                 parkingDamage.status = .partiallyCoveredByInsurance(parking.insurance.damageCoverLimit)
-                let fraction = (parking.insurance.damageCoverLimit/parkingDamage.fixPrice * 100).int
+                let fraction = (parking.insurance.damageCoverLimit / parkingDamage.fixPrice * 100).int
                 text.append("<br>The good news is that you have insurance and it partially(\(fraction)%) covered the damage value")
                 duration = 15
             }
         }
         self.delegate?.notify(playerUUID: parking.ownerUUID, UINotification(text: text, level: level, duration: duration, icon: .carDamage))
-
     }
-    
+
     func getDamages(address: MapPoint) -> [ParkingDamage] {
         return self.damages[address] ?? []
     }
-    
+
     func randomDamage() {
-        
         let parkings: [Parking] = self.dataStore.getAll().shuffled()
         var untouchablePlayers = SystemPlayer.allCases.map{ $0.uuid }
         for parking in parkings {
@@ -138,16 +136,16 @@ class ParkingBusiness {
             }
         }
     }
-    
+
     func monthlyActions() {
         self.removeOldClosedDamages()
         self.applyAdvertisementChanges()
     }
-    
+
     private func removeOldClosedDamages() {
         for address in self.damages.keys {
-            self.damages[address]?.removeAll{ ($0.status.isClosed || $0.leftToPay < self.damageLawsuitMinValue) && $0.accidentMonth < self.time.month - self.damageArchivePeriod  }
-            
+            self.damages[address]?.removeAll{ ($0.status.isClosed || $0.leftToPay < self.damageLawsuitMinValue) && $0.accidentMonth < self.time.month - self.damageArchivePeriod }
+
             self.damages[address]?
                 .filter { !$0.status.isClosed }
                 .filter { $0.accidentMonth < self.time.month - self.damageArchivePeriod }
@@ -155,10 +153,10 @@ class ParkingBusiness {
                     if let parking: Parking = self.dataStore.find(address: address) {
                         self.handDamageToCourt(damage: damage, parking: parking)
                     }
-            }
+                }
         }
     }
-    
+
     private func handDamageToCourt(damage: ParkingDamage, parking: Parking) {
         if (self.court.getCase(uuid: damage.uuid) == nil) {
             let lawsuite = ParkingDamageLawsuite(accusedUUID: parking.ownerUUID, damage: damage)
@@ -167,7 +165,7 @@ class ParkingBusiness {
             self.delegate?.notify(playerUUID: parking.ownerUUID, UINotification(text: text, level: .warning, duration: 60, icon: .court))
         }
     }
-    
+
     private func applyAdvertisementChanges() {
         let parkings: [Parking] = self.dataStore.getAll().shuffled()
         let skippedPlayers = SystemPlayer.allCases.map{ $0.uuid }
@@ -179,13 +177,12 @@ class ParkingBusiness {
             if Int.random(in: 1...3) == 1 {
                 trustLevelChange -= Double.random(in: 0.01...0.03)
             }
-            
+
             if parking.advertising.monthlyTrustGain == 0, trustLevelChange == 0.0 {
                 continue
             }
             let updatedTrust = parking.trustLevel + trustLevelChange + parking.advertising.monthlyTrustGain
             self.dataStore.update(ParkingMutation(uuid: parking.uuid, attributes: [.trustLevel(updatedTrust)]))
-            
         }
     }
 }

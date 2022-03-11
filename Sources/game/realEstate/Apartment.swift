@@ -1,6 +1,6 @@
 //
 //  Condo.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 24/03/2021.
 //
@@ -16,10 +16,9 @@ enum ApartmentWindowSide: String, CaseIterable {
     case southWest
     case west
     case northWest
-    
+
     var name: String {
         switch self {
-            
         case .east:
             return "East"
         case .southEast:
@@ -41,23 +40,22 @@ enum ApartmentWindowSide: String, CaseIterable {
 }
 
 struct Apartment {
-
     let uuid: String
     var type: String { return "\(self.livingArea)m² Apartment" }
     let ownerUUID: String
     let address: MapPoint
     let purchaseNetValue: Double
     let investmentsNetValue: Double
-    
+
     let windowSide: ApartmentWindowSide
     let livingArea: Int
     let numberOfBedrooms: Int
     let hasBalcony: Bool
-    
+
     let storey: Int
     let isRented: Bool
     let condition: Double
-    
+
     init(ownerUUID: String, address: MapPoint, windowSide: ApartmentWindowSide, hasBalcony: Bool, storey: Int, condition: Double = 1.0) {
         self.uuid = ""
         self.ownerUUID = ownerUUID
@@ -72,7 +70,7 @@ struct Apartment {
         self.isRented = false
         self.condition = min(1, max(0, condition))
     }
-    
+
     init(_ managedObject: ApartmentManagedObject) {
         self.uuid = managedObject.uuid
         self.ownerUUID = managedObject.ownerUUID

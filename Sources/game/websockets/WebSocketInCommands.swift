@@ -1,6 +1,6 @@
 //
 //  WebSocketInCommands.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 15/03/2021.
 //
@@ -21,5 +21,3 @@ class WebsocketInCommandWithPayload<T: Codable>: Codable {
     var command: WebsocketCommandInType?
     var payload: T?
 }
-
-

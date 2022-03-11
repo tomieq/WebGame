@@ -1,6 +1,6 @@
 //
 //  Parking.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 04/11/2021.
 //
@@ -8,7 +8,6 @@
 import Foundation
 
 struct Parking: Property {
-    
     let uuid: String
     var type: String { return "Parking lot" }
     let ownerUUID: String
@@ -22,7 +21,7 @@ struct Parking: Property {
     let security: ParkingSecurity
     let advertising: ParkingAdvertising
     let trustLevel: Double
-    
+
     init(land: Land, constructionFinishMonth: Int? = nil, investmentsNetValue: Double = 0, trustLevel: Double = 1.0) {
         self.uuid = land.uuid
         self.address = land.address
@@ -30,14 +29,14 @@ struct Parking: Property {
         self.ownerUUID = land.ownerUUID
         self.purchaseNetValue = land.purchaseNetValue
         self.investmentsNetValue = (land.investmentsNetValue + investmentsNetValue).rounded(toPlaces: 0)
-        self.isUnderConstruction = constructionFinishMonth == nil ? false: true
+        self.isUnderConstruction = constructionFinishMonth == nil ? false : true
         self.constructionFinishMonth = constructionFinishMonth ?? 0
         self.insurance = .none
         self.security = .none
         self.advertising = .none
         self.trustLevel = min(max(trustLevel, 0), 1)
     }
-    
+
     init(_ managedObject: ParkingManagedObject) {
         self.uuid = managedObject.uuid
         self.ownerUUID = managedObject.ownerUUID
@@ -57,7 +56,7 @@ struct Parking: Property {
 struct ParkingMutation {
     let uuid: String
     let attributes: [ParkingMutation.Attribute]
-    
+
     enum Attribute {
         case isUnderConstruction(Bool)
         case constructionFinishMonth(Int)

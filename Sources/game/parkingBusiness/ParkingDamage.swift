@@ -1,6 +1,6 @@
 //
 //  ParkingDamage.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 06/11/2021.
 //
@@ -20,10 +20,9 @@ enum ParkingDamageType: CaseIterable {
     case grafittiOnCar
     case stolenCar
     case carArsonry
-    
+
     var name: String {
         switch self {
-            
         case .brokenMirror:
             return "broken car's mirror"
         case .tirePuncture:
@@ -50,7 +49,7 @@ enum ParkingDamageType: CaseIterable {
             return "car arsoned"
         }
     }
-    
+
     var trustLoose: Double {
         switch self {
         case .brokenMirror:
@@ -79,10 +78,9 @@ enum ParkingDamageType: CaseIterable {
             return 0.93
         }
     }
-    
+
     var fixPrice: Double {
         switch self {
-            
         case .brokenMirror:
             return Double.random(in: 80...145)
         case .tirePuncture:
@@ -116,7 +114,7 @@ enum ParkingDamageStatus: Equatable {
     case awaitingPayment
     case partiallyCoveredByInsurance(Double)
     case paid
-    
+
     var name: String {
         switch self {
         case .coveredByInsurance:
@@ -129,7 +127,7 @@ enum ParkingDamageStatus: Equatable {
             return "Fully paid"
         }
     }
-    
+
     var isClosed: Bool {
         switch self {
         case .paid, .coveredByInsurance:
@@ -149,7 +147,7 @@ class ParkingDamage {
     let car: String
     let carOwner: String
     var status: ParkingDamageStatus
-    
+
     var leftToPay: Double {
         switch self.status {
         case .partiallyCoveredByInsurance(let paidAmount):
@@ -160,7 +158,7 @@ class ParkingDamage {
             return self.fixPrice
         }
     }
-    
+
     init(type: ParkingDamageType, accidentMonth: Int, criminalUUID: String? = nil) {
         self.uuid = UUID().uuidString
         self.type = type

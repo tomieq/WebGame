@@ -1,6 +1,6 @@
 //
 //  Court.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 29/10/2021.
 //
@@ -18,18 +18,18 @@ class Court {
     var delegate: CourtDelegate?
     let time: GameTime
     let duration: CourtCaseDuration
-    
+
     init(centralbank: CentralBank) {
         self.cases = []
         self.centralbank = centralbank
         self.time = centralbank.time
         self.duration = CourtCaseDuration()
     }
-    
+
     func getCase(uuid: String) -> CourtCase? {
         return self.cases.first{ $0.courtCase.uuid == uuid }?.courtCase
     }
-    
+
     func registerNewCase(_ courtCase: CourtCase) {
         var delay = 1
         switch courtCase.type {
@@ -41,7 +41,7 @@ class Court {
         let queue = CourtCaseQueue(courtCase: courtCase, trialMonth: self.time.month + delay)
         self.cases.append(queue)
     }
-    
+
     func processTrials() {
         for queue in self.cases {
             if queue.trialMonth == self.time.month {
@@ -58,7 +58,7 @@ class Court {
             }
         }
     }
-    
+
     func startParkingDamageLawsuite(_ courtCase: ParkingDamageLawsuite) {
         if courtCase.damage.leftToPay > 0, let guilty: Player = self.centralbank.dataStore.find(uuid: courtCase.accusedUUID) {
             let fine = courtCase.damage.leftToPay * 1.8
@@ -73,9 +73,8 @@ class Court {
         }
         self.cases.removeAll{ $0.courtCase.uuid == courtCase.uuid }
     }
-    
+
     func startFootballBriberyTrial(_ courtCase: FootballBriberyCase) {
-        
         if let guilty: Player = self.centralbank.dataStore.find(uuid: courtCase.accusedUUID) {
             let fine = courtCase.illegalWin * 2
             let invoice = Invoice(title: "Bribery trial fine", grossValue: fine, taxRate: 0)
@@ -111,7 +110,7 @@ struct FootballBriberyCase: CourtCase {
     let accusedUUID: String
     let illegalWin: Double
     let bribedReferees: [String]
-    
+
     init(accusedUUID: String, illegalWin: Double, bribedReferees: [String]) {
         self.uuid = UUID().uuidString
         self.type = .footballMatchBribery
@@ -126,14 +125,13 @@ struct ParkingDamageLawsuite: CourtCase {
     let type: CourtCaseType
     let accusedUUID: String
     let damage: ParkingDamage
-    
+
     init(accusedUUID: String, damage: ParkingDamage) {
         self.uuid = damage.uuid
         self.type = .parkingDamageLawsuite
         self.accusedUUID = accusedUUID
         self.damage = damage
     }
-    
 }
 
 class CourtCaseDuration {

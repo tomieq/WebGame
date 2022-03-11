@@ -1,6 +1,6 @@
 //
 //  JSCode.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 18/03/2021.
 //
@@ -13,13 +13,13 @@ class JSResponse {
     var response: HttpResponse {
         return .ok(.javaScript(self.jsCodeList.map{ $0.js }.joined(separator: "\n")))
     }
-    
+
     @discardableResult
     func add(_ code: JSCode) -> JSResponse {
         self.jsCodeList.append(code)
         return self
     }
-    
+
     @discardableResult
     func add(_ code: [JSCode]) -> JSResponse {
         self.jsCodeList.append(contentsOf: code)
@@ -80,7 +80,7 @@ extension JSCode {
         case .positionWindow(let windowIndex, let address):
             return "positionWindow(\(windowIndex), \(address.x), \(address.y));"
         case .closeWindow(let windowIndex):
-             return "closeWindow(\(windowIndex));";
+            return "closeWindow(\(windowIndex));";
         case .loadHtml(let windowIndex, let htmlPath):
             return "loadHtmlThenRunScripts(\(windowIndex), '\(htmlPath)', [], '');";
         case .loadHtmlInline(let windowIndex, let htmlPath, let targetID):
@@ -102,7 +102,7 @@ extension JSCode {
         case .clickMap(let address):
             return "mapClicked(\(address.x), \(address.y));"
         case .highlightPoints(let points, let color):
-            return "highlightTiles([\(points.map{"new MapPoint(\($0.x), \($0.y))"}.joined(separator: ","))], '\(color)');"
+            return "highlightTiles([\(points.map{ "new MapPoint(\($0.x), \($0.y))" }.joined(separator: ","))], '\(color)');"
         case .any(let code):
             return code
         }

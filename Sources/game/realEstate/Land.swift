@@ -1,6 +1,6 @@
 //
 //  Land.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 16/03/2021.
 //
@@ -8,7 +8,6 @@
 import Foundation
 
 struct Land: Property {
-    
     let uuid: String
     let ownerUUID: String
     let address: MapPoint
@@ -19,7 +18,7 @@ struct Land: Property {
     let constructionFinishMonth: Int
 
     var type: String { return "Land property" }
-    
+
     init(address: MapPoint, name: String? = nil, ownerUUID: String = SystemPlayer.government.uuid, purchaseNetValue: Double = 0, investmentsNetValue: Double = 0) {
         self.uuid = ""
         self.ownerUUID = ownerUUID
@@ -30,7 +29,7 @@ struct Land: Property {
         self.constructionFinishMonth = 0
         self.purchaseNetValue = purchaseNetValue
     }
-    
+
     init(_ managedObject: LandManagedObject) {
         self.uuid = managedObject.uuid
         self.ownerUUID = managedObject.ownerUUID
@@ -46,7 +45,7 @@ struct Land: Property {
 struct LandMutation {
     let uuid: String
     let attributes: [LandMutation.Attribute]
-    
+
     enum Attribute {
         case isUnderConstruction(Bool)
         case constructionFinishMonth(Int)

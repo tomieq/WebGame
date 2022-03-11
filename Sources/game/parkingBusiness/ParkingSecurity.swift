@@ -1,6 +1,6 @@
 //
 //  ParkingSecurity.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 08/11/2021.
 //
@@ -12,7 +12,7 @@ enum ParkingSecurity: String, CaseIterable {
     case cctv
     case nightGuard
     case securityGuard
-    
+
     var monthlyFee: Double {
         switch self {
         case .none:
@@ -25,6 +25,7 @@ enum ParkingSecurity: String, CaseIterable {
             return 4300
         }
     }
+
     var name: String {
         switch self {
         case .none:

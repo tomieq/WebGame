@@ -1,6 +1,6 @@
 //
 //  CentralBank.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 24/03/2021.
 //
@@ -12,7 +12,7 @@ enum FinancialTransactionError: Error, Equatable {
     case payerNotFound
     case recipientNotFound
     case notEnoughMoney
-    
+
     var description: String {
         switch self {
         case .negativeTransactionValue:
@@ -32,21 +32,19 @@ class CentralBank {
     let taxRates: TaxRates
     let time: GameTime
     private let semaphore = DispatchSemaphore(value: 1)
-    
+
     init(dataStore: DataStoreProvider, taxRates: TaxRates, time: GameTime) {
         self.dataStore = dataStore
         self.taxRates = taxRates
         self.time = time
     }
-    
-    func process(_ transaction: FinancialTransaction, checkWalletCapacity: Bool = true) throws {
 
+    func process(_ transaction: FinancialTransaction, checkWalletCapacity: Bool = true) throws {
         Logger.info("CentralBank", "New transaction \(transaction.toJSONString() ?? "")")
-        
+
         guard transaction.invoice.total > 0 else {
             self.semaphore.signal()
             throw FinancialTransactionError.negativeTransactionValue
-            
         }
         // let's block user's wallets so it won't be modified by anyone else
         self.semaphore.wait()
@@ -60,26 +58,26 @@ class CentralBank {
             Logger.error("CentralBank", "Transaction rejected. Recipient not found (\(transaction.recipientUUID)")
             throw FinancialTransactionError.recipientNotFound
         }
-        
+
         let government: Player? = self.dataStore.find(uuid: SystemPlayer.government.uuid)
-        
+
         if checkWalletCapacity, payer.wallet < transaction.invoice.total {
             self.semaphore.signal()
             throw FinancialTransactionError.notEnoughMoney
         }
-        
+
         // update payer's wallet
         payer.decreaseWallet(amount: transaction.invoice.total, self.dataStore)
 
         if !payer.isSystemPlayer {
             self.archive(playerID: payer.uuid, title: transaction.invoice.title, amount: -1 * transaction.invoice.total)
         }
-        
+
         if recipient.uuid == government?.uuid, let government = government {
             government.increaseWallet(amount: transaction.invoice.total, self.dataStore)
         } else {
             // government takes income tax and VAT
-            
+
             var incomeTax: Double = 0
             switch transaction.type {
             case .incomeTaxFree, .fine:
@@ -99,22 +97,20 @@ class CentralBank {
             if !recipient.isSystemPlayer {
                 self.archive(playerID: recipient.uuid, title: transaction.invoice.title, amount: transaction.invoice.netValue)
                 if incomeTax > 0 {
-                    self.archive(playerID: recipient.uuid, title: "Income tax (\((self.taxRates.incomeTax*100).rounded(toPlaces: 1))%) for \(transaction.invoice.title)", amount: -1 * incomeTax)
+                    self.archive(playerID: recipient.uuid, title: "Income tax (\((self.taxRates.incomeTax * 100).rounded(toPlaces: 1))%) for \(transaction.invoice.title)", amount: -1 * incomeTax)
                 }
             }
         }
         self.semaphore.signal()
     }
-    
+
     func refundIncomeTax(transaction: FinancialTransaction, costs: Double) {
-        
         guard !(SystemPlayer.allCases.map{ $0.uuid }.contains(transaction.recipientUUID)) else { return }
         guard costs > 0 else { return }
         let paidIncomeTax = (transaction.invoice.netValue * self.taxRates.incomeTax).rounded(toPlaces: 0)
         guard paidIncomeTax > 0 else { return }
 
         if let payer: Player = self.dataStore.find(uuid: transaction.recipientUUID) {
-            
             var refund = 0.0
 
             if costs >= transaction.invoice.netValue {
@@ -131,13 +127,10 @@ class CentralBank {
                 }
                 self.archive(playerID: payer.uuid, title: "Tax refund based on costs for \(transaction.invoice.title)", amount: refund)
             }
-            
         }
-        
     }
-    
+
     private func archive(playerID: String, title: String, amount: Double) {
-        
         let archive = CashFlow(month: self.time.month, title: title, playerID: playerID, amount: amount)
         self.dataStore.create(archive)
     }
@@ -148,7 +141,7 @@ fileprivate extension Player {
         let value = (self.wallet - amount).rounded(toPlaces: 0)
         dataStore.update(PlayerMutation(uuid: self.uuid, attributes: [.wallet(value)]))
     }
-    
+
     func increaseWallet(amount: Double, _ dataStore: DataStoreProvider) {
         let value = (self.wallet + amount).rounded(toPlaces: 0)
         dataStore.update(PlayerMutation(uuid: self.uuid, attributes: [.wallet(value)]))

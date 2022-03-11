@@ -1,6 +1,6 @@
 //
 //  LandManagedObject.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 19/10/2021.
 //
@@ -8,7 +8,6 @@
 import Foundation
 
 class LandManagedObject: Codable {
-
     let uuid: String
     var ownerUUID: String
     let x: Int

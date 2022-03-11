@@ -1,12 +1,11 @@
 //
 //  PropertyValuer.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 21/10/2021.
 //
 
 import Foundation
-
 
 class PropertyValueFactors {
     public var baseLandValue: Double = 90000
@@ -25,7 +24,7 @@ class PropertyValuer {
     let valueFactors: PropertyValueFactors
     let balanceCalculator: PropertyBalanceCalculator
     let constructionServices: ConstructionServices
-    
+
     init(balanceCalculator: PropertyBalanceCalculator, constructionServices: ConstructionServices) {
         self.mapManager = balanceCalculator.mapManager
         self.dataStore = constructionServices.dataStore
@@ -33,15 +32,15 @@ class PropertyValuer {
         self.balanceCalculator = balanceCalculator
         self.valueFactors = PropertyValueFactors()
     }
-    
+
     private func estimateLandValue(_ address: MapPoint) -> Double {
         return (self.valueFactors.baseLandValue * self.calculateLocationValueFactor(address)).rounded(toPlaces: 0)
     }
-    
+
     private func estimateRoadValue(_ address: MapPoint) -> Double {
         return (self.estimateLandValue(address) * self.valueFactors.roadValueFactor).rounded(toPlaces: 0)
     }
-    
+
     private func estimateParkingValue(_ address: MapPoint) -> Double {
         let constructionOffer = self.constructionServices.parkingOffer(landName: "")
         let monthlyCost = self.balanceCalculator.getParkingUnderConstructionMontlyCosts().map{ $0.netValue }.reduce(0, +)
@@ -51,7 +50,7 @@ class PropertyValuer {
         basePrice += carsOnTheparking * self.balanceCalculator.incomePriceList.monthlyParkingIncomePerTakenPlace * 3
         return basePrice.rounded(toPlaces: 0)
     }
-    
+
     private func estimateResidentialBuildingValue(_ address: MapPoint) -> Double {
         guard let building: ResidentialBuilding = self.dataStore.find(address: address) else { return 0 }
         let constructionOffer = self.constructionServices.residentialBuildingOffer(landName: "", storeyAmount: building.storeyAmount, elevator: building.hasElevator, balconies: building.balconies)
@@ -60,9 +59,8 @@ class PropertyValuer {
         let basePrice = constructionOffer.invoice.netValue + costs + self.estimateLandValue(address)
         return (basePrice * self.valueFactors.residentialBuildingReadyPriceGain).rounded(toPlaces: 0)
     }
-    
+
     func estimateValue(_ address: MapPoint) -> Double? {
-        
         guard let tile = self.mapManager.map.getTile(address: address) else {
             return self.estimateLandValue(address)
         }
@@ -80,18 +78,16 @@ class PropertyValuer {
             return self.estimateResidentialBuildingValue(address)
         }
     }
-    
+
     private func calculateLocationValueFactor(_ address: MapPoint) -> Double {
         // in future add price relation to bus stop
-        
+
         func getBuildingsFactor(_ address: MapPoint) -> Double {
             var startPrice = 1.0
             for distance in (1...4) {
                 for streetAddress in self.mapManager.map.getNeighbourAddresses(to: address, radius: distance) {
                     if let tile = self.mapManager.map.getTile(address: streetAddress), tile.isStreet() {
-                        
                         if distance == 1 {
-                            
                             for buildingDistance in (1...3) {
                                 var numberOfBuildings = 0
                                 for buildingAddress in self.mapManager.map.getNeighbourAddresses(to: address, radius: buildingDistance) {
@@ -100,7 +96,7 @@ class PropertyValuer {
                                     }
                                 }
                                 if numberOfBuildings > 0 {
-                                    let factor = self.valueFactors.propertyValueDistanceFromResidentialBuildingGain/buildingDistance.double
+                                    let factor = self.valueFactors.propertyValueDistanceFromResidentialBuildingGain / buildingDistance.double
                                     startPrice = startPrice * (1 + numberOfBuildings.double * factor)
                                 }
                             }
@@ -112,7 +108,7 @@ class PropertyValuer {
             }
             return startPrice
         }
-        
+
         func getAntennaFactor(_ address: MapPoint) -> Double {
             var startPrice = 1.0
             for distance in (1...3) {

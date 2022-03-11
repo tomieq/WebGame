@@ -1,6 +1,6 @@
 //
 //  RandomPersonGenerator.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 28/10/2021.
 //
@@ -13,11 +13,11 @@ class RandomPersonGenerator {
         let surname = RandomPersonGenerator.shared?.surnames.randomElement() ?? "Doe"
         return "\(name) \(surname)"
     }
-    
+
     private static let shared = RandomPersonGenerator()
     let names: [String]
     let surnames: [String]
-    
+
     init?() {
         let decoder = JSONDecoder()
 

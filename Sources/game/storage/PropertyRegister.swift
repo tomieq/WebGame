@@ -1,6 +1,6 @@
 //
 //  PropertyRegister.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 02/11/2021.
 //
@@ -53,7 +53,7 @@ extension PropertyRegister: Equatable {
 struct PropertyRegisterMutation {
     let uuid: String
     let attributes: [PropertyRegisterMutation.Attribute]
-    
+
     enum Attribute {
         case ownerUUID(String)
         case type(PropertyType)

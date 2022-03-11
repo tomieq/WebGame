@@ -1,6 +1,6 @@
 //
 //  MapPointTests.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 14/10/2021.
 //
@@ -10,7 +10,6 @@ import XCTest
 @testable import WebGameLib
 
 final class MapPointTests: XCTestCase {
-    
     func test_MapPointEquality_sameAddress() {
         let point1 = MapPoint(x: 2, y: 8)
         let point2 = MapPoint(x: 2, y: 8)
@@ -22,7 +21,7 @@ final class MapPointTests: XCTestCase {
         let point2 = MapPoint(x: 2, y: 8)
         XCTAssertNotEqual(point1, point2)
     }
-    
+
     func test_MapPointMoveUp() {
         /*
           --------
@@ -36,7 +35,7 @@ final class MapPointTests: XCTestCase {
         let expectedAddress = MapPoint(x: 3, y: 0)
         XCTAssertEqual(newAddress, expectedAddress)
     }
-    
+
     func test_MapPointMoveDown() {
         /*
           --------
@@ -50,7 +49,7 @@ final class MapPointTests: XCTestCase {
         let expectedAddress = MapPoint(x: 3, y: 2)
         XCTAssertEqual(newAddress, expectedAddress)
     }
-    
+
     func test_MapPointMoveRight() {
         /*
           --------
@@ -64,7 +63,7 @@ final class MapPointTests: XCTestCase {
         let expectedAddress = MapPoint(x: 4, y: 1)
         XCTAssertEqual(newAddress, expectedAddress)
     }
-    
+
     func test_MapPointMoveLeft() {
         /*
           --------
@@ -78,16 +77,16 @@ final class MapPointTests: XCTestCase {
         let expectedAddress = MapPoint(x: 2, y: 1)
         XCTAssertEqual(newAddress, expectedAddress)
     }
-    
+
     func test_MapPointQueryParams() {
         let point = MapPoint(x: 3, y: 1)
         XCTAssertEqual(point.asQueryParams, "x=3&y=1")
     }
-    
+
     func test_MapPointHashable() {
         let point1 = MapPoint(x: 3, y: 1)
         let point2 = MapPoint(x: 3, y: 1)
-        
+
         var dictionary: [MapPoint: Int] = [:]
         dictionary[point1] = 4
         XCTAssertEqual(dictionary[point1], 4)

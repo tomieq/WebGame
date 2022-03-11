@@ -1,6 +1,6 @@
 //
 //  Police.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 29/10/2021.
 //
@@ -17,22 +17,21 @@ class Police {
     var investigations: [PoliceInvestigation]
     var delegate: PoliceDelegate?
     let court: Court
-    
+
     init(footballBookie: FootballBookie, court: Court) {
         self.footballBookie = footballBookie
         self.investigations = []
         self.court = court
     }
-    
+
     func controlEvents() {
         self.checkFootballMatches()
     }
-    
+
     func checkFootballMatches() {
         var startInvestigation = false
         let bookie = self.footballBookie
         if let investigation = (self.investigations.first{ $0.type == .footballMatchBribery }) {
-            
             if bookie.getArchive().count == self.footballBookie.archiveCapacity,
                bookie.getArchive()[safeIndex: 0]?.match.isResultBribed ?? false {
                 self.finishInvestigation(investigation)
@@ -44,28 +43,27 @@ class Police {
         for archive in bookie.getArchive() {
             if let briberUUID = archive.match.briberUUID, let betMoney = archive.getBet(playerUUID: briberUUID)?.money {
                 numberOfSuspectedMatches += 1
-               
+
                 suspectsUUIDs.append(briberUUID)
-                
+
                 if (archive.match.winRatio ?? 1) * betMoney > 500000.0 {
                     startInvestigation = true
                 }
-                
             }
         }
         if numberOfSuspectedMatches > 1 || startInvestigation {
             let name = "Suspicious concidence with football match results"
             self.investigations.append(PoliceInvestigation(type: .footballMatchBribery, name: name))
-            
+
             var notice = "Federal police started a new investigation: \(name). They will be checking last matches and investigating people. "
             notice.append("They might close the case if they find nothing or they might hand the case to the Court if they find any evidence of illegal activity.")
-            
+
             for suspectUUID in suspectsUUIDs.unique {
                 self.delegate?.notify(playerUUID: suspectUUID, UINotification(text: notice, level: .info, duration: 30, icon: .police))
             }
         }
     }
-    
+
     func finishInvestigation(_ investigation: PoliceInvestigation) {
         switch investigation.type {
         case .footballMatchBribery:
@@ -73,13 +71,13 @@ class Police {
         }
         self.investigations.removeAll{ $0.uuid == investigation.uuid }
     }
-    
+
     func finishFootballBriberyInvestigation(_ investigation: PoliceInvestigation) {
         class InvestigationProgress {
             var suspectUUID: String
             var fraud: Double = 0
             var referees: [String] = []
-            
+
             init(suspectUUID: String) {
                 self.suspectUUID = suspectUUID
             }
@@ -94,7 +92,7 @@ class Police {
                     progress = InvestigationProgress(suspectUUID: briberUUID)
                     progresses.append(progress!)
                 }
-                progress?.fraud += archive.bets.filter{ $0.playerUUID == briberUUID }.map{ (match.winRatio ?? 1) * $0.money}.reduce(0, +)
+                progress?.fraud += archive.bets.filter{ $0.playerUUID == briberUUID }.map{ (match.winRatio ?? 1) * $0.money }.reduce(0, +)
                 progress?.referees.append(match.referee)
             }
         }
@@ -114,7 +112,7 @@ struct PoliceInvestigation {
     let type: PoliceInvestigationType
     let uuid: String
     let name: String
-    
+
     init(type: PoliceInvestigationType, name: String) {
         self.uuid = UUID().uuidString
         self.type = type

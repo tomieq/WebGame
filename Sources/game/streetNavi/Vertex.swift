@@ -1,6 +1,6 @@
 //
 //  Vertex.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 14/03/2021.
 //
@@ -13,16 +13,16 @@ public struct Vertex<T: Hashable> {
 
 extension Vertex: Hashable {
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(data)
+        hasher.combine(self.data)
     }
-  
-    static public func ==(lhs: Vertex, rhs: Vertex) -> Bool {
+
+    static public func == (lhs: Vertex, rhs: Vertex) -> Bool {
         return lhs.data == rhs.data
     }
 }
 
 extension Vertex: CustomStringConvertible {
     public var description: String {
-        return "\(data)"
+        return "\(self.data)"
     }
 }

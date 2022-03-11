@@ -1,6 +1,6 @@
 //
 //  Road.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 23/03/2021.
 //
@@ -8,7 +8,6 @@
 import Foundation
 
 struct Road: Property, Codable {
-    
     let uuid: String
     var type: String { return "Public street" }
     let ownerUUID: String
@@ -18,7 +17,7 @@ struct Road: Property, Codable {
     let investmentsNetValue: Double
     let isUnderConstruction: Bool
     let constructionFinishMonth: Int
-    
+
     init(land: Land, constructionFinishMonth: Int? = nil, investmentsNetValue: Double = 0) {
         self.uuid = land.uuid
         self.address = land.address
@@ -26,10 +25,10 @@ struct Road: Property, Codable {
         self.ownerUUID = land.ownerUUID
         self.purchaseNetValue = land.purchaseNetValue
         self.investmentsNetValue = (land.investmentsNetValue + investmentsNetValue).rounded(toPlaces: 0)
-        self.isUnderConstruction = constructionFinishMonth == nil ? false: true
+        self.isUnderConstruction = constructionFinishMonth == nil ? false : true
         self.constructionFinishMonth = constructionFinishMonth ?? 0
     }
-    
+
     init(_ managedObject: RoadManagedObject) {
         self.uuid = managedObject.uuid
         self.ownerUUID = managedObject.ownerUUID
@@ -45,7 +44,7 @@ struct Road: Property, Codable {
 struct RoadMutation {
     let uuid: String
     let attributes: [RoadMutation.Attribute]
-    
+
     enum Attribute {
         case isUnderConstruction(Bool)
         case constructionFinishMonth(Int)

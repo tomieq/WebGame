@@ -1,6 +1,6 @@
 //
 //  ResidentialBuildingManagedObject.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 19/10/2021.
 //
@@ -8,7 +8,6 @@
 import Foundation
 
 class ResidentialBuildingManagedObject: Codable {
-    
     let uuid: String
     var ownerUUID: String
     let x: Int
@@ -35,7 +34,7 @@ class ResidentialBuildingManagedObject: Codable {
         self.constructionFinishMonth = building.constructionFinishMonth
         self.condition = building.condition
         self.storeyAmount = building.storeyAmount
-        self.balconies = building.balconies.map{$0.rawValue}.joined(separator: ",")
+        self.balconies = building.balconies.map{ $0.rawValue }.joined(separator: ",")
         self.hasElevator = building.hasElevator
     }
 }

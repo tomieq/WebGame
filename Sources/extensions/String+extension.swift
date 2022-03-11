@@ -1,6 +1,6 @@
 //
 //  String+extension.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 19/03/2021.
 //
@@ -28,7 +28,7 @@ extension String {
 
         return result
     }
-    
+
     public var asResponse: HttpResponse {
         return .ok(.html(self))
     }

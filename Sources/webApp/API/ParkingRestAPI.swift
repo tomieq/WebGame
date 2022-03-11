@@ -1,6 +1,6 @@
 //
 //  ParkingRestAPI.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 04/11/2021.
 //
@@ -8,7 +8,6 @@
 import Foundation
 
 class ParkingRestAPI: RestAPI {
-    
     static func jsForHighlightParkingArea(address: MapPoint, parkingClientCalculator: ParkingClientCalculator) -> [JSCode] {
         var js: [JSCode] = []
         var points = parkingClientCalculator.mapManager.map.getNeighbourAddresses(to: address, radius: 1)
@@ -20,8 +19,6 @@ class ParkingRestAPI: RestAPI {
     }
 
     override func setupEndpoints() {
-        
-        
         // MARK: openParkingManager
         server.GET[.openParkingManager] = { request, _ in
             request.disableKeepAlive = true
@@ -33,7 +30,7 @@ class ParkingRestAPI: RestAPI {
             js.add(ParkingRestAPI.jsForHighlightParkingArea(address: address, parkingClientCalculator: self.gameEngine.parkingClientCalculator))
             return js.response
         }
-        
+
         // MARK: initParkingManager.js
         server.GET["initParkingManager.js"] = { request, _ in
             request.disableKeepAlive = true
@@ -53,8 +50,8 @@ class ParkingRestAPI: RestAPI {
         server.GET["/parkingManager.html"] = { request, _ in
             request.disableKeepAlive = true
             guard let playerSessionID = request.queryParam("playerSessionID"),
-                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                    return self.htmlError("Invalid request! Missing session ID.")
+                  let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                return self.htmlError("Invalid request! Missing session ID.")
             }
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return self.htmlError("Invalid request! Missing window context.")
@@ -77,39 +74,37 @@ class ParkingRestAPI: RestAPI {
             view.addTab("Damages", onclick: .loadHtmlInline(windowIndex, htmlPath: "parkingDamages.html".append(address), targetID: domID))
             view.addTab("Advertising", onclick: .loadHtmlInline(windowIndex, htmlPath: "parkingAdvertising.html".append(address), targetID: domID))
             view.addTab("Sell", onclick: .loadHtmlInline(windowIndex, htmlPath: RestEndpoint.propertySellStatus.append(address), targetID: domID))
-            
-            
+
             if parking.isUnderConstruction {
                 view.setPropertyType("\(parking.type) - under construction")
                     .setTileImage(TileType.parkingUnderConstruction.image.path)
-                
+
             } else {
                 view.setPropertyType(parking.type)
                     .setTileImage(TileType.parking(type: .leftConnection).image.path)
             }
-            
+
             view.addTip("The more buildings/facilities around, the more customers you get.")
                 .addTip("If there is more parkings in the area, the market is shared between them.")
                 .addTip("It's best if your parking business is the only one in the area.")
                 .addTip("The area coverage of your parking lot is marked with green and the competitors in red.")
-            
+
             let balanceView = PropertyBalanceView()
             balanceView.setMonthlyCosts(self.gameEngine.propertyBalanceCalculator.getMontlyCosts(address: address))
             balanceView.setMonthlyIncome(self.gameEngine.propertyBalanceCalculator.getMonthlyIncome(address: address))
             balanceView.setProperty(parking)
 
             view.setInitialContent(html: balanceView.output())
-            
-            
+
             return view.output().asResponse
         }
-        
+
         // MARK: parkingBalance.html
         server.GET["/parkingBalance.html"] = { request, _ in
             request.disableKeepAlive = true
             guard let playerSessionID = request.queryParam("playerSessionID"),
-                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                    return self.htmlError("Invalid request! Missing session ID.")
+                  let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                return self.htmlError("Invalid request! Missing session ID.")
             }
             guard let address = request.mapPoint else {
                 return self.htmlError("Invalid request! Missing address.")
@@ -127,13 +122,13 @@ class ParkingRestAPI: RestAPI {
             balanceView.setProperty(parking)
             return balanceView.output().asResponse
         }
-        
+
         // MARK: parkingSecurity.html
         server.GET["/parkingSecurity.html"] = { request, _ in
             request.disableKeepAlive = true
             guard let playerSessionID = request.queryParam("playerSessionID"),
-                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                    return self.htmlError("Invalid request! Missing session ID.")
+                  let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                return self.htmlError("Invalid request! Missing session ID.")
             }
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return self.htmlError("Invalid request! Missing window context.")
@@ -153,7 +148,7 @@ class ParkingRestAPI: RestAPI {
             data["windowIndex"] = windowIndex
             data["submitUrl"] = "/updateParkingSecurity.js".append(address)
             template.assign(variables: data)
-            
+
             for security in ParkingSecurity.allCases {
                 var data: [String: String] = [:]
                 data["name"] = security.name
@@ -165,7 +160,7 @@ class ParkingRestAPI: RestAPI {
                 }
                 template.assign(variables: data, inNest: "security")
             }
-            
+
             for insurance in ParkingInsurance.allCases {
                 var data: [String: String] = [:]
                 data["name"] = insurance.name
@@ -179,13 +174,13 @@ class ParkingRestAPI: RestAPI {
             }
             return template.asResponse()
         }
-        
+
         // MARK: updateParkingSecurity.js
         server.POST["updateParkingSecurity.js"] = { request, _ in
             request.disableKeepAlive = true
             guard let playerSessionID = request.queryParam("playerSessionID"),
-                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                    return self.jsError("Invalid request! Missing session ID.")
+                  let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                return self.jsError("Invalid request! Missing session ID.")
             }
             guard let address = request.mapPoint else {
                 return self.jsError("Invalid request! Missing address.")
@@ -197,7 +192,7 @@ class ParkingRestAPI: RestAPI {
             guard session.playerUUID == ownerID else {
                 return self.jsError("Property at \(address.readable) is not yours!")
             }
-            
+
             let formData = request.flatFormData()
             guard let securityString = formData["security"], let security = ParkingSecurity(rawValue: securityString) else {
                 return self.jsError("Security value not set!")
@@ -213,13 +208,13 @@ class ParkingRestAPI: RestAPI {
             }
             return js.response
         }
-        
+
         // MARK: parkingInsurance.html
         server.GET["/parkingInsurance.html"] = { request, _ in
             request.disableKeepAlive = true
             guard let playerSessionID = request.queryParam("playerSessionID"),
-                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                    return self.htmlError("Invalid request! Missing session ID.")
+                  let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                return self.htmlError("Invalid request! Missing session ID.")
             }
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return self.htmlError("Invalid request! Missing window context.")
@@ -239,7 +234,7 @@ class ParkingRestAPI: RestAPI {
             data["windowIndex"] = windowIndex
             data["submitUrl"] = "/updateParkingInsurance.js".append(address)
             template.assign(variables: data)
-            
+
             for insurance in ParkingInsurance.allCases {
                 var data: [String: String] = [:]
                 data["name"] = insurance.name
@@ -253,13 +248,13 @@ class ParkingRestAPI: RestAPI {
             }
             return template.asResponse()
         }
-        
+
         // MARK: updateParkingInsurance.js
         server.POST["updateParkingInsurance.js"] = { request, _ in
             request.disableKeepAlive = true
             guard let playerSessionID = request.queryParam("playerSessionID"),
-                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                    return self.jsError("Invalid request! Missing session ID.")
+                  let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                return self.jsError("Invalid request! Missing session ID.")
             }
             guard let address = request.mapPoint else {
                 return self.jsError("Invalid request! Missing address.")
@@ -271,7 +266,7 @@ class ParkingRestAPI: RestAPI {
             guard session.playerUUID == ownerID else {
                 return self.jsError("Property at \(address.readable) is not yours!")
             }
-            
+
             let formData = request.flatFormData()
             guard let insuranceString = formData["insurance"], let insurance = ParkingInsurance(rawValue: insuranceString) else {
                 return self.jsError("Insurance value not set!")
@@ -287,13 +282,13 @@ class ParkingRestAPI: RestAPI {
             }
             return js.response
         }
-        
+
         // MARK: parkingDamages.html
         server.GET["/parkingDamages.html"] = { request, _ in
             request.disableKeepAlive = true
             guard let playerSessionID = request.queryParam("playerSessionID"),
-                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                    return self.htmlError("Invalid request! Missing session ID.")
+                  let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                return self.htmlError("Invalid request! Missing session ID.")
             }
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return self.htmlError("Invalid request! Missing window context.")
@@ -322,16 +317,16 @@ class ParkingRestAPI: RestAPI {
                     template.assign(variables: ["html": html, "domID": "damage-\(damage.uuid)"], inNest: "damage")
                 }
             }
-            
+
             return template.asResponse()
         }
-        
+
         // MARK: singleParkingDamage.html
         server.GET["/singleParkingDamage.html"] = { request, _ in
             request.disableKeepAlive = true
             guard let playerSessionID = request.queryParam("playerSessionID"),
-                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                    return self.htmlError("Invalid request! Missing session ID.")
+                  let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                return self.htmlError("Invalid request! Missing session ID.")
             }
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return self.htmlError("Invalid request! Missing window context.")
@@ -349,19 +344,19 @@ class ParkingRestAPI: RestAPI {
             guard let damageUUID = request.queryParam("damageUUID") else {
                 return self.htmlError("Missing damage ID!")
             }
-            
-            guard let damage = (self.gameEngine.parkingBusiness.getDamages(address: address).first{$0.uuid == damageUUID}) else {
+
+            guard let damage = (self.gameEngine.parkingBusiness.getDamages(address: address).first{ $0.uuid == damageUUID }) else {
                 return self.htmlError("Damage not found")
             }
             return self.damageItemHTML(damage, windowIndex: windowIndex, address: address).asResponse
         }
-        
+
         // MARK: parkingAdvertising.html
         server.GET["/parkingAdvertising.html"] = { request, _ in
             request.disableKeepAlive = true
             guard let playerSessionID = request.queryParam("playerSessionID"),
-                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                    return self.htmlError("Invalid request! Missing session ID.")
+                  let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                return self.htmlError("Invalid request! Missing session ID.")
             }
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return self.htmlError("Invalid request! Missing window context.")
@@ -382,7 +377,7 @@ class ParkingRestAPI: RestAPI {
             data["submitUrl"] = "/updateParkingAdvertisement.js".append(address)
             data["trustLevel"] = (parking.trustLevel * 100).int.string
             template.assign(variables: data)
-            
+
             for advertising in ParkingAdvertising.allCases {
                 var data: [String: String] = [:]
                 data["name"] = advertising.name
@@ -397,13 +392,13 @@ class ParkingRestAPI: RestAPI {
             }
             return template.asResponse()
         }
-        
+
         // MARK: updateParkingAdvertisement.js
         server.POST["updateParkingAdvertisement.js"] = { request, _ in
             request.disableKeepAlive = true
             guard let playerSessionID = request.queryParam("playerSessionID"),
-                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                    return self.jsError("Invalid request! Missing session ID.")
+                  let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                return self.jsError("Invalid request! Missing session ID.")
             }
             guard let address = request.mapPoint else {
                 return self.jsError("Invalid request! Missing address.")
@@ -415,14 +410,14 @@ class ParkingRestAPI: RestAPI {
             guard session.playerUUID == ownerID else {
                 return self.jsError("Property at \(address.readable) is not yours!")
             }
-            
+
             let formData = request.flatFormData()
             guard let advertisementString = formData["advertisement"], let advertisement = ParkingAdvertising(rawValue: advertisementString) else {
                 return self.jsError("Advertisement value not set!")
             }
             let mutation = ParkingMutation(uuid: parking.uuid, attributes: [.advertising(advertisement)])
             self.gameEngine.dataStore.update(mutation)
-            
+
             let js = JSResponse()
             if advertisement == .none {
                 js.add(.showWarning(txt: "Marketing campaign cancelled for <b>\(parking.name)</b> located <i>\(parking.readableAddress)</i>", duration: 10))
@@ -432,13 +427,13 @@ class ParkingRestAPI: RestAPI {
             }
             return js.response
         }
-        
+
         // MARK: payForDamage.js
         server.GET["payForDamage.js"] = { request, _ in
             request.disableKeepAlive = true
             guard let playerSessionID = request.queryParam("playerSessionID"),
-                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                    return self.jsError("Invalid request! Missing session ID.")
+                  let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                return self.jsError("Invalid request! Missing session ID.")
             }
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return self.htmlError("Invalid request! Missing window context.")
@@ -468,10 +463,10 @@ class ParkingRestAPI: RestAPI {
             return js.response
         }
     }
-    
+
     private func damageItemHTML(_ damage: ParkingDamage, windowIndex: String, address: MapPoint) -> String {
         let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManager/parking/parkingDamageItem.html"))
-        
+
         var data: [String: String] = [:]
         data["date"] = GameTime(damage.accidentMonth).text
         data["car"] = damage.car
@@ -489,8 +484,7 @@ class ParkingRestAPI: RestAPI {
             template.assign(variables: payData, inNest: "payButton")
         }
         template.assign(variables: data)
-        
+
         return template.output()
     }
-
 }

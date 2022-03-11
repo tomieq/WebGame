@@ -1,6 +1,6 @@
 //
 //  Int+extension.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 12/03/2021.
 //
@@ -11,7 +11,7 @@ extension Int {
     var string: String {
         return "\(self)"
     }
-    
+
     var double: Double {
         return Double(self)
     }

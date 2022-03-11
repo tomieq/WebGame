@@ -1,6 +1,6 @@
 //
 //  RealEstateAgentRestAPI.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 22/10/2021.
 //
@@ -9,7 +9,6 @@ import Foundation
 
 class PropertySalesAPI: RestAPI {
     override func setupEndpoints() {
-
         // MARK: openSaleOffer
         server.GET[.openSaleOffer] = { request, _ in
             request.disableKeepAlive = true
@@ -27,7 +26,7 @@ class PropertySalesAPI: RestAPI {
             js.add(.disableWindowResizing(windowIndex))
             return js.response
         }
-        
+
         // MARK: saleOffer.html
         server.GET["/saleOffer.html"] = { request, _ in
             request.disableKeepAlive = true
@@ -37,18 +36,18 @@ class PropertySalesAPI: RestAPI {
             guard let address = request.mapPoint else {
                 return .badRequest(.html("Invalid request! Missing address."))
             }
-            
+
             guard let playerSessionID = request.queryParam("playerSessionID"),
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                      return .badRequest(.html("Invalid request! Missing sessionID."))
+                return .badRequest(.html("Invalid request! Missing sessionID."))
             }
             guard let offer = self.gameEngine.realEstateAgent.saleOffer(address: address, buyerUUID: session.playerUUID) else {
                 return .badRequest(.html("Sale offer not found!"))
             }
 
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/saleOffer.html"))
-            var data = [String:String]()
-            
+            var data = [String: String]()
+
             if offer.property.ownerUUID == SystemPlayer.government.uuid {
                 data["sellerName"] = "Government"
                 template.assign(variables: ["value": offer.saleInvoice.netValue.money], inNest: "govermentOffer")
@@ -68,9 +67,9 @@ class PropertySalesAPI: RestAPI {
             template.assign(variables: data)
             return .ok(.html(template.output()))
         }
-        
+
         // MARK: buyProperty.js
-        server.GET["/buyProperty.js"] = {request, _ in
+        server.GET["/buyProperty.js"] = { request, _ in
             request.disableKeepAlive = true
             let code = JSResponse()
             guard let windowIndex = request.queryParam("windowIndex") else {
@@ -80,12 +79,12 @@ class PropertySalesAPI: RestAPI {
                 return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
             }
             guard let playerSessionID = request.queryParam("playerSessionID"),
-                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                    code.add(.closeWindow(windowIndex))
-                    code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
-                    return code.response
+                  let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                code.add(.closeWindow(windowIndex))
+                code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
+                return code.response
             }
-            var netValue: Double? = nil
+            var netValue: Double?
             if let netValueString = request.queryParam("netValue") {
                 netValue = Double(netValueString)
             }
@@ -107,7 +106,7 @@ class PropertySalesAPI: RestAPI {
             code.add(.closeWindow(windowIndex))
             return code.response
         }
-        
+
         // MARK: loadNewSaleOfferForm
         server.GET[.loadNewSaleOfferForm] = { request, _ in
             request.disableKeepAlive = true
@@ -131,10 +130,10 @@ class PropertySalesAPI: RestAPI {
             guard let address = request.mapPoint else {
                 return self.htmlError("Invalid request! Missing address.")
             }
-            
+
             guard let playerSessionID = request.queryParam("playerSessionID"),
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                      return self.htmlError("Invalid request! Missing sessionID.")
+                return self.htmlError("Invalid request! Missing sessionID.")
             }
             guard let property = self.gameEngine.realEstateAgent.getProperty(address: address) else {
                 return self.htmlError("Property not found!")
@@ -144,7 +143,7 @@ class PropertySalesAPI: RestAPI {
             }
 
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertySales/newSaleOfferForm.html"))
-            var data = [String:String]()
+            var data = [String: String]()
             data["name"] = property.name
             data["type"] = property.type
             data["price"] = property.purchaseNetValue.moneyFormat
@@ -154,7 +153,7 @@ class PropertySalesAPI: RestAPI {
             template.assign(variables: data)
             return .ok(.html(template.output()))
         }
-        
+
         // MARK: publishSaleOffer.js
         server.GET["/publishSaleOffer.js"] = { request, _ in
             request.disableKeepAlive = true
@@ -168,7 +167,7 @@ class PropertySalesAPI: RestAPI {
                 return self.jsError("Invalid request! Missing price.")
             }
             let js = JSResponse()
-            
+
             do {
                 try self.gameEngine.realEstateAgent.registerSaleOffer(address: address, netValue: price)
                 js.add(.showSuccess(txt: "Sale offer published successfully", duration: 5))
@@ -178,7 +177,7 @@ class PropertySalesAPI: RestAPI {
             }
             return js.response
         }
-        
+
         // MARK: loadEditSaleOfferForm
         server.GET[.loadEditSaleOfferForm] = { request, _ in
             request.disableKeepAlive = true
@@ -202,10 +201,10 @@ class PropertySalesAPI: RestAPI {
             guard let address = request.mapPoint else {
                 return self.htmlError("Invalid request! Missing address.")
             }
-            
+
             guard let playerSessionID = request.queryParam("playerSessionID"),
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                      return self.htmlError("Invalid request! Missing sessionID.")
+                return self.htmlError("Invalid request! Missing sessionID.")
             }
             guard let property = self.gameEngine.realEstateAgent.getProperty(address: address) else {
                 return self.htmlError("Property not found!")
@@ -218,7 +217,7 @@ class PropertySalesAPI: RestAPI {
             }
 
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertySales/editSaleOfferForm.html"))
-            var data = [String:String]()
+            var data = [String: String]()
             data["name"] = property.name
             data["type"] = property.type
             data["price"] = offer.saleInvoice.netValue.moneyFormat
@@ -229,7 +228,7 @@ class PropertySalesAPI: RestAPI {
             template.assign(variables: data)
             return .ok(.html(template.output()))
         }
-        
+
         // MARK: saveSaleOffer.js
         server.GET["/saveSaleOffer.js"] = { request, _ in
             request.disableKeepAlive = true
@@ -239,7 +238,7 @@ class PropertySalesAPI: RestAPI {
             guard let address = request.mapPoint else {
                 return self.jsError("Invalid request! Missing address.")
             }
-            
+
             guard let priceString = request.queryParam("price"), let price = Double(priceString) else {
                 return self.jsError("Invalid request! Missing price.")
             }
@@ -271,13 +270,13 @@ class PropertySalesAPI: RestAPI {
             js.add(.loadHtmlInline(windowIndex, htmlPath: RestEndpoint.propertySellStatus.append(address), targetID: PropertyManagerTopView.domID(windowIndex)))
             return js.response
         }
-        
+
         // MARK: propertySellStatus
         server.GET[.propertySellStatus] = { request, _ in
             request.disableKeepAlive = true
             guard let playerSessionID = request.queryParam("playerSessionID"),
-                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                    return self.htmlError("Invalid request! Missing session ID.")
+                  let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                return self.htmlError("Invalid request! Missing session ID.")
             }
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return self.htmlError("Invalid request! Missing window context.")
@@ -296,17 +295,17 @@ class PropertySalesAPI: RestAPI {
             sellView.setOffer(self.gameEngine.realEstateAgent.saleOffer(address: address, buyerUUID: "random"))
             return sellView.output(windowIndex: windowIndex).asResponse
         }
-        
+
         // MARK: newSaleOfferForm.html
         server.GET["/propertyValuation.html"] = { request, _ in
             request.disableKeepAlive = true
             guard let address = request.mapPoint else {
                 return self.htmlError("Invalid request! Missing address.")
             }
-            
+
             guard let playerSessionID = request.queryParam("playerSessionID"),
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                      return self.htmlError("Invalid request! Missing sessionID.")
+                return self.htmlError("Invalid request! Missing sessionID.")
             }
             guard let property = self.gameEngine.realEstateAgent.getProperty(address: address) else {
                 return self.htmlError("Property not found!")
@@ -319,7 +318,7 @@ class PropertySalesAPI: RestAPI {
                 return self.htmlError("Problem with property valuation")
             }
             let instantSellValue = value * self.gameEngine.investorAI.params.instantPurchaseToEstimatedValueFactor
-            
+
             let html = "The estimated value is <b>\(value.money)</b>. If you want to sell the property immediately, set the price under \(instantSellValue.money)."
             return html.asResponse
         }

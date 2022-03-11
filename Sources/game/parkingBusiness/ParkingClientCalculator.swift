@@ -1,6 +1,6 @@
 //
 //  ParkingClientCalculator.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 14/02/2022.
 //
@@ -8,7 +8,6 @@
 import Foundation
 
 class ParkingClientCalculator {
-    
     let mapManager: GameMapManager
     let dataStore: DataStoreProvider
 
@@ -16,17 +15,15 @@ class ParkingClientCalculator {
         self.mapManager = mapManager
         self.dataStore = dataStore
     }
-    
-    
+
     func calculateCarsForParking(address: MapPoint) -> Double {
-        
         let parking: Parking? = self.dataStore.find(address: address)
         let carsInTheArea = self.getCarsAroundAddress(address)
         let competitorAddresses = self.getParkingsAroundAddress(address)
         let competitors: [Parking] = competitorAddresses.compactMap{ self.dataStore.find(address: $0) }
         // competitorTrusts stores a map of competitor's shares for address (competitors' parking trusts)
         var competitorTrusts: [MapPoint: [Double]] = [:]
-        
+
         for competitorAddress in competitorAddresses {
             let carsInCompetitorRange = self.getCarsAroundAddress(competitorAddress)
             let competitorTrust = competitors.first{ $0.address == competitorAddress }?.trustLevel ?? 1.0
@@ -62,8 +59,7 @@ class ParkingClientCalculator {
         }
         return carsPerAddress
     }
-    
-    
+
     func getParkingsAroundAddress(_ address: MapPoint) -> [MapPoint] {
         var parkings: [MapPoint] = []
         for radius in (1...4) {

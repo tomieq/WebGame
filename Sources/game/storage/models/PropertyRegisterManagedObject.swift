@@ -1,6 +1,6 @@
 //
 //  PropertyRegisterManagedObject.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 02/11/2021.
 //
@@ -13,7 +13,7 @@ class PropertyRegisterManagedObject {
     var ownerUUID: String
     var type: PropertyType
     var status: PropertyStatus
-    
+
     init(_ register: PropertyRegister) {
         self.uuid = register.uuid
         self.address = register.address

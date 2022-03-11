@@ -1,6 +1,6 @@
 //
 //  ParkingManagedObject.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 04/11/2021.
 //
@@ -8,7 +8,6 @@
 import Foundation
 
 class ParkingManagedObject: Codable {
-    
     let uuid: String
     var ownerUUID: String
     let x: Int
@@ -22,7 +21,7 @@ class ParkingManagedObject: Codable {
     var security: String
     var advertising: String
     var trustLevel: Double
-    
+
     init(_ parking: Parking) {
         self.uuid = parking.uuid.isEmpty ? UUID().uuidString : parking.uuid
         self.ownerUUID = parking.ownerUUID

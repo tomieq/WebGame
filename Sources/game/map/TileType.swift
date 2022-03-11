@@ -1,6 +1,6 @@
 //
 //  TileImage.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 12/03/2021.
 //
@@ -83,60 +83,59 @@ extension TileType {
             return TileImage(path: "tiles/streetUnderConstruction.png", width: 600, height: 400)
         case .street(let type):
             switch type {
-
-                case .local(let subtype):
-                    switch (subtype) {
-                    case .localX:
-                        return TileImage(path: "tiles/street-X.png", width: 600, height: 400)
-                    case .localY:
-                        return TileImage(path: "tiles/street-Y.png", width: 600, height: 400)
-                    case .localYIntersection1:
-                        return TileImage(path: "tiles/street-Y-1.png", width: 600, height: 400)
-                    case .localYIntersection2:
-                        return TileImage(path: "tiles/street-Y-2.png", width: 600, height: 400)
-                    case .localXIntersection1:
-                        return TileImage(path: "tiles/street-X-1.png", width: 600, height: 400)
-                    case .localXIntersection2:
-                        return TileImage(path: "tiles/street-X-2.png", width: 600, height: 400)
-                    case .localCross:
-                        return TileImage(path: "tiles/street-cross.png", width: 600, height: 400)
-                    case .localCurveBottom:
-                        return TileImage(path: "tiles/street-curve-bottom.png", width: 600, height: 400)
-                    case .localCurveLeft:
-                        return TileImage(path: "tiles/street-curve-left.png", width: 600, height: 400)
-                    case .localCurveRight:
-                        return TileImage(path: "tiles/street-curve-right.png", width: 600, height: 400)
-                    case .localCurveTop:
-                        return TileImage(path: "tiles/street-curve-top.png", width: 600, height: 400)
-                    case .localDeadEndX1:
-                        return TileImage(path: "tiles/street-dead-X-1.png", width: 600, height: 400)
-                    case .localDeadEndX2:
-                        return TileImage(path: "tiles/street-dead-X-2.png", width: 600, height: 400)
-                    case .localDeadEndY1:
-                        return TileImage(path: "tiles/street-dead-Y-1.png", width: 600, height: 400)
-                    case .localDeadEndY2:
-                        return TileImage(path: "tiles/street-dead-Y-2.png", width: 600, height: 400)
-                    }
-                case .main(let subtype):
-                    switch (subtype) {
-                    case .mainX:
-                        return TileImage(path: "tiles/wide-street-X.png", width: 600, height: 400)
-                    case .mainY:
-                        return TileImage(path: "tiles/wide-street-Y.png", width: 600, height: 400)
-                    case .mainCross:
-                        return TileImage(path: "tiles/wide-street-cross.png", width: 600, height: 400)
-                    case .mainXIntersection1:
-                        return TileImage(path: "tiles/wide-street-X-1.png", width: 600, height: 400)
-                    case .mainXIntersection2:
-                        return TileImage(path: "tiles/wide-street-X-2.png", width: 600, height: 400)
-                    case .mainXIntersection3:
-                        return TileImage(path: "tiles/wide-street-X-3.png", width: 600, height: 400)
-                    case .mainYIntersection1:
-                        return TileImage(path: "tiles/wide-street-Y-1.png", width: 600, height: 400)
-                    case .mainYIntersection2:
-                        return TileImage(path: "tiles/wide-street-Y-2.png", width: 600, height: 400)
-                    case .mainYIntersection3:
-                        return TileImage(path: "tiles/wide-street-Y-3.png", width: 600, height: 400)
+            case .local(let subtype):
+                switch (subtype) {
+                case .localX:
+                    return TileImage(path: "tiles/street-X.png", width: 600, height: 400)
+                case .localY:
+                    return TileImage(path: "tiles/street-Y.png", width: 600, height: 400)
+                case .localYIntersection1:
+                    return TileImage(path: "tiles/street-Y-1.png", width: 600, height: 400)
+                case .localYIntersection2:
+                    return TileImage(path: "tiles/street-Y-2.png", width: 600, height: 400)
+                case .localXIntersection1:
+                    return TileImage(path: "tiles/street-X-1.png", width: 600, height: 400)
+                case .localXIntersection2:
+                    return TileImage(path: "tiles/street-X-2.png", width: 600, height: 400)
+                case .localCross:
+                    return TileImage(path: "tiles/street-cross.png", width: 600, height: 400)
+                case .localCurveBottom:
+                    return TileImage(path: "tiles/street-curve-bottom.png", width: 600, height: 400)
+                case .localCurveLeft:
+                    return TileImage(path: "tiles/street-curve-left.png", width: 600, height: 400)
+                case .localCurveRight:
+                    return TileImage(path: "tiles/street-curve-right.png", width: 600, height: 400)
+                case .localCurveTop:
+                    return TileImage(path: "tiles/street-curve-top.png", width: 600, height: 400)
+                case .localDeadEndX1:
+                    return TileImage(path: "tiles/street-dead-X-1.png", width: 600, height: 400)
+                case .localDeadEndX2:
+                    return TileImage(path: "tiles/street-dead-X-2.png", width: 600, height: 400)
+                case .localDeadEndY1:
+                    return TileImage(path: "tiles/street-dead-Y-1.png", width: 600, height: 400)
+                case .localDeadEndY2:
+                    return TileImage(path: "tiles/street-dead-Y-2.png", width: 600, height: 400)
+                }
+            case .main(let subtype):
+                switch (subtype) {
+                case .mainX:
+                    return TileImage(path: "tiles/wide-street-X.png", width: 600, height: 400)
+                case .mainY:
+                    return TileImage(path: "tiles/wide-street-Y.png", width: 600, height: 400)
+                case .mainCross:
+                    return TileImage(path: "tiles/wide-street-cross.png", width: 600, height: 400)
+                case .mainXIntersection1:
+                    return TileImage(path: "tiles/wide-street-X-1.png", width: 600, height: 400)
+                case .mainXIntersection2:
+                    return TileImage(path: "tiles/wide-street-X-2.png", width: 600, height: 400)
+                case .mainXIntersection3:
+                    return TileImage(path: "tiles/wide-street-X-3.png", width: 600, height: 400)
+                case .mainYIntersection1:
+                    return TileImage(path: "tiles/wide-street-Y-1.png", width: 600, height: 400)
+                case .mainYIntersection2:
+                    return TileImage(path: "tiles/wide-street-Y-2.png", width: 600, height: 400)
+                case .mainYIntersection3:
+                    return TileImage(path: "tiles/wide-street-Y-3.png", width: 600, height: 400)
                 }
             }
         }
@@ -148,7 +147,6 @@ extension TileType: Equatable {
         return lhs.image.path == rhs.image.path
     }
 }
-
 
 struct TileImage {
     let path: String
@@ -166,10 +164,9 @@ enum BuildingBalcony: CaseIterable {
     case southBalcony
     case northBalcony
     case northAndSouthBalcony
-    
+
     var imagePathSuffix: String {
         switch self {
-            
         case .none:
             return ""
         case .southBalcony:

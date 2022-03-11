@@ -1,6 +1,6 @@
 //
 //  SyncWalletCoordinatorTests.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 25/10/2021.
 //
@@ -10,28 +10,27 @@ import XCTest
 @testable import WebGameLib
 
 class SyncWalletCoordinatorTests: XCTestCase {
-
     func test_normalSingleSync() {
         let coordinator = SyncWalletCoordinator()
         var users: [String] = []
-        
+
         coordinator.setSyncWalletChange { playerUUID in
             users.append(playerUUID)
         }
-        
+
         coordinator.syncWalletChange(playerUUID: "john")
         XCTAssertEqual(users.count, 1)
         XCTAssertTrue(users.contains("john"))
     }
-    
+
     func test_normalMultipleSync() {
         let coordinator = SyncWalletCoordinator()
         var users: [String] = []
-        
+
         coordinator.setSyncWalletChange { playerUUID in
             users.append(playerUUID)
         }
-        
+
         coordinator.syncWalletChange(playerUUID: "john")
         coordinator.syncWalletChange(playerUUID: "tom")
         XCTAssertEqual(users.count, 2)
@@ -42,7 +41,7 @@ class SyncWalletCoordinatorTests: XCTestCase {
     func test_holdSync() {
         let coordinator = SyncWalletCoordinator()
         var users: [String] = []
-        
+
         coordinator.setSyncWalletChange { playerUUID in
             users.append(playerUUID)
         }
@@ -59,7 +58,7 @@ class SyncWalletCoordinatorTests: XCTestCase {
     func test_flushMultipleTimes() {
         let coordinator = SyncWalletCoordinator()
         var users: [String] = []
-        
+
         coordinator.setSyncWalletChange { playerUUID in
             users.append(playerUUID)
         }
@@ -74,11 +73,11 @@ class SyncWalletCoordinatorTests: XCTestCase {
         XCTAssertTrue(users.contains("john"))
         XCTAssertTrue(users.contains("tom"))
     }
-    
+
     func test_worksNormalAfterFlush() {
         let coordinator = SyncWalletCoordinator()
         var users: [String] = []
-        
+
         coordinator.setSyncWalletChange { playerUUID in
             users.append(playerUUID)
         }

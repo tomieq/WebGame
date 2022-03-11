@@ -13,5 +13,3 @@ do {
 } catch {
     print("WebGame start error: \(error)")
 }
-
-

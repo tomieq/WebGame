@@ -1,6 +1,6 @@
 //
 //  GameMapTile.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 13/02/2022.
 //
@@ -26,7 +26,7 @@ extension GameMapTile {
         }
         return false
     }
-    
+
     func isParking() -> Bool {
         if case .parking(_) = self.type {
             return true
@@ -47,31 +47,30 @@ extension GameMapTile {
         }
         return false
     }
-    
+
     func isBuildingUnderConstruction() -> Bool {
         if case .buildingUnderConstruction = self.type {
             return true
         }
         return false
     }
-    
+
     func isOffice() -> Bool {
         if case .office = self.type {
             return true
         }
         return false
     }
-    
+
     func isAntenna() -> Bool {
         if case .btsAntenna = self.type {
             return true
         }
         return false
     }
-    
+
     var propertyType: GameMapPropertyType? {
         switch self.type {
-            
         case .soldLand:
             return .land
         case .street(_), .streetUnderConstruction:
@@ -83,6 +82,5 @@ extension GameMapTile {
         default:
             return nil
         }
-        
     }
 }

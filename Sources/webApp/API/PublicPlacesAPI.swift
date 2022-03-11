@@ -1,6 +1,6 @@
 //
 //  PublicPlacesAPI.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 27/10/2021.
 //
@@ -9,17 +9,16 @@ import Foundation
 
 class PublicPlacesAPI: RestAPI {
     override func setupEndpoints() {
-
         // MARK: openFootballPitch
         self.server.GET[.openFootballPitch] = { request, _ in
             request.disableKeepAlive = true
-            
+
             guard let address = request.mapPoint else {
                 return self.jsError("Invalid request! Missing address.")
             }
             let js = JSResponse()
             js.add(.openWindow(name: "Football pitch", path: "/initFootballPitch.js".append(address), width: 400, height: 435, point: address, singletonID: address.asQueryParams))
-            
+
             if let tile = self.gameEngine.gameMap.getTile(address: address) {
                 switch tile.type {
                 case .footballPitch(let side):
@@ -47,11 +46,10 @@ class PublicPlacesAPI: RestAPI {
                     return self.jsError("Invalid request! Not a football pitch!")
                 }
             }
-            
-            
+
             return js.response
         }
-        
+
         // MARK: initFootballPitch.js
         self.server.GET["/initFootballPitch.js"] = { request, _ in
             request.disableKeepAlive = true
@@ -66,7 +64,7 @@ class PublicPlacesAPI: RestAPI {
             js.add(.disableWindowResizing(windowIndex))
             return js.response
         }
-        
+
         // MARK: footballPitchInfo.html
         self.server.GET["/footballPitchInfo.html"] = { request, _ in
             request.disableKeepAlive = true
@@ -75,14 +73,14 @@ class PublicPlacesAPI: RestAPI {
                 return self.htmlError("Invalid request! Missing window context.")
             }
             guard let playerSessionID = request.queryParam("playerSessionID"),
-                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                    return self.htmlError("Invalid request! Missing session ID.")
+                  let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                return self.htmlError("Invalid request! Missing session ID.")
             }
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/footballPitchInfo.html"))
             let bookie = self.gameEngine.footballBookie
-            
+
             if let lastMatch = bookie.lastMonthMatch {
-                var data = [String:String]()
+                var data = [String: String]()
                 data["team"] = lastMatch.team1
                 data["team2"] = lastMatch.team2
                 data["referee"] = lastMatch.referee
@@ -91,13 +89,13 @@ class PublicPlacesAPI: RestAPI {
                 template.assign(variables: data, inNest: "lastMatch")
             }
             let match = bookie.upcomingMatch
-            var data = [String:String]()
+            var data = [String: String]()
             data["tileUrl"] = TileType.smallFootballPitch.image.path
             data["team"] = match.team1
             data["team2"] = match.team2
             data["referee"] = match.referee
             data["windowIndex"] = windowIndex
-            
+
             template.assign(variables: data)
             if let bet = bookie.getBet(playerUUID: session.playerUUID) {
                 func who() -> String {
@@ -110,27 +108,26 @@ class PublicPlacesAPI: RestAPI {
                         return match.team2
                     }
                 }
-                var data = [String:String]()
+                var data = [String: String]()
                 data["money"] = bet.money.money
                 data["who"] = who()
                 data["win"] = (bet.money * bookie.upcomingMatch.resultRatio(bet.expectedResult)).money
                 template.assign(variables: data, inNest: "betInfo")
                 let ivestigation = self.gameEngine.police.investigations.filter{ $0.type == .footballMatchBribery }
-                if !bookie.referee.didAlreadyTryBribe(playerUUID: session.playerUUID) && ivestigation.isEmpty {
-                    data = [String:String]()
+                if !bookie.referee.didAlreadyTryBribe(playerUUID: session.playerUUID), ivestigation.isEmpty {
+                    data = [String: String]()
                     data["referee"] = match.referee
                     data["contactRefereeJS"] = JSCode.loadHtml(windowIndex, htmlPath: "/contactReferee.html?matchUUID=\(match.uuid)").js
                     template.assign(variables: data, inNest: "bribe")
                 }
             } else {
-                var data = [String:String]()
+                var data = [String: String]()
                 data["makeBetUrl"] = JSCode.loadHtml(windowIndex, htmlPath: "/makeBetForm.html?matchUUID=\(match.uuid)").js
                 template.assign(variables: data, inNest: "makeBet")
             }
             return template.asResponse()
         }
-        
-        
+
         // MARK: betForm.html
         self.server.GET["/makeBetForm.html"] = { request, _ in
             request.disableKeepAlive = true
@@ -145,9 +142,9 @@ class PublicPlacesAPI: RestAPI {
             guard match.uuid == matchUUID else {
                 return self.htmlError("The match is over. You can not bet now. Try next game.")
             }
-            
+
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/makeBetForm.html"))
-            var data = [String:String]()
+            var data = [String: String]()
             data["team"] = match.team1
             data["team2"] = match.team2
             data["referee"] = match.referee
@@ -163,13 +160,13 @@ class PublicPlacesAPI: RestAPI {
             template.assign(variables: data)
             return template.asResponse()
         }
-        
+
         // MARK: makeBet.js
         self.server.POST["/makeBet.js"] = { request, _ in
             request.disableKeepAlive = true
             guard let playerSessionID = request.queryParam("playerSessionID"),
-                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                    return self.jsError("Invalid request! Missing session ID.")
+                  let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                return self.jsError("Invalid request! Missing session ID.")
             }
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return self.jsError("Invalid request! Missing window context.")
@@ -200,10 +197,8 @@ class PublicPlacesAPI: RestAPI {
             } catch {
                 return self.jsError(error.localizedDescription)
             }
-            
         }
-        
-        
+
         // MARK: contactReferee.html
         self.server.GET["/contactReferee.html"] = { request, _ in
             request.disableKeepAlive = true
@@ -218,9 +213,9 @@ class PublicPlacesAPI: RestAPI {
             guard match.uuid == matchUUID else {
                 return self.htmlError("The match is over. You can not bet now. Try next game.")
             }
-            
+
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/makeRefereeOfferForm.html"))
-            var data = [String:String]()
+            var data = [String: String]()
             data["team"] = match.team1
             data["team2"] = match.team2
             data["referee"] = match.referee
@@ -230,13 +225,13 @@ class PublicPlacesAPI: RestAPI {
             template.assign(variables: data)
             return template.asResponse()
         }
-        
+
         // MARK: makeRefereeOfferForm.js
         self.server.POST["/makeRefereeOfferForm.js"] = { request, _ in
             request.disableKeepAlive = true
             guard let playerSessionID = request.queryParam("playerSessionID"),
-                let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
-                    return self.jsError("Invalid request! Missing session ID.")
+                  let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+                return self.jsError("Invalid request! Missing session ID.")
             }
             guard let windowIndex = request.queryParam("windowIndex") else {
                 return self.jsError("Invalid request! Missing window context.")
@@ -259,7 +254,6 @@ class PublicPlacesAPI: RestAPI {
             }
             js.add(.closeWindow(windowIndex))
             return js.response
-            
         }
     }
 }

@@ -1,6 +1,6 @@
 //
 //  DataStoreProvider.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 15/10/2021.
 //
@@ -17,11 +17,11 @@ protocol DataStoreProvider {
     @discardableResult func create(_ building: ResidentialBuilding) -> String
     @discardableResult func create(_ apartment: Apartment) -> String
     @discardableResult func create(_ advert: SaleAdvert) -> String
-    
+
     func find(uuid: String) -> Player?
     func find(uuid: String) -> PropertyRegister?
     func find(uuid: String) -> Apartment?
-    
+
     func find(address: MapPoint) -> Land?
     func find(address: MapPoint) -> Road?
     func find(address: MapPoint) -> Parking?
@@ -30,18 +30,18 @@ protocol DataStoreProvider {
     func get(address: MapPoint) -> [Apartment]
     func getFinancialTransactions(userID: String) -> [CashFlow]
     func get(ownerUUID: String) -> [PropertyRegister]
-    
+
     func getAll() -> [Player]
     func getAll() -> [Land]
     func getAll() -> [Road]
     func getAll() -> [Parking]
     func getAll() -> [ResidentialBuilding]
     func getAll() -> [SaleAdvert]
-    
+
     func getUnderConstruction() -> [Road]
     func getUnderConstruction() -> [Parking]
     func getUnderConstruction() -> [ResidentialBuilding]
-    
+
     func update(_ mutation: PlayerMutation)
     func update(_ mutation: LandMutation)
     func update(_ mutation: RoadMutation)

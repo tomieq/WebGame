@@ -1,6 +1,6 @@
 //
 //  UIGameDate.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 24/10/2021.
 //

@@ -1,6 +1,6 @@
 //
 //  Template+Resource.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 26/02/2021.
 //

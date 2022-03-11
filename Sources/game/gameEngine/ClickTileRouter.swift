@@ -1,6 +1,6 @@
 //
 //  ClickTileRouter.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 19/10/2021.
 //
@@ -24,17 +24,16 @@ enum ClickTileAction {
 }
 
 class ClickTileRouter {
-    
     let map: GameMap
     let dataStore: DataStoreProvider
     let agent: RealEstateAgent
-    
+
     init(agent: RealEstateAgent) {
         self.map = agent.mapManager.map
         self.dataStore = agent.dataStore
         self.agent = agent
     }
-    
+
     func action(address: MapPoint, playerUUID: String?) -> ClickTileAction {
         let tile = self.map.getTile(address: address)
         guard let tile = tile else {
@@ -47,7 +46,6 @@ class ClickTileRouter {
             default:
                 return .noAction
             }
-            
         }
         switch propertyType {
         case .land:
@@ -93,11 +91,10 @@ class ClickTileRouter {
 extension ClickTileAction {
     func commands(point: MapPoint) -> [WebsocketOutCommand] {
         switch self {
-            
         case .roadInfo:
-            return  [.runScript(RestEndpoint.openRoadInfo.append(point))]
+            return [.runScript(RestEndpoint.openRoadInfo.append(point))]
         case .roadManager:
-            return  [ .runScript(RestEndpoint.openRoadManager.base.append(point))]
+            return [.runScript(RestEndpoint.openRoadManager.base.append(point))]
         case .landInfo:
             return [
                 .openWindow(OpenWindow(title: "Property info", width: 400, height: 200, initUrl: RestEndpoint.openPropertyInfo.base.append(point), address: point))
@@ -111,21 +108,21 @@ extension ClickTileAction {
                 .openWindow(OpenWindow(title: "Sale offer", width: 300, height: 270, initUrl: RestEndpoint.openSaleOffer.append(point), address: point))
             ]
         case .landManager:
-            return [ .runScript(RestEndpoint.openLandManager.append(point))]
+            return [.runScript(RestEndpoint.openLandManager.append(point))]
         case .residentialBuildingInfo:
             return [
                 .openWindow(OpenWindow(title: "Property info", width: 400, height: 200, initUrl: RestEndpoint.openPropertyInfo.base.append(point), address: point))
             ]
         case .residentialBuildingManager:
-            return [ .runScript(RestEndpoint.openBuildingManager.append(point))]
+            return [.runScript(RestEndpoint.openBuildingManager.append(point))]
         case .footballPitchInfo:
-            return [ .runScript(RestEndpoint.openFootballPitch.append(point)) ]
+            return [.runScript(RestEndpoint.openFootballPitch.append(point))]
         case .parkingInfo:
             return [
                 .openWindow(OpenWindow(title: "Property info", width: 400, height: 200, initUrl: RestEndpoint.openPropertyInfo.base.append(point), address: point))
             ]
         case .parkingManager:
-            return  [ .runScript(RestEndpoint.openParkingManager.base.append(point))]
+            return [.runScript(RestEndpoint.openParkingManager.base.append(point))]
         case .buyParking:
             return [
                 .openWindow(OpenWindow(title: "Sale offer", width: 300, height: 270, initUrl: RestEndpoint.openSaleOffer.append(point), address: point))

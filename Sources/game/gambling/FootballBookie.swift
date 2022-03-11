@@ -1,6 +1,6 @@
 //
 //  FootballBookie.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 28/10/2021.
 //
@@ -18,7 +18,7 @@ enum MakeBetError: Error, Equatable {
     case financialProblem(FinancialTransactionError)
     case outOfTime
     case canNotBetTwice
-    
+
     var description: String {
         switch self {
         case .financialProblem(let finance):
@@ -39,7 +39,7 @@ protocol FootballBookieDelegate {
 struct FootballBetArchive {
     let match: FootballMatch
     let bets: [FootballBet]
-    
+
     func getBet(playerUUID: String) -> FootballBet? {
         return self.bets.first{ $0.playerUUID == playerUUID }
     }
@@ -54,31 +54,30 @@ class FootballBookie {
     let referee: Referee
     let centralBank: CentralBank
     var delegate: FootballBookieDelegate?
-    
+
     var upcomingMatch: FootballMatch {
         self.match
     }
-    
+
     var lastMonthMatch: FootballMatch? {
         self.archive.last?.match
     }
-    
+
     init(centralBank: CentralBank) {
         self.localTeam = RandomNameGenerator.getName()
         self.match = FootballMatch(team: self.localTeam)
         self.referee = Referee()
         self.bets = []
         self.centralBank = centralBank
-        
+
         self.referee.delegate = self
     }
-    
+
     func makeBet(bet: FootballBet) throws {
-        
         guard bet.matchUUID == self.match.uuid else {
             throw MakeBetError.outOfTime
         }
-        if (self.bets.contains{ $0.playerUUID == bet.playerUUID}) {
+        if (self.bets.contains{ $0.playerUUID == bet.playerUUID }) {
             throw MakeBetError.canNotBetTwice
         }
         let invoice = Invoice(title: "Footbal match bet", grossValue: bet.money, taxRate: 0)
@@ -87,7 +86,7 @@ class FootballBookie {
             try self.centralBank.process(transaction)
             self.bets.append(bet)
             self.delegate?.syncWalletChange(playerUUID: bet.playerUUID)
-            
+
             func who() -> String {
                 switch bet.expectedResult {
                 case .draw:
@@ -104,22 +103,22 @@ class FootballBookie {
             throw MakeBetError.financialProblem(error)
         }
     }
-    
+
     func getBet(playerUUID: String) -> FootballBet? {
         return self.bets.first{ $0.playerUUID == playerUUID }
     }
-    
+
     func getArchive() -> [FootballBetArchive] {
         return self.archive
     }
-    
+
     func nextMonth() {
         self.match.playMatch()
-        let winRatio = match.winRatio ?? 1
+        let winRatio = self.match.winRatio ?? 1
         print("Win ration is \(winRatio)")
         var winnerUUIDs: [String] = []
         var looserUUIDs: [String] = []
-        
+
         for bet in self.bets {
             if bet.expectedResult == self.match.result {
                 let money = bet.money * winRatio
@@ -142,7 +141,7 @@ class FootballBookie {
         for looserUUID in looserUUIDs {
             self.delegate?.notify(playerUUID: looserUUID, UINotification(text: looserMessage, level: .warning, duration: 10, icon: .redFlag))
         }
-        
+
         self.archive.append(FootballBetArchive(match: self.match, bets: self.bets))
         if self.archive.count > self.archiveCapacity {
             self.archive.removeFirst()

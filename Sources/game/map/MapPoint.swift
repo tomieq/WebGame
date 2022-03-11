@@ -1,6 +1,6 @@
 //
 //  MapPoint.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 14/03/2021.
 //
@@ -20,11 +20,9 @@ enum MapDirection: CaseIterable {
 }
 
 extension MapPoint: Equatable {
-    
 }
 
 extension MapPoint {
-    
     func move(_ direction: MapDirection) -> MapPoint {
         switch direction {
         case .right:
@@ -47,11 +45,11 @@ extension MapPoint: CustomStringConvertible {
 
 extension MapPoint: Hashable {
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(x)
-        hasher.combine(y)
+        hasher.combine(self.x)
+        hasher.combine(self.y)
     }
-  
-    static public func ==(lhs: MapPoint, rhs: MapPoint) -> Bool {
+
+    static public func == (lhs: MapPoint, rhs: MapPoint) -> Bool {
         return lhs.x == rhs.x && lhs.y == rhs.y
     }
 }
@@ -60,7 +58,7 @@ extension MapPoint {
     var asQueryParams: String {
         return "x=\(self.x)&y=\(self.y)"
     }
-    
+
     var readable: String {
         return "East \(self.x), South \(self.y)"
     }

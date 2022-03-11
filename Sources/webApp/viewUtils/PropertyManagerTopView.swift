@@ -1,6 +1,6 @@
 //
 //  PropertyManagerTopView.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 05/11/2021.
 //
@@ -8,52 +8,51 @@
 import Foundation
 
 class PropertyManagerTopView {
-    
     private var data: [String: String] = [:]
     private var tips: [String] = []
-    private var tabs: [[String:String]] = []
-    
+    private var tabs: [[String: String]] = []
+
     init(windowIndex: String) {
-        data["tabDetailsID"] = PropertyManagerTopView.domID(windowIndex)
+        self.data["tabDetailsID"] = PropertyManagerTopView.domID(windowIndex)
     }
-    
+
     public static func domID(_ windowIndex: String) -> String {
         return "content\(windowIndex)"
     }
-    
+
     @discardableResult
     func setTileImage(_ path: String) -> PropertyManagerTopView {
         self.data["tileUrl"] = path
         return self
     }
-    
+
     @discardableResult
     func setPropertyType(_ type: String) -> PropertyManagerTopView {
         self.data["type"] = type
         return self
     }
-    
+
     @discardableResult
     func addTip(_ tip: String) -> PropertyManagerTopView {
         self.tips.append(tip)
         return self
     }
-    
+
     @discardableResult
     func addTab(_ name: String, onclick: JSCode) -> PropertyManagerTopView {
-        var tabData: [String:String] = [:]
+        var tabData: [String: String] = [:]
         tabData["name"] = name
         tabData["onclick"] = "\(onclick.js); $('.tabItem').removeClass('activeTabItem'); $(this).addClass('activeTabItem');"
         self.tabs.append(tabData)
         return self
     }
-    
+
     @discardableResult
     func setInitialContent(html: String) -> PropertyManagerTopView {
         self.data["initialContent"] = html
         return self
     }
-    
+
     func output() -> String {
         let template = Template(raw: ResourceCache.shared.getAppResource("templates/propertyManager/topView.html"))
         template.assign(variables: self.data)
@@ -67,5 +66,4 @@ class PropertyManagerTopView {
         }
         return template.output()
     }
-    
 }

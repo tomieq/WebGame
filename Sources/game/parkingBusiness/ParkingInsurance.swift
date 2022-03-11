@@ -1,6 +1,6 @@
 //
 //  ParkingInsurance.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 08/11/2021.
 //
@@ -13,7 +13,7 @@ enum ParkingInsurance: String, CaseIterable {
     case extended
     case full
     case sleepWell
-    
+
     var monthlyFee: Double {
         switch self {
         case .none:
@@ -28,10 +28,9 @@ enum ParkingInsurance: String, CaseIterable {
             return 2500
         }
     }
-    
+
     var damageCoverLimit: Double {
         switch self {
-            
         case .none:
             return 0
         case .basic:
@@ -44,7 +43,7 @@ enum ParkingInsurance: String, CaseIterable {
             return 1000000
         }
     }
-    
+
     var name: String {
         switch self {
         case .none:

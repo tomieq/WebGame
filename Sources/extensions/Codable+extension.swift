@@ -1,6 +1,6 @@
 //
 //  Codable+extension.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 15/03/2021.
 //

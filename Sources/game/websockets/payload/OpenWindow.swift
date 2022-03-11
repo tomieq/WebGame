@@ -1,6 +1,6 @@
 //
 //  OpenWindow.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 18/03/2021.
 //

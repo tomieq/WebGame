@@ -1,6 +1,6 @@
 //
 //  RestEndpoint.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 25/10/2021.
 //
@@ -24,7 +24,7 @@ enum RestEndpoint {
     case openFootballPitch
     case startInvestment
     case residentialBuildingInvestmentWizard
-    
+
     var base: String {
         switch self {
         case .openRoadInfo:
@@ -78,6 +78,7 @@ extension String {
         }
         return "\(self)?\(address.asQueryParams)"
     }
+
     func append(_ key: String, _ value: String) -> String {
         if self.contains("?") {
             return "\(self)&\(key)=\(value)"

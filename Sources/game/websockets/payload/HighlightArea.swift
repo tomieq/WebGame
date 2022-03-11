@@ -1,6 +1,6 @@
 //
 //  HighlightArea.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 17/03/2021.
 //

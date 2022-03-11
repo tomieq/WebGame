@@ -1,6 +1,6 @@
 //
 //  FinancialTransactionArchive.swift
-//  
+//
 //
 //  Created by Tomasz Kucharski on 29/03/2021.
 //
@@ -21,7 +21,7 @@ struct CashFlow: Codable {
         self.playerID = playerID
         self.amount = amount
     }
-    
+
     init(_ managedObject: CashFlowManagedObject) {
         self.uuid = managedObject.uuid
         self.month = managedObject.month
