@@ -48,4 +48,5 @@
 #other
 --enable redundantNilInit
 --enable todos
+--commas inline
 --enable trailingCommas
