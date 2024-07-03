@@ -42,22 +42,22 @@ class ConstructionServicesAPI: RestAPI {
 
     override func setupEndpoints() {
         // MARK: startInvestment
-        server.GET[.startInvestment] = { request, _ in
+        server.get[.startInvestment] = { request, _ in
             request.disableKeepAlive = true
             let code = JSResponse()
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
                 return self.jsError("Invalid request! Missing address.")
             }
-            guard let playerSessionID = request.queryParam("playerSessionID"),
+            guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 code.add(.closeWindow(windowIndex))
                 code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
                 return code.response
             }
-            guard let investmentType = request.queryParam("type") else {
+            guard let investmentType = request.queryParams.get("type") else {
                 return self.jsError("Invalid request! Missing investmentType.")
             }
 
@@ -87,9 +87,9 @@ class ConstructionServicesAPI: RestAPI {
         }
 
         // MARK: .residentialBuildingInvestmentWizard
-        server.GET[.residentialBuildingInvestmentWizard] = { request, _ in
+        server.get[.residentialBuildingInvestmentWizard] = { request, _ in
             request.disableKeepAlive = true
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
@@ -102,17 +102,17 @@ class ConstructionServicesAPI: RestAPI {
         }
 
         // MARK: residentialInvestmentStep1.html
-        self.server.GET[API.step1html.url] = { request, _ in
+        self.server.get[API.step1html.url] = { request, _ in
             request.disableKeepAlive = true
 
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.htmlError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
                 return self.htmlError("Invalid request! Missing address.")
             }
 
-            let prechoiced = request.queryParam("storey")
+            let prechoiced = request.queryParams.get("storey")
 
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/constructionServices/residentialBuildingStep1.html"))
             for storey in [4, 6, 8, 10] {
@@ -133,17 +133,16 @@ class ConstructionServicesAPI: RestAPI {
         }
 
         // MARK: validateBuildingStep1.js
-        server.POST[API.validateStep1js.url] = { request, _ in
+        server.post[API.validateStep1js.url] = { request, _ in
             request.disableKeepAlive = true
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
                 return self.jsError("Invalid request! Missing address.")
             }
 
-            let formData = request.flatFormData()
-            guard let storey = formData["storey"] else {
+            guard let storey = request.formData["storey"] else {
                 return self.jsError("Please choose storey amount")
             }
             guard [4, 6, 8, 10].contains(Int(storey)) else {
@@ -156,16 +155,16 @@ class ConstructionServicesAPI: RestAPI {
         }
 
         // MARK: residentialInvestmentStep2.html
-        self.server.GET[API.step2html.url] = { request, _ in
+        self.server.get[API.step2html.url] = { request, _ in
             request.disableKeepAlive = true
 
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.htmlError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
                 return self.htmlError("Invalid request! Missing address.")
             }
-            guard let storeyTxt = request.queryParam("storey"), let storey = Int(storeyTxt) else {
+            guard let storeyTxt = request.queryParams.get("storey"), let storey = Int(storeyTxt) else {
                 return self.htmlError("Missing storey amount")
             }
 
@@ -181,7 +180,7 @@ class ConstructionServicesAPI: RestAPI {
             data["previousJS"] = JSCode.loadHtmlInline(windowIndex, htmlPath: API.step1html.url.append(address).append("storey", storeyTxt), targetID: PropertyManagerTopView.domID(windowIndex)).js
             data["windowIndex"] = windowIndex
 
-            let prechoice = request.queryParam("elevator")
+            let prechoice = request.queryParams.get("elevator")
             if prechoice == "true" {
                 data["yesChecked"] = "checked"
             } else if prechoice == "false" {
@@ -193,20 +192,19 @@ class ConstructionServicesAPI: RestAPI {
         }
 
         // MARK: validateBuildingStep2.js
-        server.POST[API.validateStep2js.url] = { request, _ in
+        server.post[API.validateStep2js.url] = { request, _ in
             request.disableKeepAlive = true
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
                 return self.jsError("Invalid request! Missing address.")
             }
 
-            guard let storeyTxt = request.queryParam("storey") else {
+            guard let storeyTxt = request.queryParams.get("storey") else {
                 return self.jsError("Missing storey amount")
             }
-            let formData = request.flatFormData()
-            guard let elevator = formData["elevator"] else {
+            guard let elevator = request.formData["elevator"] else {
                 return self.jsError("Please choose elevator option")
             }
             guard let _ = Bool(elevator) else {
@@ -219,24 +217,24 @@ class ConstructionServicesAPI: RestAPI {
         }
 
         // MARK: residentialInvestmentStep3.html
-        self.server.GET[API.step3html.url] = { request, _ in
+        self.server.get[API.step3html.url] = { request, _ in
             request.disableKeepAlive = true
 
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.htmlError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
                 return self.htmlError("Invalid request! Missing address.")
             }
-            guard let storeyTxt = request.queryParam("storey"), let storey = Int(storeyTxt) else {
+            guard let storeyTxt = request.queryParams.get("storey"), let storey = Int(storeyTxt) else {
                 return self.htmlError("Missing storey amount")
             }
-            guard let elevatorTxt = request.queryParam("elevator") else {
+            guard let elevatorTxt = request.queryParams.get("elevator") else {
                 return self.htmlError("Missing storey amount")
             }
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/constructionServices/residentialBuildingStep3.html"))
 
-            let prechoice = request.queryParam("balconies")?.components(separatedBy: ",").compactMap { ApartmentWindowSide(rawValue: $0) } ?? []
+            let prechoice = request.queryParams.get("balconies")?.components(separatedBy: ",").compactMap { ApartmentWindowSide(rawValue: $0) } ?? []
 
             for side in ApartmentWindowSide.allCases {
                 let cost = storey.double * self.gameEngine.constructionServices.priceList.residentialBuildingBalconyCost
@@ -259,26 +257,26 @@ class ConstructionServicesAPI: RestAPI {
         }
 
         // MARK: validateBuildingStep3.js
-        server.POST[API.validateStep3js.url] = { request, _ in
+        server.post[API.validateStep3js.url] = { request, _ in
             request.disableKeepAlive = true
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
                 return self.jsError("Invalid request! Missing address.")
             }
 
-            guard let storeyTxt = request.queryParam("storey"), let storey = Int(storeyTxt) else {
+            guard let storeyTxt = request.queryParams.get("storey"), let storey = Int(storeyTxt) else {
                 return self.jsError("Missing storey amount")
             }
             guard [2, 4, 6, 8, 10].contains(storey) else {
                 return self.jsError("Invalid storey amount")
             }
-            guard let elevatorTxt = request.queryParam("elevator"), let _ = Bool(elevatorTxt) else {
+            guard let elevatorTxt = request.queryParams.get("elevator"), let _ = Bool(elevatorTxt) else {
                 return self.jsError("Invalid elevator value")
             }
 
-            let formData = request.flatFormData()
+            let formData = request.formData.dict
             var balconies: [ApartmentWindowSide] = []
             for balcony in ApartmentWindowSide.allCases {
                 if let _ = formData[balcony.rawValue] {
@@ -298,22 +296,22 @@ class ConstructionServicesAPI: RestAPI {
         }
 
         // MARK: residentialInvestmentStep4.html
-        self.server.GET[API.step4html.url] = { request, _ in
+        self.server.get[API.step4html.url] = { request, _ in
             request.disableKeepAlive = true
 
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.htmlError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
                 return self.htmlError("Invalid request! Missing address.")
             }
-            guard let storeyTxt = request.queryParam("storey"), let storey = Int(storeyTxt) else {
+            guard let storeyTxt = request.queryParams.get("storey"), let storey = Int(storeyTxt) else {
                 return self.htmlError("Missing storey amount")
             }
-            guard let elevatorTxt = request.queryParam("elevator"), let elevator = Bool(elevatorTxt) else {
+            guard let elevatorTxt = request.queryParams.get("elevator"), let elevator = Bool(elevatorTxt) else {
                 return self.htmlError("Missing storey amount")
             }
-            guard let balconiesTxt = request.queryParam("balconies") else {
+            guard let balconiesTxt = request.queryParams.get("balconies") else {
                 return self.htmlError("Missing balcony info")
             }
             let balconies = balconiesTxt.components(separatedBy: ",").compactMap { ApartmentWindowSide(rawValue: $0) }
@@ -349,13 +347,13 @@ class ConstructionServicesAPI: RestAPI {
         }
 
         // MARK: validateBuildingStep3.js
-        server.POST[API.startInvestment.url] = { request, _ in
+        server.post[API.startInvestment.url] = { request, _ in
             request.disableKeepAlive = true
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
             let code = JSResponse()
-            guard let playerSessionID = request.queryParam("playerSessionID"),
+            guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 code.add(.closeWindow(windowIndex))
                 code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
@@ -364,16 +362,16 @@ class ConstructionServicesAPI: RestAPI {
             guard let address = request.mapPoint else {
                 return self.jsError("Invalid request! Missing address.")
             }
-            guard let storeyTxt = request.queryParam("storey"), let storey = Int(storeyTxt) else {
+            guard let storeyTxt = request.queryParams.get("storey"), let storey = Int(storeyTxt) else {
                 return self.jsError("Missing storey amount")
             }
             guard [2, 4, 6, 8, 10].contains(storey) else {
                 return self.jsError("Invalid storey amount")
             }
-            guard let elevatorTxt = request.queryParam("elevator"), let elevator = Bool(elevatorTxt) else {
+            guard let elevatorTxt = request.queryParams.get("elevator"), let elevator = Bool(elevatorTxt) else {
                 return self.jsError("Invalid elevator value")
             }
-            guard let balconiesTxt = request.queryParam("balconies") else {
+            guard let balconiesTxt = request.queryParams.get("balconies") else {
                 return self.jsError("Missing balconies")
             }
             let balconies = balconiesTxt.components(separatedBy: ",").compactMap { ApartmentWindowSide(rawValue: $0) }

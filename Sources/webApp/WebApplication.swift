@@ -30,10 +30,10 @@ public class WebApplication {
         api.append(ConstructionServicesAPI(server, gameEngine: self.gameEngine))
         self.api = api
 
-        server.GET["/"] = { request, responseHeaders in
+        server.get["/"] = { request, responseHeaders in
             request.disableKeepAlive = true
-            guard let userID = request.queryParam("userID"), let player: Player = self.dataStore.find(uuid: userID) else {
-                return .ok(.htmlBody("Invalid userID"))
+            guard let userID = request.queryParams.get("userID"), let player: Player = self.dataStore.find(uuid: userID) else {
+                return .ok(.html("Invalid userID"))
             }
             let playerSession = PlayerSessionManager.shared.createPlayerSession(for: player)
             responseHeaders.setCookie(name: "sessionID", value: playerSession.id)
@@ -57,7 +57,7 @@ public class WebApplication {
             return template.asResponse()
         }
 
-        server.GET["js/init.js"] = { request, _ in
+        server.get["js/init.js"] = { request, _ in
             request.disableKeepAlive = true
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/init.js"))
 
@@ -67,10 +67,10 @@ public class WebApplication {
             variables["mapScale"] = self.gameEngine.gameMap.scale.string
             template.assign(variables: variables)
 
-            return .ok(.javaScript(template.output()))
+            return .ok(.js(template.output()))
         }
 
-        server.GET["js/loadMap.js"] = { request, _ in
+        server.get["js/loadMap.js"] = { request, _ in
             request.disableKeepAlive = true
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/loadMap.js"))
 
@@ -89,10 +89,10 @@ public class WebApplication {
                     template.assign(variables: variables, inNest: "building")
                 }
             }
-            return .ok(.javaScript(template.output()))
+            return .ok(.js(template.output()))
         }
 
-        server.GET["js/loadAddonsMap.js"] = { request, _ in
+        server.get["js/loadAddonsMap.js"] = { request, _ in
             request.disableKeepAlive = true
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/loadAddonsMap.js"))
 
@@ -108,12 +108,12 @@ public class WebApplication {
                 template.assign(variables: variables, inNest: "object")
             }
 
-            return .ok(.javaScript(template.output()))
+            return .ok(.js(template.output()))
         }
 
-        server.GET["js/openBankTransactions.js"] = { request, _ in
+        server.get["js/openBankTransactions.js"] = { request, _ in
             request.disableKeepAlive = true
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
             }
             let code = JSResponse()
@@ -121,8 +121,8 @@ public class WebApplication {
             return code.response
         }
 
-        server.GET["bankTransactions.html"] = { request, _ in
-            guard let playerSessionID = request.queryParam("playerSessionID"),
+        server.get["bankTransactions.html"] = { request, _ in
+            guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return .badRequest(.text("Invalid request! Missing session ID."))
             }
@@ -145,9 +145,9 @@ public class WebApplication {
             return .ok(.text(html))
         }
 
-        server.GET["js/openWalletBalance.js"] = { request, _ in
+        server.get["js/openWalletBalance.js"] = { request, _ in
             request.disableKeepAlive = true
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
             }
             let code = JSResponse()
@@ -156,8 +156,8 @@ public class WebApplication {
             return code.response
         }
 
-        server.GET["walletBalance.html"] = { request, _ in
-            guard let playerSessionID = request.queryParam("playerSessionID"),
+        server.get["walletBalance.html"] = { request, _ in
+            guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return .badRequest(.text("Invalid request! Missing session ID."))
             }
@@ -191,14 +191,14 @@ public class WebApplication {
             return .ok(.text(template.output()))
         }
 
-        server.GET["js/websockets.js"] = { request, _ in
+        server.get["js/websockets.js"] = { request, _ in
             request.disableKeepAlive = true
-            guard let playerSessionID = request.queryParam("playerSessionID"), let _ = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
+            guard let playerSessionID = request.playerSessionID, let _ = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return .ok(.text("alert('Invalid playerSessionID');"))
             }
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/websockets.js"))
             template.assign(variables: ["url": "ws://127.0.0.1:\((try? server.port()) ?? 0)/websocket", "playerSessionID": playerSessionID])
-            return .ok(.javaScript(template.output()))
+            return .ok(.js(template.output()))
         }
 
         server["/websocket"] = websocket(text: { (session, text) in
@@ -220,26 +220,9 @@ public class WebApplication {
         server.notFoundHandler = { request, responseHeaders in
             request.disableKeepAlive = true
             let filePath = Resource.absolutePath(forPublicResource: request.path)
-            if FileManager.default.fileExists(atPath: filePath) {
-                guard let file = try? filePath.openForReading() else {
-                    Logger.error("File", "Could not open `\(filePath)`")
-                    return .notFound
-                }
-                let mimeType = filePath.mimeType()
-                responseHeaders.addHeader("Content-Type", mimeType)
-
-                if let attr = try? FileManager.default.attributesOfItem(atPath: filePath),
-                   let fileSize = attr[FileAttributeKey.size] as? UInt64 {
-                    responseHeaders.addHeader("Content-Length", String(fileSize))
-                }
-
-                return .raw(200, "OK", { writer in
-                    try writer.write(file)
-                    file.close()
-                })
-            }
+            try HttpFileResponse.with(absolutePath: filePath)
             Logger.error("Unhandled request", "File `\(filePath)` doesn't exist")
-            return .notFound
+            return .notFound()
         }
 
         server.middleware.append { request, responseHeaders in

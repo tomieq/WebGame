@@ -10,9 +10,18 @@ import Swifter
 
 extension HttpRequest {
     var mapPoint: MapPoint? {
-        guard let xText = self.queryParam("x"), let yText = self.queryParam("y"), let x = Int(xText), let y = Int(yText) else {
+        guard let xText = self.queryParams.get("x"),
+              let yText = self.queryParams.get("y"), let x = Int(xText), let y = Int(yText) else {
             return nil
         }
         return MapPoint(x: x, y: y)
+    }
+    
+    var windowIndex: String? {
+        self.queryParams.get("windowIndex")
+    }
+    
+    var playerSessionID: String? {
+        self.queryParams.get("playerSessionID")
     }
 }

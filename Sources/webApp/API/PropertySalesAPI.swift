@@ -10,9 +10,9 @@ import Foundation
 class PropertySalesAPI: RestAPI {
     override func setupEndpoints() {
         // MARK: openSaleOffer
-        server.GET[.openSaleOffer] = { request, _ in
+        server.get[.openSaleOffer] = { request, _ in
             request.disableKeepAlive = true
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
             }
             guard let address = request.mapPoint else {
@@ -28,16 +28,16 @@ class PropertySalesAPI: RestAPI {
         }
 
         // MARK: saleOffer.html
-        server.GET["/saleOffer.html"] = { request, _ in
+        server.get["/saleOffer.html"] = { request, _ in
             request.disableKeepAlive = true
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return .badRequest(.html("Invalid request! Missing window context."))
             }
             guard let address = request.mapPoint else {
                 return .badRequest(.html("Invalid request! Missing address."))
             }
 
-            guard let playerSessionID = request.queryParam("playerSessionID"),
+            guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return .badRequest(.html("Invalid request! Missing sessionID."))
             }
@@ -69,23 +69,23 @@ class PropertySalesAPI: RestAPI {
         }
 
         // MARK: buyProperty.js
-        server.GET["/buyProperty.js"] = { request, _ in
+        server.get["/buyProperty.js"] = { request, _ in
             request.disableKeepAlive = true
             let code = JSResponse()
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
             }
             guard let address = request.mapPoint else {
                 return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
             }
-            guard let playerSessionID = request.queryParam("playerSessionID"),
+            guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 code.add(.closeWindow(windowIndex))
                 code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
                 return code.response
             }
             var netValue: Double?
-            if let netValueString = request.queryParam("netValue") {
+            if let netValueString = request.queryParams.get("netValue") {
                 netValue = Double(netValueString)
             }
             do {
@@ -108,9 +108,9 @@ class PropertySalesAPI: RestAPI {
         }
 
         // MARK: loadNewSaleOfferForm
-        server.GET[.loadNewSaleOfferForm] = { request, _ in
+        server.get[.loadNewSaleOfferForm] = { request, _ in
             request.disableKeepAlive = true
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
@@ -122,16 +122,16 @@ class PropertySalesAPI: RestAPI {
         }
 
         // MARK: newSaleOfferForm.html
-        server.GET["newSaleOfferForm.html"] = { request, _ in
+        server.get["newSaleOfferForm.html"] = { request, _ in
             request.disableKeepAlive = true
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.htmlError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
                 return self.htmlError("Invalid request! Missing address.")
             }
 
-            guard let playerSessionID = request.queryParam("playerSessionID"),
+            guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.htmlError("Invalid request! Missing sessionID.")
             }
@@ -155,15 +155,15 @@ class PropertySalesAPI: RestAPI {
         }
 
         // MARK: publishSaleOffer.js
-        server.GET["/publishSaleOffer.js"] = { request, _ in
+        server.get["/publishSaleOffer.js"] = { request, _ in
             request.disableKeepAlive = true
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
                 return self.jsError("Invalid request! Missing address.")
             }
-            guard let priceString = request.queryParam("price"), let price = Double(priceString) else {
+            guard let priceString = request.queryParams.get("price"), let price = Double(priceString) else {
                 return self.jsError("Invalid request! Missing price.")
             }
             let js = JSResponse()
@@ -179,9 +179,9 @@ class PropertySalesAPI: RestAPI {
         }
 
         // MARK: loadEditSaleOfferForm
-        server.GET[.loadEditSaleOfferForm] = { request, _ in
+        server.get[.loadEditSaleOfferForm] = { request, _ in
             request.disableKeepAlive = true
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
@@ -193,16 +193,16 @@ class PropertySalesAPI: RestAPI {
         }
 
         // MARK: editSaleOffer.html
-        server.GET["/editSaleOffer.html"] = { request, _ in
+        server.get["/editSaleOffer.html"] = { request, _ in
             request.disableKeepAlive = true
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.htmlError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
                 return self.htmlError("Invalid request! Missing address.")
             }
 
-            guard let playerSessionID = request.queryParam("playerSessionID"),
+            guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.htmlError("Invalid request! Missing sessionID.")
             }
@@ -230,16 +230,16 @@ class PropertySalesAPI: RestAPI {
         }
 
         // MARK: saveSaleOffer.js
-        server.GET["/saveSaleOffer.js"] = { request, _ in
+        server.get["/saveSaleOffer.js"] = { request, _ in
             request.disableKeepAlive = true
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
                 return self.jsError("Invalid request! Missing address.")
             }
 
-            guard let priceString = request.queryParam("price"), let price = Double(priceString) else {
+            guard let priceString = request.queryParams.get("price"), let price = Double(priceString) else {
                 return self.jsError("Invalid request! Missing price.")
             }
             let js = JSResponse()
@@ -256,9 +256,9 @@ class PropertySalesAPI: RestAPI {
         }
 
         // MARK: cancelSaleOffer
-        server.GET[.cancelSaleOffer] = { request, _ in
+        server.get[.cancelSaleOffer] = { request, _ in
             request.disableKeepAlive = true
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
             }
             guard let address = request.mapPoint else {
@@ -272,13 +272,13 @@ class PropertySalesAPI: RestAPI {
         }
 
         // MARK: propertySellStatus
-        server.GET[.propertySellStatus] = { request, _ in
+        server.get[.propertySellStatus] = { request, _ in
             request.disableKeepAlive = true
-            guard let playerSessionID = request.queryParam("playerSessionID"),
+            guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.htmlError("Invalid request! Missing session ID.")
             }
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.htmlError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
@@ -297,13 +297,13 @@ class PropertySalesAPI: RestAPI {
         }
 
         // MARK: newSaleOfferForm.html
-        server.GET["/propertyValuation.html"] = { request, _ in
+        server.get["/propertyValuation.html"] = { request, _ in
             request.disableKeepAlive = true
             guard let address = request.mapPoint else {
                 return self.htmlError("Invalid request! Missing address.")
             }
 
-            guard let playerSessionID = request.queryParam("playerSessionID"),
+            guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.htmlError("Invalid request! Missing sessionID.")
             }

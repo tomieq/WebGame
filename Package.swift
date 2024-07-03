@@ -1,4 +1,4 @@
-// swift-tools-version:4.0
+// swift-tools-version:5.9
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 import PackageDescription
 
@@ -12,21 +12,33 @@ let package = Package(
             targets: ["WebGameLib"])
     ],
     dependencies: [
-        .package(url: "https://github.com/tomieq/swifter.git", .upToNextMajor(from: "1.5.5")),
-        .package(url: "https://github.com/ReactiveX/RxSwift.git", .exact("6.1.0"))
+        .package(url: "https://github.com/tomieq/swifter.git", branch: "develop"),
+        .package(url: "https://github.com/ReactiveX/RxSwift.git", exact: "6.5.0")
     ],
     targets: [
         .target(
             name: "WebGameLib",
-            dependencies: ["Swifter", "RxSwift", "RxCocoa"],
+            dependencies: [
+                .product(name: "Swifter", package: "Swifter"),
+                .product(name: "RxSwift", package: "RxSwift"),
+                .product(name: "RxCocoa", package: "RxSwift")
+            ],
             path: "Sources"),
         .target(
             name: "WebGame",
-            dependencies: ["WebGameLib", "Swifter", "RxSwift", "RxCocoa"],
+            dependencies: ["WebGameLib",
+                           .product(name: "Swifter", package: "Swifter"),
+                           .product(name: "RxSwift", package: "RxSwift"),
+                           .product(name: "RxCocoa", package: "RxSwift")
+            ],
             path: "Executable"),
         .testTarget(
             name: "WebGameTests",
-            dependencies: ["WebGameLib", "Swifter", "RxSwift", "RxCocoa"],
+            dependencies: ["WebGameLib",
+                           .product(name: "Swifter", package: "Swifter"),
+                           .product(name: "RxSwift", package: "RxSwift"),
+                           .product(name: "RxCocoa", package: "RxSwift")
+            ],
             path: "Tests")
     ]
 )

@@ -10,7 +10,7 @@ import Foundation
 class LandRestAPI: RestAPI {
     override func setupEndpoints() {
         // MARK: openLandManager
-        server.GET[.openLandManager] = { request, _ in
+        server.get[.openLandManager] = { request, _ in
             request.disableKeepAlive = true
             guard let address = request.mapPoint else {
                 return self.jsError("Invalid request! Missing address.")
@@ -21,9 +21,9 @@ class LandRestAPI: RestAPI {
         }
 
         // MARK: initLandManager.js
-        server.GET["initLandManager.js"] = { request, _ in
+        server.get["initLandManager.js"] = { request, _ in
             request.disableKeepAlive = true
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
@@ -36,13 +36,13 @@ class LandRestAPI: RestAPI {
         }
 
         // MARK: landManager.html
-        server.GET["/landManager.html"] = { request, _ in
+        server.get["/landManager.html"] = { request, _ in
             request.disableKeepAlive = true
-            guard let playerSessionID = request.queryParam("playerSessionID"),
+            guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.htmlError("Invalid request! Missing session ID.")
             }
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.htmlError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
@@ -77,13 +77,13 @@ class LandRestAPI: RestAPI {
         }
 
         // MARK: landBalance.html
-        server.GET["/landInvestments.html"] = { request, _ in
+        server.get["/landInvestments.html"] = { request, _ in
             request.disableKeepAlive = true
-            guard let playerSessionID = request.queryParam("playerSessionID"),
+            guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.htmlError("Invalid request! Missing session ID.")
             }
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.htmlError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {

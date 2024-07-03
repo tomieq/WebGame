@@ -10,7 +10,7 @@ import Foundation
 class RoadRestAPI: RestAPI {
     override func setupEndpoints() {
         // MARK: openRoadInfo
-        self.server.GET[.openRoadInfo] = { request, _ in
+        self.server.get[.openRoadInfo] = { request, _ in
             request.disableKeepAlive = true
 
             guard let address = request.mapPoint else {
@@ -22,9 +22,9 @@ class RoadRestAPI: RestAPI {
         }
 
         // MARK: initRoadInfo.js
-        self.server.GET["/initRoadInfo.js"] = { request, _ in
+        self.server.get["/initRoadInfo.js"] = { request, _ in
             request.disableKeepAlive = true
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
@@ -37,7 +37,7 @@ class RoadRestAPI: RestAPI {
         }
 
         // MARK: roadInfo.html
-        self.server.GET["/roadInfo.html"] = { request, _ in
+        self.server.get["/roadInfo.html"] = { request, _ in
             request.disableKeepAlive = true
             guard let address = request.mapPoint else {
                 return self.htmlError("Invalid request! Missing address.")
@@ -60,7 +60,7 @@ class RoadRestAPI: RestAPI {
         }
 
         // MARK: openRoadManager
-        self.server.GET[.openRoadManager] = { request, _ in
+        self.server.get[.openRoadManager] = { request, _ in
             request.disableKeepAlive = true
 
             guard let address = request.mapPoint else {
@@ -72,9 +72,9 @@ class RoadRestAPI: RestAPI {
         }
 
         // MARK: initRoadManager.js
-        self.server.GET["/initRoadManager.js"] = { request, _ in
+        self.server.get["/initRoadManager.js"] = { request, _ in
             request.disableKeepAlive = true
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
@@ -87,13 +87,13 @@ class RoadRestAPI: RestAPI {
         }
 
         // MARK: roadManager.html
-        self.server.GET["/roadManager.html"] = { request, _ in
+        self.server.get["/roadManager.html"] = { request, _ in
             request.disableKeepAlive = true
             guard let address = request.mapPoint else {
                 return self.htmlError("Invalid request! Missing address.")
             }
 
-            guard let playerSessionID = request.queryParam("playerSessionID"),
+            guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.htmlError("Invalid request! Missing sessionID.")
             }

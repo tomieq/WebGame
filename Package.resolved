@@ -1,25 +1,23 @@
 {
-  "object": {
-    "pins": [
-      {
-        "package": "RxSwift",
-        "repositoryURL": "https://github.com/ReactiveX/RxSwift.git",
-        "state": {
-          "branch": null,
-          "revision": "7e01c05f25c025143073eaa3be3532f9375c614b",
-          "version": "6.1.0"
-        }
-      },
-      {
-        "package": "Swifter",
-        "repositoryURL": "https://github.com/tomieq/swifter.git",
-        "state": {
-          "branch": null,
-          "revision": "24df448b3260acb14138754091f379693674c2b7",
-          "version": "1.5.4"
-        }
+  "pins" : [
+    {
+      "identity" : "rxswift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ReactiveX/RxSwift.git",
+      "state" : {
+        "revision" : "b4307ba0b6425c0ba4178e138799946c3da594f8",
+        "version" : "6.5.0"
       }
-    ]
-  },
-  "version": 1
+    },
+    {
+      "identity" : "swifter",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tomieq/swifter.git",
+      "state" : {
+        "branch" : "develop",
+        "revision" : "9bce8a70379f7fe288637d71d1f243445e4e774b"
+      }
+    }
+  ],
+  "version" : 2
 }

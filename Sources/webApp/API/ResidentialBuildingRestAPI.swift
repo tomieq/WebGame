@@ -10,7 +10,7 @@ import Foundation
 class ResidentialBuildingRestAPI: RestAPI {
     override func setupEndpoints() {
         // MARK: openBuildingManager
-        server.GET[.openBuildingManager] = { request, _ in
+        server.get[.openBuildingManager] = { request, _ in
             request.disableKeepAlive = true
 
             guard let address = request.mapPoint else {
@@ -22,9 +22,9 @@ class ResidentialBuildingRestAPI: RestAPI {
         }
 
         // MARK: initBuildingManager.js
-        server.GET["/initBuildingManager.js"] = { request, _ in
+        server.get["/initBuildingManager.js"] = { request, _ in
             request.disableKeepAlive = true
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
@@ -37,13 +37,13 @@ class ResidentialBuildingRestAPI: RestAPI {
         }
 
         // MARK: buildingManager.html
-        server.GET["/buildingManager.html"] = { request, _ in
+        server.get["/buildingManager.html"] = { request, _ in
             request.disableKeepAlive = true
-            guard let playerSessionID = request.queryParam("playerSessionID"),
+            guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.htmlError("Invalid request! Missing session ID.")
             }
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.htmlError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {

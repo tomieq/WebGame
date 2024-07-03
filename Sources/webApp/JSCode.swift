@@ -11,7 +11,7 @@ import Swifter
 class JSResponse {
     private var jsCodeList: [JSCode] = []
     var response: HttpResponse {
-        return .ok(.javaScript(self.jsCodeList.map{ $0.js }.joined(separator: "\n")))
+        return .ok(.js(self.jsCodeList.map{ $0.js }.joined(separator: "\n")))
     }
 
     @discardableResult
@@ -111,7 +111,7 @@ extension JSCode {
 
 extension JSCode {
     var response: HttpResponse {
-        return .ok(.javaScript(self.js))
+        return .ok(.js(self.js))
     }
 }
 

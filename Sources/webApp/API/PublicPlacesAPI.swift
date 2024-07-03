@@ -10,7 +10,7 @@ import Foundation
 class PublicPlacesAPI: RestAPI {
     override func setupEndpoints() {
         // MARK: openFootballPitch
-        self.server.GET[.openFootballPitch] = { request, _ in
+        self.server.get[.openFootballPitch] = { request, _ in
             request.disableKeepAlive = true
 
             guard let address = request.mapPoint else {
@@ -51,9 +51,9 @@ class PublicPlacesAPI: RestAPI {
         }
 
         // MARK: initFootballPitch.js
-        self.server.GET["/initFootballPitch.js"] = { request, _ in
+        self.server.get["/initFootballPitch.js"] = { request, _ in
             request.disableKeepAlive = true
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
             guard let address = request.mapPoint else {
@@ -66,13 +66,13 @@ class PublicPlacesAPI: RestAPI {
         }
 
         // MARK: footballPitchInfo.html
-        self.server.GET["/footballPitchInfo.html"] = { request, _ in
+        self.server.get["/footballPitchInfo.html"] = { request, _ in
             request.disableKeepAlive = true
 
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.htmlError("Invalid request! Missing window context.")
             }
-            guard let playerSessionID = request.queryParam("playerSessionID"),
+            guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.htmlError("Invalid request! Missing session ID.")
             }
@@ -129,13 +129,13 @@ class PublicPlacesAPI: RestAPI {
         }
 
         // MARK: betForm.html
-        self.server.GET["/makeBetForm.html"] = { request, _ in
+        self.server.get["/makeBetForm.html"] = { request, _ in
             request.disableKeepAlive = true
 
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.htmlError("Invalid request! Missing window context.")
             }
-            guard let matchUUID = request.queryParam("matchUUID") else {
+            guard let matchUUID = request.queryParams.get("matchUUID") else {
                 return self.htmlError("Invalid request! Missing match ID.")
             }
             let match = self.gameEngine.footballBookie.upcomingMatch
@@ -162,31 +162,35 @@ class PublicPlacesAPI: RestAPI {
         }
 
         // MARK: makeBet.js
-        self.server.POST["/makeBet.js"] = { request, _ in
+        self.server.post["/makeBet.js"] = { request, _ in
             request.disableKeepAlive = true
-            guard let playerSessionID = request.queryParam("playerSessionID"),
+            guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.jsError("Invalid request! Missing session ID.")
             }
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
-            let formData = request.flatFormData()
-            guard let matchUUID = formData["matchUUID"] else {
-                return self.jsError("Invalid request! Missing match ID.")
+            struct MakeBet: Decodable {
+                let matchUUID: String
+                let money: String
+                let result: String
             }
-            guard let moneyString = formData["money"]?.replacingOccurrences(of: " ", with: ""), let money = Double(moneyString) else {
+            guard let betForm: MakeBet = try? request.formData.decode() else {
+                return self.jsError("Please provide data for bet")
+            }
+            guard let money = Double(betForm.money.replacingOccurrences(of: " ", with: "")) else {
                 return self.jsError("Please provide the amount of money")
             }
-            guard let resultString = formData["result"], let result = FootballMatchResult(rawValue: resultString) else {
+            guard let result = FootballMatchResult(rawValue: betForm.result) else {
                 return self.jsError("Please decide what you bet")
             }
             let match = self.gameEngine.footballBookie.upcomingMatch
-            guard match.uuid == matchUUID else {
+            guard match.uuid == betForm.matchUUID else {
                 return self.jsError("The match is over. You can not do any action now. Try with next game.")
             }
             let bookie = self.gameEngine.footballBookie
-            let bet = FootballBet(matchUUID: matchUUID, playerUUID: session.playerUUID, money: money, expectedResult: result)
+            let bet = FootballBet(matchUUID: betForm.matchUUID, playerUUID: session.playerUUID, money: money, expectedResult: result)
             do {
                 try bookie.makeBet(bet: bet)
                 let js = JSResponse()
@@ -200,13 +204,13 @@ class PublicPlacesAPI: RestAPI {
         }
 
         // MARK: contactReferee.html
-        self.server.GET["/contactReferee.html"] = { request, _ in
+        self.server.get["/contactReferee.html"] = { request, _ in
             request.disableKeepAlive = true
 
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.htmlError("Invalid request! Missing window context.")
             }
-            guard let matchUUID = request.queryParam("matchUUID") else {
+            guard let matchUUID = request.queryParams.get("matchUUID") else {
                 return self.htmlError("Invalid request! Missing match ID.")
             }
             let match = self.gameEngine.footballBookie.upcomingMatch
@@ -227,26 +231,29 @@ class PublicPlacesAPI: RestAPI {
         }
 
         // MARK: makeRefereeOfferForm.js
-        self.server.POST["/makeRefereeOfferForm.js"] = { request, _ in
+        self.server.post["/makeRefereeOfferForm.js"] = { request, _ in
             request.disableKeepAlive = true
-            guard let playerSessionID = request.queryParam("playerSessionID"),
+            guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.jsError("Invalid request! Missing session ID.")
             }
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
-            let formData = request.flatFormData()
-            guard let matchUUID = formData["matchUUID"] else {
-                return self.jsError("Invalid request! Missing match ID.")
+            struct Offer: Decodable {
+                let matchUUID: String
+                let money: String
             }
-            guard let moneyString = formData["money"]?.replacingOccurrences(of: " ", with: ""), let money = Double(moneyString) else {
+            guard let offerForm: Offer = try? request.formData.decode() else {
+                return self.jsError("Please provide data for offer")
+            }
+            guard let money = Double(offerForm.money.replacingOccurrences(of: " ", with: "")) else {
                 return self.jsError("Please provide the amount of money")
             }
             let referee = self.gameEngine.footballBookie.referee
             let js = JSResponse()
             do {
-                try referee.bribe(playerUUID: session.playerUUID, matchUUID: matchUUID, amount: money)
+                try referee.bribe(playerUUID: session.playerUUID, matchUUID: offerForm.matchUUID, amount: money)
             } catch let error as RefereeError {
                 js.add(.showError(txt: error.description, duration: 10))
             } catch {

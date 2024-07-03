@@ -11,9 +11,9 @@ import Swifter
 class PropertyManagerRestAPI: RestAPI {
     override func setupEndpoints() {
         // MARK: openPropertyInfo
-        server.GET[.openPropertyInfo] = { request, _ in
+        server.get[.openPropertyInfo] = { request, _ in
             request.disableKeepAlive = true
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
             }
             guard let address = request.mapPoint else {
@@ -28,9 +28,9 @@ class PropertyManagerRestAPI: RestAPI {
             return js.response
         }
 
-        server.GET["/propertyInfo.html"] = { request, _ in
+        server.get["/propertyInfo.html"] = { request, _ in
             request.disableKeepAlive = true
-            guard let _ = request.queryParam("windowIndex") else {
+            guard let _ = request.windowIndex else {
                 return .badRequest(.html("Invalid request! Missing window context."))
             }
             guard let address = request.mapPoint else {
@@ -53,9 +53,9 @@ class PropertyManagerRestAPI: RestAPI {
         }
 
         // MARK: propertyWalletBalance
-        server.GET[.propertyWalletBalance] = { request, _ in
+        server.get[.propertyWalletBalance] = { request, _ in
             request.disableKeepAlive = true
-            guard let playerSessionID = request.queryParam("playerSessionID"),
+            guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.htmlError("Invalid request! Missing session ID.")
             }
@@ -76,17 +76,17 @@ class PropertyManagerRestAPI: RestAPI {
             return balanceView.output().asResponse
         }
 
-        server.GET["/loadApartmentDetails.js"] = { request, _ in
+        server.get["/loadApartmentDetails.js"] = { request, _ in
             request.disableKeepAlive = true
 
-            guard let windowIndex = request.queryParam("windowIndex") else {
+            guard let windowIndex = request.windowIndex else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
             }
 
-            guard let propertyID = request.queryParam("propertyID") else {
+            guard let propertyID = request.queryParams.get("propertyID") else {
                 return JSCode.showError(txt: "Invalid request! Missing propertyID.", duration: 10).response
             }
-            guard let playerSessionID = request.queryParam("playerSessionID"),
+            guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return JSCode.showError(txt: "Invalid request! Missing session ID.", duration: 10).response
             }
@@ -96,17 +96,17 @@ class PropertyManagerRestAPI: RestAPI {
             return code.response
         }
         /*
-         server.GET["/rentApartment.js"] = { request, _ in
+         server.get["/rentApartment.js"] = { request, _ in
              request.disableKeepAlive = true
              let code = JSResponse()
-             guard let windowIndex = request.queryParam("windowIndex") else {
+             guard let windowIndex = request.windowIndex else {
                  return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
              }
              guard let address = request.mapPoint else {
                  return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
              }
 
-             guard let propertyID = request.queryParam("propertyID") else {
+             guard let propertyID = request.queryParams.get("propertyID") else {
                  return JSCode.showError(txt: "Invalid request! Missing propertyID.", duration: 10).response
              }
 
@@ -117,7 +117,7 @@ class PropertyManagerRestAPI: RestAPI {
                  return JSCode.showError(txt: "Property address mismatch.", duration: 10).response
              }
 
-             guard let playerSessionID = request.queryParam("playerSessionID"),
+             guard let playerSessionID = request.playerSessionID,
                  let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                      code.add(.closeWindow(windowIndex))
                      code.add(.showError(txt: "Invalid request! Missing session ID.", duration: 10))
@@ -127,7 +127,7 @@ class PropertyManagerRestAPI: RestAPI {
                  code.add(.showError(txt: "You can rent only your properties.", duration: 10))
                  return code.response
              }
-             if let _ = request.queryParam("unrent") {
+             if let _ = request.queryParams.get("unrent") {
                  //self.gameEngine.realEstateAgent.unrentApartment(apartment)
              } else {
                  //self.gameEngine.realEstateAgent.rentApartment(apartment)
@@ -140,14 +140,14 @@ class PropertyManagerRestAPI: RestAPI {
              return code.response
          }
 
-         server.GET["/manageApartment.html"] = { request, _ in
+         server.get["/manageApartment.html"] = { request, _ in
              request.disableKeepAlive = true
 
-             guard let windowIndex = request.queryParam("windowIndex") else {
+             guard let windowIndex = request.windowIndex else {
                  return .badRequest(.html("Invalid request! Missing window context."))
              }
 
-             guard let propertyID = request.queryParam("propertyID") else {
+             guard let propertyID = request.queryParams.get("propertyID") else {
                  return .badRequest(.html("Invalid request! Missing propertyID."))
              }
 
@@ -155,7 +155,7 @@ class PropertyManagerRestAPI: RestAPI {
                  return .badRequest(.html("Apartment \(propertyID) not found!"))
              }
 
-             guard let playerSessionID = request.queryParam("playerSessionID"),
+             guard let playerSessionID = request.playerSessionID,
                    let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                      return .badRequest(.html("Invalid request! Missing session ID."))
              }
