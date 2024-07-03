@@ -11,7 +11,7 @@ class RoadRestAPI: RestAPI {
     override func setupEndpoints() {
         // MARK: openRoadInfo
         self.server.get[.openRoadInfo] = { request, _ in
-            request.disableKeepAlive = true
+            
 
             guard let address = request.mapPoint else {
                 return self.jsError("Invalid request! Missing address.")
@@ -23,7 +23,7 @@ class RoadRestAPI: RestAPI {
 
         // MARK: initRoadInfo.js
         self.server.get["/initRoadInfo.js"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
@@ -38,7 +38,7 @@ class RoadRestAPI: RestAPI {
 
         // MARK: roadInfo.html
         self.server.get["/roadInfo.html"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let address = request.mapPoint else {
                 return self.htmlError("Invalid request! Missing address.")
             }
@@ -61,7 +61,7 @@ class RoadRestAPI: RestAPI {
 
         // MARK: openRoadManager
         self.server.get[.openRoadManager] = { request, _ in
-            request.disableKeepAlive = true
+            
 
             guard let address = request.mapPoint else {
                 return JSCode.showError(txt: "Invalid request! Missing address.", duration: 10).response
@@ -73,7 +73,7 @@ class RoadRestAPI: RestAPI {
 
         // MARK: initRoadManager.js
         self.server.get["/initRoadManager.js"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
@@ -88,7 +88,7 @@ class RoadRestAPI: RestAPI {
 
         // MARK: roadManager.html
         self.server.get["/roadManager.html"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let address = request.mapPoint else {
                 return self.htmlError("Invalid request! Missing address.")
             }

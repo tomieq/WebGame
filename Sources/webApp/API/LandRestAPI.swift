@@ -11,7 +11,7 @@ class LandRestAPI: RestAPI {
     override func setupEndpoints() {
         // MARK: openLandManager
         server.get[.openLandManager] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let address = request.mapPoint else {
                 return self.jsError("Invalid request! Missing address.")
             }
@@ -22,7 +22,7 @@ class LandRestAPI: RestAPI {
 
         // MARK: initLandManager.js
         server.get["initLandManager.js"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
@@ -37,7 +37,7 @@ class LandRestAPI: RestAPI {
 
         // MARK: landManager.html
         server.get["/landManager.html"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.htmlError("Invalid request! Missing session ID.")
@@ -78,7 +78,7 @@ class LandRestAPI: RestAPI {
 
         // MARK: landBalance.html
         server.get["/landInvestments.html"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.htmlError("Invalid request! Missing session ID.")

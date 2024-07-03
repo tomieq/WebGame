@@ -11,7 +11,7 @@ class PublicPlacesAPI: RestAPI {
     override func setupEndpoints() {
         // MARK: openFootballPitch
         self.server.get[.openFootballPitch] = { request, _ in
-            request.disableKeepAlive = true
+            
 
             guard let address = request.mapPoint else {
                 return self.jsError("Invalid request! Missing address.")
@@ -52,7 +52,7 @@ class PublicPlacesAPI: RestAPI {
 
         // MARK: initFootballPitch.js
         self.server.get["/initFootballPitch.js"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
@@ -67,7 +67,7 @@ class PublicPlacesAPI: RestAPI {
 
         // MARK: footballPitchInfo.html
         self.server.get["/footballPitchInfo.html"] = { request, _ in
-            request.disableKeepAlive = true
+            
 
             guard let windowIndex = request.windowIndex else {
                 return self.htmlError("Invalid request! Missing window context.")
@@ -130,7 +130,7 @@ class PublicPlacesAPI: RestAPI {
 
         // MARK: betForm.html
         self.server.get["/makeBetForm.html"] = { request, _ in
-            request.disableKeepAlive = true
+            
 
             guard let windowIndex = request.windowIndex else {
                 return self.htmlError("Invalid request! Missing window context.")
@@ -163,7 +163,7 @@ class PublicPlacesAPI: RestAPI {
 
         // MARK: makeBet.js
         self.server.post["/makeBet.js"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.jsError("Invalid request! Missing session ID.")
@@ -205,7 +205,7 @@ class PublicPlacesAPI: RestAPI {
 
         // MARK: contactReferee.html
         self.server.get["/contactReferee.html"] = { request, _ in
-            request.disableKeepAlive = true
+            
 
             guard let windowIndex = request.windowIndex else {
                 return self.htmlError("Invalid request! Missing window context.")
@@ -232,7 +232,7 @@ class PublicPlacesAPI: RestAPI {
 
         // MARK: makeRefereeOfferForm.js
         self.server.post["/makeRefereeOfferForm.js"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.jsError("Invalid request! Missing session ID.")

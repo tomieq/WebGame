@@ -12,7 +12,7 @@ class PropertyManagerRestAPI: RestAPI {
     override func setupEndpoints() {
         // MARK: openPropertyInfo
         server.get[.openPropertyInfo] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let windowIndex = request.windowIndex else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
             }
@@ -29,7 +29,7 @@ class PropertyManagerRestAPI: RestAPI {
         }
 
         server.get["/propertyInfo.html"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let _ = request.windowIndex else {
                 return .badRequest(.html("Invalid request! Missing window context."))
             }
@@ -54,7 +54,7 @@ class PropertyManagerRestAPI: RestAPI {
 
         // MARK: propertyWalletBalance
         server.get[.propertyWalletBalance] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.htmlError("Invalid request! Missing session ID.")
@@ -77,7 +77,7 @@ class PropertyManagerRestAPI: RestAPI {
         }
 
         server.get["/loadApartmentDetails.js"] = { request, _ in
-            request.disableKeepAlive = true
+            
 
             guard let windowIndex = request.windowIndex else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
@@ -97,7 +97,7 @@ class PropertyManagerRestAPI: RestAPI {
         }
         /*
          server.get["/rentApartment.js"] = { request, _ in
-             request.disableKeepAlive = true
+             
              let code = JSResponse()
              guard let windowIndex = request.windowIndex else {
                  return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
@@ -141,7 +141,7 @@ class PropertyManagerRestAPI: RestAPI {
          }
 
          server.get["/manageApartment.html"] = { request, _ in
-             request.disableKeepAlive = true
+             
 
              guard let windowIndex = request.windowIndex else {
                  return .badRequest(.html("Invalid request! Missing window context."))

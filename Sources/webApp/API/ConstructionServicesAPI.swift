@@ -43,7 +43,7 @@ class ConstructionServicesAPI: RestAPI {
     override func setupEndpoints() {
         // MARK: startInvestment
         server.get[.startInvestment] = { request, _ in
-            request.disableKeepAlive = true
+            
             let code = JSResponse()
             guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
@@ -88,7 +88,7 @@ class ConstructionServicesAPI: RestAPI {
 
         // MARK: .residentialBuildingInvestmentWizard
         server.get[.residentialBuildingInvestmentWizard] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
@@ -103,7 +103,7 @@ class ConstructionServicesAPI: RestAPI {
 
         // MARK: residentialInvestmentStep1.html
         self.server.get[API.step1html.url] = { request, _ in
-            request.disableKeepAlive = true
+            
 
             guard let windowIndex = request.windowIndex else {
                 return self.htmlError("Invalid request! Missing window context.")
@@ -134,7 +134,7 @@ class ConstructionServicesAPI: RestAPI {
 
         // MARK: validateBuildingStep1.js
         server.post[API.validateStep1js.url] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
@@ -156,7 +156,7 @@ class ConstructionServicesAPI: RestAPI {
 
         // MARK: residentialInvestmentStep2.html
         self.server.get[API.step2html.url] = { request, _ in
-            request.disableKeepAlive = true
+            
 
             guard let windowIndex = request.windowIndex else {
                 return self.htmlError("Invalid request! Missing window context.")
@@ -193,7 +193,7 @@ class ConstructionServicesAPI: RestAPI {
 
         // MARK: validateBuildingStep2.js
         server.post[API.validateStep2js.url] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
@@ -218,7 +218,7 @@ class ConstructionServicesAPI: RestAPI {
 
         // MARK: residentialInvestmentStep3.html
         self.server.get[API.step3html.url] = { request, _ in
-            request.disableKeepAlive = true
+            
 
             guard let windowIndex = request.windowIndex else {
                 return self.htmlError("Invalid request! Missing window context.")
@@ -258,7 +258,7 @@ class ConstructionServicesAPI: RestAPI {
 
         // MARK: validateBuildingStep3.js
         server.post[API.validateStep3js.url] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
@@ -297,7 +297,7 @@ class ConstructionServicesAPI: RestAPI {
 
         // MARK: residentialInvestmentStep4.html
         self.server.get[API.step4html.url] = { request, _ in
-            request.disableKeepAlive = true
+            
 
             guard let windowIndex = request.windowIndex else {
                 return self.htmlError("Invalid request! Missing window context.")
@@ -348,7 +348,7 @@ class ConstructionServicesAPI: RestAPI {
 
         // MARK: validateBuildingStep3.js
         server.post[API.startInvestment.url] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }

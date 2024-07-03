@@ -30,8 +30,10 @@ public class WebApplication {
         api.append(ConstructionServicesAPI(server, gameEngine: self.gameEngine))
         self.api = api
 
+        server.middleware.append({ request, _ in
+            return nil
+        })
         server.get["/"] = { request, responseHeaders in
-            request.disableKeepAlive = true
             guard let userID = request.queryParams.get("userID"), let player: Player = self.dataStore.find(uuid: userID) else {
                 return .ok(.html("Invalid userID"))
             }
@@ -58,7 +60,7 @@ public class WebApplication {
         }
 
         server.get["js/init.js"] = { request, _ in
-            request.disableKeepAlive = true
+            
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/init.js"))
 
             var variables = [String: String]()
@@ -71,7 +73,7 @@ public class WebApplication {
         }
 
         server.get["js/loadMap.js"] = { request, _ in
-            request.disableKeepAlive = true
+            
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/loadMap.js"))
 
             for tile in self.gameEngine.gameMap.tiles {
@@ -93,7 +95,7 @@ public class WebApplication {
         }
 
         server.get["js/loadAddonsMap.js"] = { request, _ in
-            request.disableKeepAlive = true
+            
             let template = Template(raw: ResourceCache.shared.getAppResource("templates/loadAddonsMap.js"))
 
             for tile in self.gameEngine.addonsMap.tiles {
@@ -112,7 +114,7 @@ public class WebApplication {
         }
 
         server.get["js/openBankTransactions.js"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let windowIndex = request.windowIndex else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
             }
@@ -146,7 +148,7 @@ public class WebApplication {
         }
 
         server.get["js/openWalletBalance.js"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let windowIndex = request.windowIndex else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
             }
@@ -192,7 +194,7 @@ public class WebApplication {
         }
 
         server.get["js/websockets.js"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let playerSessionID = request.playerSessionID, let _ = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return .ok(.text("alert('Invalid playerSessionID');"))
             }
@@ -218,7 +220,7 @@ public class WebApplication {
         })
 
         server.notFoundHandler = { request, responseHeaders in
-            request.disableKeepAlive = true
+            
             let filePath = Resource.absolutePath(forPublicResource: request.path)
             try HttpFileResponse.with(absolutePath: filePath)
             Logger.error("Unhandled request", "File `\(filePath)` doesn't exist")

@@ -11,7 +11,7 @@ class PropertySalesAPI: RestAPI {
     override func setupEndpoints() {
         // MARK: openSaleOffer
         server.get[.openSaleOffer] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let windowIndex = request.windowIndex else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
             }
@@ -29,7 +29,7 @@ class PropertySalesAPI: RestAPI {
 
         // MARK: saleOffer.html
         server.get["/saleOffer.html"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let windowIndex = request.windowIndex else {
                 return .badRequest(.html("Invalid request! Missing window context."))
             }
@@ -70,7 +70,7 @@ class PropertySalesAPI: RestAPI {
 
         // MARK: buyProperty.js
         server.get["/buyProperty.js"] = { request, _ in
-            request.disableKeepAlive = true
+            
             let code = JSResponse()
             guard let windowIndex = request.windowIndex else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
@@ -109,7 +109,7 @@ class PropertySalesAPI: RestAPI {
 
         // MARK: loadNewSaleOfferForm
         server.get[.loadNewSaleOfferForm] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
@@ -123,7 +123,7 @@ class PropertySalesAPI: RestAPI {
 
         // MARK: newSaleOfferForm.html
         server.get["newSaleOfferForm.html"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let windowIndex = request.windowIndex else {
                 return self.htmlError("Invalid request! Missing window context.")
             }
@@ -156,7 +156,7 @@ class PropertySalesAPI: RestAPI {
 
         // MARK: publishSaleOffer.js
         server.get["/publishSaleOffer.js"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
@@ -180,7 +180,7 @@ class PropertySalesAPI: RestAPI {
 
         // MARK: loadEditSaleOfferForm
         server.get[.loadEditSaleOfferForm] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
@@ -194,7 +194,7 @@ class PropertySalesAPI: RestAPI {
 
         // MARK: editSaleOffer.html
         server.get["/editSaleOffer.html"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let windowIndex = request.windowIndex else {
                 return self.htmlError("Invalid request! Missing window context.")
             }
@@ -231,7 +231,7 @@ class PropertySalesAPI: RestAPI {
 
         // MARK: saveSaleOffer.js
         server.get["/saveSaleOffer.js"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
@@ -257,7 +257,7 @@ class PropertySalesAPI: RestAPI {
 
         // MARK: cancelSaleOffer
         server.get[.cancelSaleOffer] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let windowIndex = request.windowIndex else {
                 return JSCode.showError(txt: "Invalid request! Missing window context.", duration: 10).response
             }
@@ -273,7 +273,7 @@ class PropertySalesAPI: RestAPI {
 
         // MARK: propertySellStatus
         server.get[.propertySellStatus] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.htmlError("Invalid request! Missing session ID.")
@@ -298,7 +298,7 @@ class PropertySalesAPI: RestAPI {
 
         // MARK: newSaleOfferForm.html
         server.get["/propertyValuation.html"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let address = request.mapPoint else {
                 return self.htmlError("Invalid request! Missing address.")
             }

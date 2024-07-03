@@ -11,7 +11,7 @@ class ResidentialBuildingRestAPI: RestAPI {
     override func setupEndpoints() {
         // MARK: openBuildingManager
         server.get[.openBuildingManager] = { request, _ in
-            request.disableKeepAlive = true
+            
 
             guard let address = request.mapPoint else {
                 return self.jsError("Invalid request! Missing address.")
@@ -23,7 +23,7 @@ class ResidentialBuildingRestAPI: RestAPI {
 
         // MARK: initBuildingManager.js
         server.get["/initBuildingManager.js"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
@@ -38,7 +38,7 @@ class ResidentialBuildingRestAPI: RestAPI {
 
         // MARK: buildingManager.html
         server.get["/buildingManager.html"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.htmlError("Invalid request! Missing session ID.")

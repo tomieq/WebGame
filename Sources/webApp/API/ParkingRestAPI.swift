@@ -21,7 +21,7 @@ class ParkingRestAPI: RestAPI {
     override func setupEndpoints() {
         // MARK: openParkingManager
         server.get[.openParkingManager] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let address = request.mapPoint else {
                 return self.jsError("Invalid request! Missing address.")
             }
@@ -33,7 +33,7 @@ class ParkingRestAPI: RestAPI {
 
         // MARK: initParkingManager.js
         server.get["initParkingManager.js"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let windowIndex = request.windowIndex else {
                 return self.jsError("Invalid request! Missing window context.")
             }
@@ -48,7 +48,7 @@ class ParkingRestAPI: RestAPI {
 
         // MARK: parkingManager.html
         server.get["/parkingManager.html"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.htmlError("Invalid request! Missing session ID.")
@@ -101,7 +101,7 @@ class ParkingRestAPI: RestAPI {
 
         // MARK: parkingBalance.html
         server.get["/parkingBalance.html"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.htmlError("Invalid request! Missing session ID.")
@@ -125,7 +125,7 @@ class ParkingRestAPI: RestAPI {
 
         // MARK: parkingSecurity.html
         server.get["/parkingSecurity.html"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.htmlError("Invalid request! Missing session ID.")
@@ -177,7 +177,7 @@ class ParkingRestAPI: RestAPI {
 
         // MARK: updateParkingSecurity.js
         server.post["updateParkingSecurity.js"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.jsError("Invalid request! Missing session ID.")
@@ -210,7 +210,7 @@ class ParkingRestAPI: RestAPI {
 
         // MARK: parkingInsurance.html
         server.get["/parkingInsurance.html"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.htmlError("Invalid request! Missing session ID.")
@@ -250,7 +250,7 @@ class ParkingRestAPI: RestAPI {
 
         // MARK: updateParkingInsurance.js
         server.post["updateParkingInsurance.js"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.jsError("Invalid request! Missing session ID.")
@@ -283,7 +283,7 @@ class ParkingRestAPI: RestAPI {
 
         // MARK: parkingDamages.html
         server.get["/parkingDamages.html"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.htmlError("Invalid request! Missing session ID.")
@@ -321,7 +321,7 @@ class ParkingRestAPI: RestAPI {
 
         // MARK: singleParkingDamage.html
         server.get["/singleParkingDamage.html"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.htmlError("Invalid request! Missing session ID.")
@@ -351,7 +351,7 @@ class ParkingRestAPI: RestAPI {
 
         // MARK: parkingAdvertising.html
         server.get["/parkingAdvertising.html"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.htmlError("Invalid request! Missing session ID.")
@@ -393,7 +393,7 @@ class ParkingRestAPI: RestAPI {
 
         // MARK: updateParkingAdvertisement.js
         server.post["updateParkingAdvertisement.js"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.jsError("Invalid request! Missing session ID.")
@@ -427,7 +427,7 @@ class ParkingRestAPI: RestAPI {
 
         // MARK: payForDamage.js
         server.get["payForDamage.js"] = { request, _ in
-            request.disableKeepAlive = true
+            
             guard let playerSessionID = request.playerSessionID,
                   let session = PlayerSessionManager.shared.getPlayerSession(playerSessionID: playerSessionID) else {
                 return self.jsError("Invalid request! Missing session ID.")
