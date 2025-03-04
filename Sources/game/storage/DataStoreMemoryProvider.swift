@@ -89,7 +89,7 @@ class DataStoreMemoryProvider: DataStoreProvider {
 
     func getFinancialTransactions(userID: String) -> [CashFlow] {
         return self.cashQueue.sync {
-            self.transactions.filter{ $0.playerID == userID }.sorted { $0.id > $1.id }.map{ CashFlow($0) }
+            self.transactions.filter{ $0.playerID == userID }.sorted { $0.id ?? 0 > $1.id ?? 0 }.map{ CashFlow($0) }
         }
     }
 

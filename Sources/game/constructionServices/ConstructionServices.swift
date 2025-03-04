@@ -35,6 +35,7 @@ class ConstructionServices {
     let constructionDuration: ConstructionDuration
     var delegate: ConstructionServicesDelegate?
     let dataStore: DataStoreProvider
+    private let queue = DispatchQueue(label: "ConstructionServices.queue", attributes: .concurrent)
 
     init(mapManager: GameMapManager, centralBank: CentralBank, time: GameTime, delegate: ConstructionServicesDelegate? = nil) {
         self.time = time
@@ -202,13 +203,15 @@ class ConstructionServices {
         for building in buildings {
             if building.constructionFinishMonth == self.time.month, building.isUnderConstruction {
                 self.dataStore.update(ResidentialBuildingMutation(uuid: building.uuid, attributes: [.isUnderConstruction(false)]))
-
                 for storey in (1...building.storeyAmount) {
                     for side in ApartmentWindowSide.allCases {
-                        let apartment = Apartment(ownerUUID: building.ownerUUID, address: building.address, windowSide: side, hasBalcony: building.balconies.contains(side), storey: storey)
-                        let uuid = self.dataStore.create(apartment)
-                        let registry = PropertyRegister(uuid: uuid, address: apartment.address, playerUUID: apartment.ownerUUID, type: .apartment)
-                        self.dataStore.create(registry)
+                        queue.async {
+                            let apartment = Apartment(ownerUUID: building.ownerUUID, address: building.address, windowSide: side, hasBalcony: building.balconies.contains(side), storey: storey)
+                            let uuid = self.dataStore.create(apartment)
+                            let registry = PropertyRegister(uuid: uuid, address: apartment.address, playerUUID: apartment.ownerUUID, type: .apartment)
+                            self.dataStore.create(registry)
+                        }
+                        
                     }
                 }
                 let tile = GameMapTile(address: building.address, type: building.mapTile)

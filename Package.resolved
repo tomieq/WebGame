@@ -15,7 +15,16 @@
       "location" : "https://github.com/tomieq/swifter.git",
       "state" : {
         "branch" : "develop",
-        "revision" : "9bce8a70379f7fe288637d71d1f243445e4e774b"
+        "revision" : "0682c1e28c134e783e35d414155ebf89f8641e7a"
+      }
+    },
+    {
+      "identity" : "webrequest.swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tomieq/WebRequest.swift.git",
+      "state" : {
+        "revision" : "a583450964ff7102244dc8e4f4aec0aa28fda9c3",
+        "version" : "1.0.2"
       }
     }
   ],

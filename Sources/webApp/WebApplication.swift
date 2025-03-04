@@ -30,9 +30,16 @@ public class WebApplication {
         api.append(ConstructionServicesAPI(server, gameEngine: self.gameEngine))
         self.api = api
 
-        server.middleware.append({ request, _ in
+        server.middleware.append( { request, header in
+            Logger.info("WebApplication", "Request \(request.id) \(request.method) \(request.path) from \(request.peerName ?? "")")
+            request.onFinished = { id, code, duration in
+                print("Request \(id) finished with \(code) in \(String(format: "%.3f", duration)) seconds")
+            }
             return nil
         })
+        server.metrics.onOpenConnectionsChanged = { number in
+            print("amount of connections: \(number)")
+        }
         server.get["/"] = { request, responseHeaders in
             guard let userID = request.queryParams.get("userID"), let player: Player = self.dataStore.find(uuid: userID) else {
                 return .ok(.html("Invalid userID"))
@@ -225,11 +232,6 @@ public class WebApplication {
             try HttpFileResponse.with(absolutePath: filePath)
             Logger.error("Unhandled request", "File `\(filePath)` doesn't exist")
             return .notFound()
-        }
-
-        server.middleware.append { request, responseHeaders in
-            Logger.info("Incoming request", "\(request.method) \(request.path)")
-            return nil
         }
     }
 }

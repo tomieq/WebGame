@@ -7,7 +7,7 @@
 
 import Foundation
 
-class SaleAdvertManagedObject {
+class SaleAdvertManagedObject: Codable {
     let uuid: String
     let x: Int
     let y: Int

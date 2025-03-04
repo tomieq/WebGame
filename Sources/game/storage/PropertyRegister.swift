@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum PropertyType: String {
+enum PropertyType: String, Codable {
     case land
     case road
     case parking

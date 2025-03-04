@@ -8,7 +8,7 @@
 import Foundation
 
 class CashFlowManagedObject: Codable {
-    let id: Int
+    var id: Int?
     let uuid: String
     let month: Int
     let title: String
@@ -16,7 +16,6 @@ class CashFlowManagedObject: Codable {
     let amount: Double
 
     init(_ archive: CashFlow) {
-        self.id = Int(Date().timeIntervalSince1970)
         self.uuid = UUID().uuidString
         self.month = archive.month
         self.title = archive.title

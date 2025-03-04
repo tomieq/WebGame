@@ -7,7 +7,7 @@
 
 import Foundation
 
-class ApartmentManagedObject {
+class ApartmentManagedObject: Codable {
     let uuid: String
     var ownerUUID: String
     let x: Int

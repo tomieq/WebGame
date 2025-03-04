@@ -13,7 +13,8 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/tomieq/swifter.git", branch: "develop"),
-        .package(url: "https://github.com/ReactiveX/RxSwift.git", exact: "6.5.0")
+        .package(url: "https://github.com/ReactiveX/RxSwift.git", exact: "6.5.0"),
+        .package(url: "https://github.com/tomieq/WebRequest.swift.git", exact: "1.0.2"  )
     ],
     targets: [
         .target(
@@ -21,7 +22,8 @@ let package = Package(
             dependencies: [
                 .product(name: "Swifter", package: "Swifter"),
                 .product(name: "RxSwift", package: "RxSwift"),
-                .product(name: "RxCocoa", package: "RxSwift")
+                .product(name: "RxCocoa", package: "RxSwift"),
+                .product(name: "WebRequest", package: "WebRequest.swift")
             ],
             path: "Sources"),
         .target(
@@ -29,7 +31,8 @@ let package = Package(
             dependencies: ["WebGameLib",
                            .product(name: "Swifter", package: "Swifter"),
                            .product(name: "RxSwift", package: "RxSwift"),
-                           .product(name: "RxCocoa", package: "RxSwift")
+                           .product(name: "RxCocoa", package: "RxSwift"),
+                           .product(name: "WebRequest", package: "WebRequest.swift")
             ],
             path: "Executable"),
         .testTarget(
